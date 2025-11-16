@@ -1,0 +1,28 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Danh sách căn hộ</h2>
+
+<div class="row">
+    {% for a in apartments %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+
+            <img src="{{ a.image }}" class="card-img-top" alt="Apartment">
+
+            <div class="card-body">
+                <h5 class="card-title">{{ a.code }}</h5>
+
+                <p>Loại phòng: {{ a.room_type }}</p>
+                <p>Giá thuê: {{ a.price }} VND</p>
+                <p>Tầng: {{ a.floor }}</p>
+
+                <a class="btn btn-primary w-100">Xem chi tiết</a>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
