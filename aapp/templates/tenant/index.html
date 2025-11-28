@@ -1,0 +1,161 @@
+{% extends "tenant/base.html" %}
+
+{% block title %}Overview - Resident Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark">Welcome back, {{current_user.full_name}}!</h2>
+    <p class="text-muted">Here's what's happening with your apartment today.</p>
+</div>
+
+<hr>
+<h5 class="mb-3 text-secondary fw-bold">Dashboard</h5>
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="card-body">
+                <div class="card-icon-bg mb-3">
+                    <i class="bi bi-file-earmark-text fs-4 text-primary"></i>
+                </div>
+                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Contract Status</h6>
+                <h4 class="card-title fw-bold mb-1">Active</h4>
+                <p class="card-text text-success small mb-3"><i class="bi bi-check-circle"></i> Lease ends May 31, 2026</p>
+                <a href="{{ url_for('tenant_apartment') }}" class="text-decoration-none fw-bold stretched-link">Detail <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="card-body">
+                <div class="card-icon-bg mb-3">
+                    <i class="bi bi-currency-dollar fs-4 text-success"></i>
+                </div>
+                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Next Payment</h6>
+                <h4 class="card-title fw-bold mb-1">5.200.000 VND</h4>
+                <p class="card-text text-danger small mb-3"><i class="bi bi-clock"></i> Due Dec 21, 2025</p>
+                <a href="{{ url_for('tenant_payments') }}" class="text-decoration-none fw-bold stretched-link">Pay now <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="card-body">
+                <div class="card-icon-bg mb-3">
+                    <i class="bi bi-envelope fs-4 text-warning"></i>
+                </div>
+                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Latest Notifications</h6>
+                <h5 class="card-title fw-bold mb-1 fs-6">Electrical maintenance</h5>
+                <p class="card-text text-muted small mb-3 text-truncate">Dear residents, we will check...</p>
+                <a href="{{ url_for('tenant_notifications') }}" class="text-decoration-none fw-bold stretched-link">Learn more <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+<div class="d-flex justify-content-between align-items-end mb-3">
+    <h5 class="text-secondary fw-bold m-0">Introducing Skyscraper's Modern Apartments</h5>
+</div>
+
+<div id="apartmentCarousel" class="carousel carousel-dark slide shadow-sm rounded-4 overflow-hidden bg-white" data-bs-ride="carousel">
+    
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+
+    <div class="carousel-inner">
+        
+        <div class="carousel-item active" data-bs-interval="5000"> <div class="row g-0">
+                <div class="col-md-5 position-relative">
+                    <img src="https://placehold.co/800x600/e0e0e0/555?text=Classic+Suite" class="d-block w-100 h-100 object-fit-cover" alt="Room 1" style="min-height: 320px;">
+                    <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">VIP</span>
+                </div>
+                <div class="col-md-7">
+                    <div class="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
+                        <h3 class="fw-bold mb-2">European Classic Suite</h3>
+                        <p class="text-primary fw-bold mb-3 fs-5">8.500.000 VND <small class="text-muted fw-normal fs-6">/ month</small></p>
+                        
+                        <div class="mb-4 text-muted small">
+                            <span class="me-3"><i class="bi bi-people me-1"></i> 4 Guests</span>
+                            <span class="me-3"><i class="bi bi-door-open me-1"></i> 2 Bedrooms</span>
+                            <span><i class="bi bi-aspect-ratio me-1"></i> 65m²</span>
+                        </div>
+                        
+                        <p class="card-text text-secondary mb-4 line-clamp-3">
+                            Classic European style combined with modern amenities. Features cream and wood brown tones with delicate moldings, creating a noble living space.
+                        </p>
+                        <div>
+                            <button class="btn btn-dark px-4 rounded-pill">Book Viewing</button>
+                            <button class="btn btn-outline-secondary px-4 rounded-pill ms-2">Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item" data-bs-interval="5000">
+            <div class="row g-0">
+                <div class="col-md-5 position-relative">
+                    <img src="https://placehold.co/800x600/cbe4f9/0056b3?text=Modern+Studio" class="d-block w-100 h-100 object-fit-cover" alt="Room 2" style="min-height: 320px;">
+                    <span class="position-absolute top-0 start-0 m-3 badge bg-success">Available</span>
+                </div>
+                <div class="col-md-7">
+                    <div class="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
+                        <h3 class="fw-bold mb-2">Sunny Modern Studio</h3>
+                        <p class="text-primary fw-bold mb-3 fs-5">5.200.000 VND <small class="text-muted fw-normal fs-6">/ month</small></p>
+                        
+                        <div class="mb-4 text-muted small">
+                            <span class="me-3"><i class="bi bi-people me-1"></i> 2 Guests</span>
+                            <span class="me-3"><i class="bi bi-door-open me-1"></i> Studio</span>
+                            <span><i class="bi bi-aspect-ratio me-1"></i> 35m²</span>
+                        </div>
+                        
+                        <p class="card-text text-secondary mb-4">
+                            Perfect for young professionals or students. Full distinct glass windows focusing on natural light, fully furnished with smart home devices.
+                        </p>
+                        <div>
+                            <button class="btn btn-dark px-4 rounded-pill">Book Viewing</button>
+                            <button class="btn btn-outline-secondary px-4 rounded-pill ms-2">Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-item" data-bs-interval="5000">
+            <div class="row g-0">
+                <div class="col-md-5">
+                    <img src="https://placehold.co/800x600/d4edda/155724?text=Rooftop+Garden" class="d-block w-100 h-100 object-fit-cover" alt="News" style="min-height: 320px;">
+                </div>
+                <div class="col-md-7">
+                    <div class="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
+                        <h6 class="text-uppercase text-success fw-bold ls-1 mb-2">Community News</h6>
+                        <h3 class="fw-bold mb-3">New Rooftop Garden Open!</h3>
+                        
+                        <p class="card-text text-secondary mb-4">
+                            We are happy to announce the opening of the new community garden on the rooftop. All residents are welcome to visit, plant vegetables, and enjoy the BBQ area starting this weekend.
+                        </p>
+                        <div>
+                            <button class="btn btn-success px-4 rounded-pill">Read Guidelines</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#apartmentCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#apartmentCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+{% endblock %}

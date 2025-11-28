@@ -1,0 +1,70 @@
+{% extends "tenant/base.html" %}
+
+{% block title %}Bills - Skyscraper{% endblock %}
+{% block header_title %}Bills & Payments{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="opacity-75">Total Outstanding Amount</h6>
+                    <h2 class="fw-bold mb-0">5.200.000 VND</h2>
+                </div>
+                <button class="btn btn-light fw-bold text-primary px-4 py-2">
+                    <i class="bi bi-credit-card me-2"></i> Pay All
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 fw-bold">Payment History</h6>
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary active">All</button>
+            <button class="btn btn-outline-secondary">Unpaid</button>
+            <button class="btn btn-outline-secondary">Paid</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Invoice ID</th>
+                        <th>Service Month</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ps-4 fw-bold">#INV-2025-12</td>
+                        <td>December 2025</td>
+                        <td class="fw-bold text-danger">5.200.000 ₫</td>
+                        <td>21/12/2025</td>
+                        <td><span class="badge bg-danger bg-opacity-10 text-danger px-3">Unpaid</span></td>
+                        <td><button class="btn btn-sm btn-primary">Pay</button></td>
+                    </tr>
+                    <tr>
+                        <td class="ps-4 fw-bold text-muted">#INV-2025-11</td>
+                        <td>November 2025</td>
+                        <td>5.150.000 ₫</td>
+                        <td>21/11/2025</td>
+                        <td><span class="badge bg-success bg-opacity-10 text-success px-3">Paid</span></td>
+                        <td><button class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white text-center py-3">
+        <a href="#" class="text-decoration-none small fw-bold">View older invoices</a>
+    </div>
+</div>
+{% endblock %}

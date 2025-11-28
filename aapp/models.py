@@ -12,6 +12,7 @@ class BaseModel(db.Model):
     __abstract__ = True
     id = Column(Integer, primary_key=True, autoincrement=True)
     active = Column(Boolean, default=True)
+    
 
 
 class RoomType(AppEnum):
@@ -44,9 +45,9 @@ class TargetGroup(AppEnum):
     ALL = "ALL"
 
 class UserRole(AppEnum):
-    TENANT =1
-    MANAGER =2
-    TECHNICIAN =3
+    TENANT = 1
+    MANAGER = 2
+    TECHNICIAN = 3
     ALL = 4
 
 
@@ -58,7 +59,7 @@ class Manager(BaseModel,UserMixin):
     full_name = Column(String(50), nullable=False)
     phone_number = Column(String(20))
     email = Column(String(50))
-    avatar = Column(String(100), default="https://res.cloudinary.com/demo/image/upload/default_avatar.jpg")
+    avatar = Column(String(100), default="https://res.cloudinary.com/dt3btnnxy/image/upload/v1763293575/bifgdnpwfsixbur45xun.png")
     user_role = Column(Enum(UserRole), default=UserRole.MANAGER)
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
@@ -73,7 +74,7 @@ class Tenant(BaseModel,UserMixin):
     full_name = Column(String(50), nullable=False)
     phone_number = Column(String(20))
     email = Column(String(50))
-    avatar = Column(String(100), default="https://res.cloudinary.com/demo/image/upload/default_avatar.jpg")
+    avatar = Column(String(100), default="https://res.cloudinary.com/dt3btnnxy/image/upload/v1763293575/bifgdnpwfsixbur45xun.png")
     user_role = Column(Enum(UserRole), default=UserRole.TENANT)
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
@@ -195,7 +196,7 @@ if __name__ == "__main__":
             apartment_id="A101",
             room_type=RoomType.ONE_BEDROOM,
             status=ApartmentStatus.AVAILABLE,
-            image_urls="https://res.cloudinary.com/demo/image/upload/a1.jpg",
+            image_urls="https://res.cloudinary.com/djviyyvzu/image/upload/v1764136201/iodwckukwxzuz8sksioj.webp",
             floor=1, area=40, price=4500000
         )
 
@@ -203,7 +204,7 @@ if __name__ == "__main__":
             apartment_id="A102",
             room_type=RoomType.STUDIO,
             status=ApartmentStatus.AVAILABLE,
-            image_urls="https://res.cloudinary.com/demo/image/upload/a2.jpg",
+            image_urls="https://res.cloudinary.com/djviyyvzu/image/upload/v1764136201/iodwckukwxzuz8sksioj.webp",
             floor=1, area=30, price=3500000
         )
 
@@ -211,7 +212,7 @@ if __name__ == "__main__":
             apartment_id="A201",
             room_type=RoomType.TWO_BEDROOM,
             status=ApartmentStatus.RENTED,
-            image_urls="https://res.cloudinary.com/demo/image/upload/a3.jpg",
+            image_urls="https://res.cloudinary.com/djviyyvzu/image/upload/v1764136201/iodwckukwxzuz8sksioj.webp",
             floor=2, area=55, price=6000000
         )
 
@@ -219,7 +220,7 @@ if __name__ == "__main__":
             apartment_id="A202",
             room_type=RoomType.DUPLEX,
             status=ApartmentStatus.MAINTENANCE,
-            image_urls="https://res.cloudinary.com/demo/image/upload/a4.jpg",
+            image_urls="https://res.cloudinary.com/djviyyvzu/image/upload/v1764136201/iodwckukwxzuz8sksioj.webp",
             floor=2, area=75, price=9000000
         )
 
@@ -227,7 +228,7 @@ if __name__ == "__main__":
             apartment_id="A301",
             room_type=RoomType.PENTHOUSE,
             status=ApartmentStatus.LOOKING_FOR_ROOMMATE,
-            image_urls="https://res.cloudinary.com/demo/image/upload/a5.jpg",
+            image_urls="https://res.cloudinary.com/djviyyvzu/image/upload/v1764136201/iodwckukwxzuz8sksioj.webp",
             floor=3, area=95, price=15000000
         )
 
