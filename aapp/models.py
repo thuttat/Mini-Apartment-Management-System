@@ -232,6 +232,10 @@ if __name__ == "__main__":
             floor=3, area=95, price=15000000
         )
 
+        # Mapping Apartment - Manager
+        ad1 = ApartmentDetail(apartment_id="A101", manager_id="M001", note="Main manager")
+        ad2 = ApartmentDetail(apartment_id="A102", manager_id="M001", note="Backup manager")
+
         # Contracts
         c1 = Contract(
             contract_id="C001",
