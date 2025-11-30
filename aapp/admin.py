@@ -2,6 +2,7 @@ from flask_admin.contrib.sqla import ModelView
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
+from flask_admin import AdminIndexView
 
 from aapp import app, db
 from aapp.models import Apartment, Tenant, Manager, Contract, Invoice, Rule, UserRole
@@ -12,6 +13,7 @@ class AdminView(ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect('/?forbidden=1')
+
 
 class ApartmentView(AdminView):
     column_list = ['id', 'apartment_id', 'room_type', 'status', 'floor', 'area', 'price']
@@ -51,7 +53,7 @@ class LogoutView(BaseView):
     def is_accessible(self):
         return current_user.is_authenticated
 
-admin = Admin(app=app, name="Apartment Management")
+admin = Admin(app=app, name="Apartment Management" )
 
 admin.add_view(ManagerView(Manager, db.session))
 admin.add_view(TenantView(Tenant, db.session))

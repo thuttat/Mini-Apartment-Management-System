@@ -2,10 +2,36 @@
 {% extends 'layout/base.html' %}
 
 
-{% block title %}Staff Portal{% endblock %}
+{% block title %}Technician{% endblock %}
 
+{% block header %}
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+  <div class="container ">
+    <a class="navbar-brand" href="javascript:void(0)">Apartment Management</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mynavbar">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="javascript:void(0)">Apartment</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% endblock %}
 
 {% block content %}
-<h2>Chào bạn Staff!</h2>
+<h2>Chào bạn Technician!</h2>
 
 {% endblock %}

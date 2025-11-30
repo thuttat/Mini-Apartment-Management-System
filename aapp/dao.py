@@ -1,5 +1,5 @@
 import hashlib
-from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole
+from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole, Technician
 from aapp import db
 
 def auth_manager(username, password):
@@ -17,10 +17,22 @@ def auth_tenant(username, password):
         Tenant.password == password
     ).first()
 
+def auth_technician(username, password):
+    password = hashlib.md5(password.strip().encode('utf-8')).hexdigest()
+    return Technician.query.filter(Technician.username == username.strip(),
+                                   Technician.password == password).first()
+
+def get_user(user_id):
+    user = Manager.query.get(user_id)
+    if not user:
+        user=Technician.query.get(user_id)
+    return user
 
 def get_manager_by_id(id):
     return Manager.query.get(id)
 
+def get_technician_by_id(id):
+    return Technician.query.get(id)
 
 def get_tenant_by_id(id):
     return Tenant.query.get(id)

@@ -49,11 +49,7 @@ class UserRole(AppEnum):
     TECHNICIAN =3
     ALL = 4
 
-
-
 class Manager(BaseModel,UserMixin):
-
-
     manager_id = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(50), nullable=False)
     phone_number = Column(String(20))
@@ -82,6 +78,18 @@ class Tenant(BaseModel,UserMixin):
 
     contracts = relationship("Contract", backref="tenant", lazy=True)
 
+class Technician(BaseModel,UserMixin):
+    technician_id = Column(String(50), unique=True, nullable=False)
+    full_name = Column(String(50), nullable=False)
+    phone_number = Column(String(20))
+    email = Column(String(50))
+    avatar = Column(String(100))
+    user_role = Column(Enum(UserRole), default=UserRole.TECHNICIAN)
+    username = Column(String(50), unique=True, nullable=False)
+    password = Column(String(100), nullable=False)
+
+    def __str__(self):
+        return self.full_name
 
 
 class Apartment(BaseModel):
@@ -135,8 +143,13 @@ class Rule(BaseModel):
     description = Column(Text)
     last_updated = Column(Date, default=datetime.utcnow)
 
+
+
+
 if __name__ == "__main__":
     with app.app_context():
+        import hashlib
+
         db.drop_all()
         db.create_all()
 
@@ -151,6 +164,15 @@ if __name__ == "__main__":
 
             username="admin",
             password=hashlib.md5("123456".encode()).hexdigest()
+        )
+
+        #Technician
+        te = Technician(
+            technician_id='T001',
+            full_name='Technician',
+            username='tech',
+            password=str(hashlib.md5('123'.encode('utf-8')).hexdigest()),
+            user_role=UserRole.TECHNICIAN
         )
 
         # Tenants
@@ -286,7 +308,7 @@ if __name__ == "__main__":
         r2 = Rule(rule_name="MIN_RENT_MONTHS", value="6", description="Hợp đồng tối thiểu 6 tháng.")
         r3 = Rule(rule_name="LATE_FEE", value="150000", description="Phí phạt trễ hạn đóng tiền.")
 
-        db.session.add_all([m1, t1, t2, t3, a1, a2, a3, a4, a5, c1, c2, c3] + inv + [r1, r2, r3])
+        db.session.add_all([m1,te, t1, t2, t3, a1, a2, a3, a4, a5, c1, c2, c3] + inv + [r1, r2, r3])
         db.session.commit()
 
 

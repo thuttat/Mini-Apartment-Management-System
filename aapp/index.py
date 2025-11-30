@@ -1,6 +1,11 @@
-from flask import render_template, request, redirect
-from flask_login import login_user
+from os import abort
+
+from flask import render_template, request, redirect, url_for
+from flask_login import login_user, current_user, login_required, logout_user
+from sqlalchemy.testing.pickleable import User
+
 from aapp import app, dao, login
+from aapp.models import UserRole, Technician
 
 
 @app.route('/')
@@ -21,21 +26,42 @@ def login_process():
     password = request.form.get("password")
 
     manager = dao.auth_manager(username=username, password=password)
-
+    technician = dao.auth_technician(username=username, password=password)
     if manager:
         login_user(manager)
         return redirect('/admin')
+    elif technician:
+        login_user(technician)
+        return redirect('/technician')
 
     return redirect('/?login_failed=1')
 
-
+# @app.route('/technician')
+# def technician():
+#     abort(401)
 
 
 @login.user_loader
 def load_user(user_id):
-    return dao.get_manager_by_id(user_id)
+    return dao.get_user(user_id)
 
+
+@app.route('/technician')
+@login_required
+def technician_dashboard():
+    return render_template('technician/index.html')
+
+@app.context_processor
+def user_role():
+    return dict(UserRole=UserRole)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
 
 if __name__ == "__main__":
     from aapp import admin
     app.run(debug=True)
+
