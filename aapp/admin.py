@@ -2,9 +2,12 @@ from flask_admin.contrib.sqla import ModelView
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
+from flask_admin.form import rules
+from wtforms import SelectField
+
 
 from aapp import app, db
-from aapp.models import Apartment, Tenant, Manager, Contract, Invoice, Rule, UserRole
+from aapp.models import Apartment, Tenant, Manager, Contract, Invoice, Rule, UserRole, ApartmentDetail
 
 class AdminView(ModelView):
     def is_accessible(self):
@@ -13,13 +16,14 @@ class AdminView(ModelView):
     def inaccessible_callback(self, name, **kwargs):
         return redirect('/?forbidden=1')
 
-class ApartmentView(AdminView):
-    column_list = ['id', 'apartment_id', 'room_type', 'status', 'floor', 'area', 'price']
-    column_searchable_list = ['apartment_id']
-    column_filters = ['room_type', 'status', 'floor', 'price']
+class ApartmentDetailView(AdminView):
+    column_list = ['id', 'apartment_id', 'manager_id', 'note', 'active']
+    column_searchable_list = ['apartment_id', 'manager_id']
+    column_filters = ['apartment_id', 'manager_id']
     can_export = True
     edit_modal = True
     page_size = 30
+
 
 class TenantView(AdminView):
     column_list = ['id', 'tenant_id', 'full_name', 'phone_number', 'email', 'user_role']
@@ -61,7 +65,7 @@ admin = Admin(app=app, name="Apartment Management")
 
 admin.add_view(ManagerView(Manager, db.session))
 admin.add_view(TenantView(Tenant, db.session))
-admin.add_view(ApartmentView(Apartment, db.session))
+admin.add_view(ApartmentDetailView(ApartmentDetail, db.session))
 admin.add_view(ContractView(Contract, db.session))
 admin.add_view(InvoiceView(Invoice, db.session))
 admin.add_view(RuleView(Rule, db.session))

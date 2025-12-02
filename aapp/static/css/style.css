@@ -10,7 +10,7 @@ body {
 /* Sidebar styling */
 .sidebar {
     min-height: 100vh;
-    background-color: #1e3a8a; /* Màu xanh đậm chủ đạo */
+    background-color: #1e3a8a; /* Main color */
     width: 260px;
     transition: all 0.3s;
 }

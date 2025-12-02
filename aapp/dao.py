@@ -1,7 +1,7 @@
 import hashlib
 
 import cloudinary
-from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole
+from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole,Technician
 from aapp import db
 
 # def auth_user(username, password, role: UserRole):
@@ -13,25 +13,15 @@ from aapp import db
 #         return None
     
 def auth_user(username, password):
-    """Xác thực người dùng bất kỳ role (Manager, Tenant, Technician)"""
     hashed = hashlib.md5(password.strip().encode('utf-8')).hexdigest()
 
-    # Kiểm tra Manager
-    user = Manager.query.filter_by(username=username.strip(), password=hashed).first()
-    if user:
-        return user, 2
-
-    # Kiểm tra Tenant
-    user = Tenant.query.filter_by(username=username.strip(), password=hashed).first()
-    if user:
-        return user, 1
-
-    # Kiểm tra Technician (nếu có)
-    # user = Technician.query.filter_by(username=username.strip(), password=hashed).first()
-    # if user:
-    #     return user, 'technician'
+    for Model, role in UserRole:
+        user = Model.query.filter_by(username=username, password=hashed).first()
+        if user:
+            return user, role
 
     return None, None
+
 
 # def auth_manager(username, password):
 #     password = hashlib.md5(password.strip().encode('utf-8')).hexdigest()
