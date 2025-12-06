@@ -1,34 +1,29 @@
 {% extends 'layout/base.html' %}
 
-{% block navbar %}
-<li class="nav-item">
-    <a class="nav-link" href="/">Home</a>
-</li>
-{% endblock %}
-
 {% block content %}
-<h2 class="mb-4">Danh sách căn hộ</h2>
+<h2 class="mb-4 text-center">DANH SÁCH CĂN HỘ TRỐNG</h2>
 
 <div class="row">
     {% for a in apartments %}
     <div class="col-md-4 mb-4">
-        <div class="card">
-
-            <img src="{{ a.image }}" class="card-img-top" alt="Apartment">
+        <div class="card shadow-sm h-100">
+            <img src="{{ a.image_urls }}" class="card-img-top" alt="Apartment Image" style="height: 200px; object-fit: cover;">
 
             <div class="card-body">
-                <h5 class="card-title">{{ a.code }}</h5>
+                <h5 class="card-title text-primary">{{ a.id }}</h5>
+                <p class="card-text">Loại phòng: <strong>{{ a.room_type.value }}</strong></p>
+                <p class="card-text">Tầng: {{ a.floor }} | Diện tích: {{ a.area }} m2</p>
 
-                <p>Loại phòng: {{ a.room_type }}</p>
-                <p>Giá thuê: {{ a.price }} VND</p>
-                <p>Tầng: {{ a.floor }}</p>
+                <h5 class="text-danger font-weight-bold">{{ "{:,.0f}".format(a.price) }} VND</h5>
 
-                <a class="btn btn-primary w-100">Xem chi tiết</a>
+                <a href="#" class="btn btn-primary w-100 mt-2">Xem chi tiết</a>
             </div>
-
         </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center">
+        <p>Hiện không có phòng nào trống.</p>
     </div>
     {% endfor %}
 </div>
-
 {% endblock %}
