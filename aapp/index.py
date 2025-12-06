@@ -49,8 +49,8 @@ def login_process():
             return redirect('/admin')
         elif role == 1:
             return redirect('/tenant/index')
-        # elif role == 'technician':
-        #     return redirect('/technician-dashboard')
+        elif role == 3:
+            return redirect('/technician')
 
     return redirect('/?login_failed=1')
 
@@ -109,6 +109,11 @@ def tenant_profile():
 @app.route('/tenant/settings')
 def tenant_settings():
     return render_template('tenant/settings.html')
+
+
+@app.route('/technician')
+def admin_index():
+    return render_template('technician/index.html')
 
 if __name__ == "__main__":
     from aapp import admin

@@ -11,11 +11,17 @@ from aapp import db
 #         return auth_tenant(username, password)
 #     else:
 #         return None
-    
+
+UserRoleMapping = [
+    (Manager, UserRole.MANAGER.value),
+    (Tenant, UserRole.TENANT.value),
+    (Technician, UserRole.TECHNICIAN.value) 
+]
+
 def auth_user(username, password):
     hashed = hashlib.md5(password.strip().encode('utf-8')).hexdigest()
 
-    for Model, role in UserRole:
+    for Model, role in UserRoleMapping:
         user = Model.query.filter_by(username=username, password=hashed).first()
         if user:
             return user, role

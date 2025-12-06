@@ -155,6 +155,18 @@ if __name__ == "__main__":
             active=True
         )
 
+        #Technician
+        te1=Technician(
+            id="TE001",
+            full_name="Nhân viên kỹ thuật",
+            phone_number="097267921",
+            email="technician@system.com",
+            user_role=UserRole.TECHNICIAN,
+            username="technician",
+            password=hashlib.md5("123456".encode()).hexdigest(),
+            active=True
+        )
+
         # Tenants
         t1 = Tenant(
             id="T101",
@@ -289,7 +301,7 @@ if __name__ == "__main__":
         r2 = Rule(id="R002", rule_name="MIN_RENT_MONTHS", value="6", description="Hợp đồng tối thiểu 6 tháng.")
         r3 = Rule(id="R003", rule_name="LATE_FEE", value="150000", description="Phí phạt trễ hạn đóng tiền.")
 
-        db.session.add_all([m1, t1, t2, t3, a1, a2, a3, a4, a5, ad1, ad2, c1, c2, c3, *inv, r1, r2, r3])
+        db.session.add_all([m1,te1, t1, t2, t3, a1, a2, a3, a4, a5, ad1, ad2, c1, c2, c3, *inv, r1, r2, r3])
         db.session.commit()
 
 
