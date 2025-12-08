@@ -153,11 +153,17 @@ def tenant_settings():
 def admin_index():
     return render_template('technician/index.html')
 
+@app.route('/chart')
+def chart_view():
+    stats_data = dao.count_apartments()
+    return render_template('chart.html', stats_data=stats_data)
+
 @app.route('/technician/index')
 @login_required
 def technician_index():
     rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
     return render_template('technician/index.html', apartments=rented_apartments)
+
 
 
 def process_upload(image):
