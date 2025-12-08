@@ -134,6 +134,12 @@ class Invoice(BaseModel):
     electric_usage = Column(Float, default=0)
     water_usage = Column(Float, default=0)
 
+
+    electric_end_reading=Column(Float, default=0)
+    water_end_reading=Column(Float, default=0)
+    electric_image=Column(String(255))
+    water_image=Column(String(255))
+
     # Thành tiền
     electric_fee = Column(Float, default=0)
     water_fee = Column(Float, default=0)
@@ -172,7 +178,7 @@ if __name__ == "__main__":
             username="admin", password=hashlib.md5("123456".encode()).hexdigest(), active=True
         )
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
         #Technician
         te1=Technician(
             id="TE001",
@@ -196,7 +202,7 @@ if __name__ == "__main__":
             password=hashlib.md5("123456".encode()).hexdigest(),
             active=True
         )
-=======
+# =======
         # 2. Tenants
         t1 = Tenant(id="T101", full_name="Nguyễn Văn An", phone_number="0908000111", email="an123@gmail.com",
                     user_role=UserRole.TENANT, username="an123", password=hashlib.md5("123456".encode()).hexdigest())
@@ -204,7 +210,7 @@ if __name__ == "__main__":
                     user_role=UserRole.TENANT, username="binhtran", password=hashlib.md5("654321".encode()).hexdigest())
         t3 = Tenant(id="T103", full_name="Lê Hoàng Minh", phone_number="0933444555", email="minh@gmail.com",
                     user_role=UserRole.TENANT, username="minhle", password=hashlib.md5("abcdef".encode()).hexdigest())
->>>>>>> 0410f081f12cdbb8bd8e052ad32a3c10d5c70227
+# >>>>>>> 0410f081f12cdbb8bd8e052ad32a3c10d5c70227
 
         # 3. Apartments
         a1 = Apartment(id="A101", room_type=RoomType.ONE_BEDROOM, status=ApartmentStatus.AVAILABLE, floor=1, area=40,
@@ -247,22 +253,22 @@ if __name__ == "__main__":
                  description="Phí quản lý hàng tháng"),
         ]
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
         # Rules
-        r1 = Rule(id="R001", rule_name="MAX_TENANTS", value="4", description="Tối đa 4 người ở một căn hộ.")
-        r2 = Rule(id="R002", rule_name="MIN_RENT_MONTHS", value="6", description="Hợp đồng tối thiểu 6 tháng.")
-        r3 = Rule(id="R003", rule_name="LATE_FEE", value="150000", description="Phí phạt trễ hạn đóng tiền.")
+        # r1 = Rule(id="R001", rule_name="MAX_TENANTS", value="4", description="Tối đa 4 người ở một căn hộ.")
+        # r2 = Rule(id="R002", rule_name="MIN_RENT_MONTHS", value="6", description="Hợp đồng tối thiểu 6 tháng.")
+        # r3 = Rule(id="R003", rule_name="LATE_FEE", value="150000", description="Phí phạt trễ hạn đóng tiền.")
 
-        db.session.add_all([m1,te1, t1, t2, t3, a1, a2, a3, a4, a5, ad1, ad2, c1, c2, c3, *inv, r1, r2, r3])
+        db.session.add_all([m1,te1, t1, t2, t3, a1, a2, a3, a4, a5, ad1, ad2, c1, c2, c3])
         db.session.commit()
 
-=======
+# =======
         # 7. Invoices
         inv = [
             Invoice(id="I001", contract_id="C001", month="2024-01",
                     electric_usage=85.7, water_usage=4,  # Thêm usage
                     electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000),
->>>>>>> 0410f081f12cdbb8bd8e052ad32a3c10d5c70227
+# >>>>>>> 0410f081f12cdbb8bd8e052ad32a3c10d5c70227
 
             Invoice(id="I002", contract_id="C001", month="2024-02",
                     electric_usage=71.4, water_usage=3.75,
@@ -278,12 +284,22 @@ if __name__ == "__main__":
         ]
 
 
+        # db.session.add_all([
+        #     m1, t1, t2, t3,
+        #     a1, a2, a3, a4, a5,
+        #     ad1, ad2,
+        #     c1, c2, c3,
+        #     *inv,
+        #     *rules_list
+        # ])
+        # db.session.commit()
+
         db.session.add_all([
-            m1, t1, t2, t3,
+            m1, te1, t1, t2, t3,  # Đã thêm te1, t2, t3
             a1, a2, a3, a4, a5,
             ad1, ad2,
             c1, c2, c3,
-            *inv,
-            *rules_list
+            *inv,  # Danh sách invoices
+            *rules_list  # Danh sách rules HỢP LỆ
         ])
         db.session.commit()

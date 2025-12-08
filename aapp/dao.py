@@ -2,10 +2,13 @@ import hashlib
 from datetime import datetime
 
 import cloudinary
+from cloudinary.api import usage
+
 from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole, Technician, User, RuleKey, \
     ContractStatus, ApartmentStatus, PaymentStatus
 from aapp import db
 from aapp.utils import get_next_id, hash_password
+
 
 
 # def auth_user(username, password, role: UserRole):
@@ -15,7 +18,7 @@ from aapp.utils import get_next_id, hash_password
 #         return auth_tenant(username, password)
 #     else:
 #         return None
-<<<<<<< HEAD
+
 
 UserRoleMapping = [
     (Manager, UserRole.MANAGER.value),
@@ -28,7 +31,7 @@ def auth_user(username, password):
 
     for Model, role in UserRoleMapping:
         user = Model.query.filter_by(username=username, password=hashed).first()
-=======
+
 
 # ============================
 # USER
@@ -44,7 +47,7 @@ def auth_user(username, password):
 
     for Model, role in auth_sources:
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
->>>>>>> 0410f081f12cdbb8bd8e052ad32a3c10d5c70227
+
         if user:
             return user, role
 
@@ -352,3 +355,63 @@ def update_rule(key: RuleKey, new_value):
         db.session.commit()
         return True
     return False
+
+
+def get_last_reading_values(apartment_id, reading_type):
+    contract = Contract.query.filter_by(apartment_id=apartment_id,status=ContractStatus.ACTIVE).first()
+    if not contract:
+        return None
+
+    if reading_type == 'electric':
+        end_reading_column = Invoice.electric_end_reading
+    elif reading_type == 'water':
+        end_reading_column = Invoice.water_end_reading
+    else:
+        raise Exception("reading_type must be electric or water")
+
+    last_invoice = Invoice.query.filter(Invoice.contract_id==contract.id,end_reading_column.isnot(None)).order_by(Invoice.month.desc()).first()
+
+    if last_invoice:
+        if reading_type == 'electric':
+            return last_invoice.month, last_invoice.electric_end_reading
+        else:
+            return last_invoice.month, last_invoice.water_end_reading
+    return None, None
+
+def get_invoice(contract_id, month_str):
+    return Invoice.query.filter(Invoice.contract_id==contract_id,Invoice.month==month_str).first()
+
+def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage,new_reading, image):
+    contract = Contract.query.filter_by(apartment_id=apartment_id,status=ContractStatus.ACTIVE).first()
+    if not contract:
+        return False,"Không tìm thấy hợp đồng!"
+
+    invoice=get_invoice(contract.id, month)
+    if not invoice:
+        new_id = get_next_id(Invoice, "INV", 6)
+        invoice=Invoice(id=new_id,contract_id=contract.id,month=month)
+        db.session.add(invoice)
+    try:
+        if reading_type == 'electric':
+            invoice.electric_usage = electric_usage
+            invoice.electric_end_reading = new_reading
+            invoice.electric_image = image
+        elif reading_type == 'water':
+            invoice.water_usage = water_usage
+            invoice.water_end_reading = new_reading
+            invoice.water_image = image
+        else:
+            return False, "Loại chỉ số không xác định."
+
+        db.session.commit()
+        return True, f"Lưu chỉ số {reading_type.capitalize()} thành công."
+    except Exception as e:
+        db.session.rollback()
+        return False, f"Lỗi CSDL: {str(e)}"
+
+
+
+
+
+
+
