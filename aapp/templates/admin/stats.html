@@ -1,0 +1,147 @@
+{% extends 'admin/master.html' %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <style>
+        .datepicker { padding: 10px; z-index: 9999 !important; }
+        .input-group-text { cursor: pointer; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<h1 class="text-left text-danger mb-4">Statstical Revenue</h1>
+
+<div class="card p-3 mb-4 shadow-sm">
+    <form action="" method="get" class="form-inline">
+
+        <div class="form-group mr-4">
+            <label for="datepicker" class="mr-2 font-weight-bold">Month:</label>
+            <div class="input-group">
+                <input type="text" id="datepicker" name="month" class="form-control bg-white"
+                       value="{{ month if month }}" placeholder="Choose month..."
+                       readonly autocomplete="off" style="width: 120px;">
+                <div class="input-group-append">
+                    <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mr-3">
+            <label for="kw" class="mr-2 font-weight-bold">Find room:</label>
+            <input type="text" id="kw" name="kw" class="form-control"
+                   placeholder="Apartment ID (A101)..."
+                   value="{{ kw if kw }}">
+        </div>
+
+        <button type="submit" class="btn btn-info shadow-sm mr-2">
+            <i class="fa fa-filter"></i> Xem báo cáo
+        </button>
+
+        {% if month or kw %}
+        <a href="{{ url_for('stats.index') }}" class="btn btn-secondary shadow-sm">
+            <i class="fa fa-refresh"></i> Reset
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="row">
+    <div class="col-md-5 col-xs-12">
+        <table class="table table-bordered table-hover shadow-sm bg-white">
+            <thead class="thead-light">
+                <tr>
+                    <th>Apartment ID</th>
+                    <th>Month</th>
+                    <th class="text-right">Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in stats %}
+                <tr>
+                    <td>{{s[0]}}</td>
+                    <td>{{s[1]}}</td>
+                    <td class="text-right">{{ "{:,.0f}".format(s[2]) }} VND</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="bg-warning font-weight-bold text-dark">
+                <tr>
+                    <td colspan="2" class="text-center">Total</td>
+                    <td class="text-right text-danger">{{ "{:,.0f}".format(total_revenue) }} VND</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="col-md-7 col-xs-12">
+        <div class="card shadow-sm p-2">
+            <canvas id="revenueChartId"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(function(){
+            // Datepicker
+            $('#datepicker').datepicker({
+                format: "yyyy-mm",
+                startView: "months",
+                minViewMode: "months",
+                autoclose: true,
+                todayHighlight: true,
+                zIndexOffset: 1000
+            });
+            $('.input-group-text').click(function(){
+                $('#datepicker').datepicker('show');
+            });
+        });
+
+
+        let labels = [], data = [], colors = [], borderColors = [];
+        let r, g, b;
+
+        {% for s in stats %}
+            labels.push('{{s[0]}} - {{s[1]}}');
+            data.push({{s[2]}});
+
+            r = parseInt(Math.random() * 255); g = parseInt(Math.random() * 255); b = parseInt(Math.random() * 255);
+            colors.push(`rgba(${r},${g},${b}, 0.5)`);
+            borderColors.push(`rgba(${r},${g},${b}, 1)`);
+        {% endfor %}
+
+        window.onload = function() {
+            const ctx = document.getElementById('revenueChartId').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue (VND)',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) { return value.toLocaleString('vi-VN') + 'VND'; }//format lại đơn vị tiền nhe
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

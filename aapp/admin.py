@@ -5,9 +5,10 @@ from flask_login import current_user, logout_user
 from flask_admin.form import rules
 from wtforms import validators, ValidationError
 from aapp.utils import get_next_id, hash_password
-from aapp import app, db, dao
+from aapp import app, db, dao, utils
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
                          Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus, ApartmentStatus)
+from flask import request
 
 
 class AdminView(ModelView):
@@ -125,15 +126,16 @@ class InvoiceView(AdminView):
     form_columns = ['contract', 'month', 'electric_usage', 'water_usage', 'service_fee', 'status']
 
     def on_model_change(self, form, model, is_created):
-        if is_created and not model.id:
-            model.id = get_next_id(Invoice, "INV", 6)
-
         e_price = dao.get_rule_value(RuleKey.PRICE_ELECTRIC)
         w_price = dao.get_rule_value(RuleKey.PRICE_WATER)
-        s_price = model.service_fee if model.service_fee else dao.get_rule_value(RuleKey.PRICE_SERVICE)
 
-        e_fee = (model.electric_usage or 0) * e_price
-        w_fee = (model.water_usage or 0) * w_price
+        s_price = float(model.service_fee) if model.service_fee else float(dao.get_rule_value(RuleKey.PRICE_SERVICE))
+
+        usage_e = float(model.electric_usage) if model.electric_usage else 0.0
+        usage_w = float(model.water_usage) if model.water_usage else 0.0
+
+        e_fee = usage_e * e_price
+        w_fee = usage_w * w_price
 
         model.electric_fee = e_fee
         model.water_fee = w_fee
@@ -151,6 +153,31 @@ class RuleView(AdminView):
     can_create = False
     can_delete = False
 
+# =========================================================
+# STATS
+# =========================================================
+class StatsView(BaseView):
+    @expose('/')
+    def index(self):
+        selected_month = request.args.get('month')
+        keyword = request.args.get('kw')
+        stats = utils.revenue_stats(month=selected_month,kw=keyword)
+
+
+
+        total_revenue = 0
+        for s in stats:
+            if s[2]:
+                total_revenue += s[2]
+
+        return self.render('admin/stats.html',
+                           stats=stats,
+                           month=selected_month,
+                           kw=keyword,
+                           total_revenue=total_revenue)
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == UserRole.MANAGER
 
 # =========================================================
 # LOGOUT
@@ -180,5 +207,6 @@ admin.add_view(ApartmentDetailView(ApartmentDetail, db.session, name='Apartment 
 admin.add_view(ContractView(Contract, db.session, name='Contract'))
 admin.add_view(InvoiceView(Invoice, db.session, name='Invoice'))
 admin.add_view(RuleView(Rule, db.session, name='Rule'))
+admin.add_view(StatsView(name="Stats", endpoint='stats'))
 
 admin.add_view(LogoutView(name="Logout"))

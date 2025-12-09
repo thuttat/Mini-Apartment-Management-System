@@ -4,14 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="030f3118-5aac-45f8-9543-02b7524bf3aa" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/aapp/utils.py" afterDir="false" />
+    <list default="true" id="030f3118-5aac-45f8-9543-02b7524bf3aa" name="Changes" comment="fix bug">
+      <change afterPath="$PROJECT_DIR$/aapp/templates/admin/stats.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aapp/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aapp/dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/dao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aapp/index.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/index.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aapp/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/aapp/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,6 +20,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -34,14 +33,14 @@
     &quot;assignee&quot;: &quot;TranLe05&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/thuttat/Mini-Apartment-Management-System.git",
-    "accountId": "2dce8e16-45d8-47cf-a1e6-0a00650cbee8"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/thuttat/Mini-Apartment-Management-System.git&quot;,
+    &quot;accountId&quot;: &quot;2dce8e16-45d8-47cf-a1e6-0a00650cbee8&quot;
   }
-}]]></component>
+}</component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8
@@ -53,6 +52,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;Python.index.executor&quot;: &quot;Run&quot;,
     &quot;Python.models.executor&quot;: &quot;Run&quot;,
@@ -147,7 +147,9 @@
       <workItem from="1764500003582" duration="24000" />
       <workItem from="1764667283250" duration="5399000" />
       <workItem from="1764687471054" duration="46000" />
-      <workItem from="1765007178025" duration="9343000" />
+      <workItem from="1765007178025" duration="17176000" />
+      <workItem from="1765263854744" duration="12139000" />
+      <workItem from="1765281666457" duration="29000" />
     </task>
     <task id="LOCAL-00001" summary="ApartmentDetail">
       <option name="closed" value="true" />
@@ -157,7 +159,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764492279639</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="fix bug">
+      <option name="closed" value="true" />
+      <created>1765016655204</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1765016655205</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -165,10 +175,11 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="ApartmentDetail" />
-    <option name="LAST_COMMIT_MESSAGE" value="ApartmentDetail" />
+    <MESSAGE value="fix bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$models.coverage" NAME="models Coverage Results" MODIFIED="1765016112922" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
-    <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$index.coverage" NAME="index Coverage Results" MODIFIED="1765016525707" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
+    <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$index.coverage" NAME="index Coverage Results" MODIFIED="1765280500773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
   </component>
 </project>
