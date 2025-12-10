@@ -1,8 +1,8 @@
 import hashlib
 from datetime import datetime
 from enum import Enum as AppEnum
-
-from sqlalchemy import Column, Integer, String, Boolean, Float, Date, ForeignKey, Enum, Text
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import Column, Integer, String, Boolean, Float, Date, ForeignKey, Enum, Text, DateTime
 from sqlalchemy.orm import relationship
 
 from aapp import db, app
@@ -14,7 +14,7 @@ class BaseModel(db.Model):
     __abstract__ = True
     id = Column(String(50), primary_key=True, unique=True, nullable=False)
     active = Column(Boolean, default=True)
-
+    created_at = Column(DateTime, default=datetime.now)
 
 class RoomType(AppEnum):
     STUDIO = "STUDIO"
@@ -92,7 +92,7 @@ class Apartment(BaseModel):
     image_urls = Column(String(500), default="https://res.cloudinary.com/dt3btnnxy/image/upload/v1763293575/bifgdnpwfsixbur45xun.png")
     floor = Column(Integer)
     area = Column(Float)
-    price = Column(Float)
+    price = Column(Integer)
 
     def __str__(self):
         return self.id
@@ -112,17 +112,27 @@ class ApartmentDetail(BaseModel):
 
 #CONTRACT
 class Contract(BaseModel):
-    apartment_id = Column(String(50), ForeignKey("apartment.id"))
-    tenant_id = Column(String(50), ForeignKey("tenant.id"))
-    start_date = Column(Date)
-    end_date = Column(Date)
-    deposit = Column(Float)
-    rent_price = Column(Float)
+    apartment_id = Column(String(50), ForeignKey("apartment.id"), nullable=False)
+    tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
+    start_date = Column(Date, nullable=False)
+    rental_period = Column(Integer, nullable=False) # thoi han thue (12 thang, 24 thang...)
+    end_date = Column(Date, nullable=False) # he thong tinh ngay het han
+    deposit = Column(Integer)
+    rent_price = Column(Integer)
     member_count = Column(Integer, default=1)  # Số người ở
     status = Column(Enum(ContractStatus), default=ContractStatus.ACTIVE)
 
     apartment = relationship("Apartment", backref="contracts", lazy=True)
     tenant = relationship("Tenant", backref="contracts", lazy=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if self.start_date and self.rental_period:
+            self.end_date = self.start_date + relativedelta(months=self.rental_period)
+
+    @staticmethod
+    def calculate_end_date(start_date, rental_period):
+        return start_date + relativedelta(months=rental_period)
 
 
 #INVOICE
@@ -131,15 +141,15 @@ class Invoice(BaseModel):
     month = Column(String(20))
 
     # Chỉ số tiêu thụ
-    electric_usage = Column(Float, default=0)
-    water_usage = Column(Float, default=0)
+    electric_usage = Column(Integer, default=0)
+    water_usage = Column(Integer, default=0)
 
     # Thành tiền
-    electric_fee = Column(Float, default=0)
-    water_fee = Column(Float, default=0)
-    service_fee = Column(Float, default=0)
+    electric_fee = Column(Integer, default=0)
+    water_fee = Column(Integer, default=0)
+    service_fee = Column(Integer, default=0)
 
-    total_amount = Column(Float, default=0)
+    total_amount = Column(Integer, default=0)
     status = Column(Enum(PaymentStatus), default=PaymentStatus.UNPAID)
 
     contract = relationship("Contract", backref="invoices", lazy=True)
@@ -198,14 +208,14 @@ if __name__ == "__main__":
 
         # 5. Contracts
         c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 1, 1),
-                      end_date=datetime(2024, 12, 1), deposit=5000000, rent_price=3500000, member_count=1,
-                      status=ContractStatus.ACTIVE)
+                      deposit=5000000, rent_price=3500000, member_count=1,
+                      status=ContractStatus.ACTIVE, rental_period=12)
         c2 = Contract(id="C002", apartment_id="A201", tenant_id="T102", start_date=datetime(2024, 3, 1),
-                      end_date=datetime(2025, 3, 1), deposit=6000000, rent_price=6500000, member_count=2,
-                      status=ContractStatus.ACTIVE)
-        c3 = Contract(id="C003", apartment_id="A201", tenant_id="T103", start_date=datetime(2024, 5, 1),
-                      end_date=datetime(2025, 5, 1), deposit=6000000, rent_price=6500000, member_count=1,
-                      status=ContractStatus.ACTIVE)
+                      deposit=6000000, rent_price=6500000, member_count=2,
+                      status=ContractStatus.ACTIVE, rental_period=12)
+        c3 = Contract(id="C003", apartment_id="A301", tenant_id="T103", start_date=datetime(2024, 5, 1),
+                      deposit=6000000, rent_price=6500000, member_count=1,
+                      status=ContractStatus.ACTIVE, rental_period=12)
 
         # 6. Rules
         rules_list = [
@@ -225,7 +235,7 @@ if __name__ == "__main__":
         inv = [
             Invoice(id="I001", contract_id="C001", month="2024-01",
                     electric_usage=85.7, water_usage=4,  # Thêm usage
-                    electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000),
+                    electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000, status='PAID'),
 
             Invoice(id="I002", contract_id="C001", month="2024-02",
                     electric_usage=71.4, water_usage=3.75,

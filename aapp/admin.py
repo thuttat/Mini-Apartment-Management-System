@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from flask_admin.contrib.sqla import ModelView
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
@@ -40,7 +41,7 @@ class TenantView(AdminView):
     column_searchable_list = ['id', 'full_name', 'username']
     column_filters = ['user_role']
     page_size = 30
-    form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'user_role', 'active']
+    form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'avatar', 'user_role', 'active']
 
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
@@ -96,9 +97,13 @@ class ContractView(AdminView):
     column_searchable_list = ['id']
     can_export = True
 
-    form_columns = ['apartment', 'tenant', 'start_date', 'end_date', 'member_count', 'deposit', 'rent_price', 'status']
+    form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'deposit', 'rent_price', 'status']
+    form_excluded_columns = ('end_date',)
 
     def on_model_change(self, form, model, is_created):
+        if model.start_date and model.rental_period:
+            model.end_date = Contract.calculate_end_date(model.start_date, model.rental_period)
+
         if is_created and not model.id:
             model.id = get_next_id(Contract, "C", 3)
 

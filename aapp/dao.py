@@ -212,7 +212,7 @@ def count_people_in_apartment(apartment_id):
     return 0
 
 
-def add_contract(tenant_id, apartment_id, start_date, end_date, deposit, rent_price, member_count=1):
+def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, rent_price, member_count=1):
     max_people = get_rule_value(RuleKey.MAX_PER_ROOM)
     if member_count > int(max_people):
         raise Exception(f"The quanity is ({member_count})/({int(max_people)})")
@@ -221,12 +221,14 @@ def add_contract(tenant_id, apartment_id, start_date, end_date, deposit, rent_pr
     if current_active:
         raise Exception("This room is active")
 
+    end_date = Contract.calculate_end_date(start_date, rental_period)
     new_id = get_next_id(Contract, "C", 3)
     contract = Contract(
         id=new_id,
         tenant_id=tenant_id,
         apartment_id=apartment_id,
         start_date=start_date,
+        rental_period=rental_period,
         end_date=end_date,
         deposit=deposit,
         rent_price=rent_price,
