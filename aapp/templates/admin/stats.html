@@ -35,7 +35,7 @@
         </div>
 
         <button type="submit" class="btn btn-info shadow-sm mr-2">
-            <i class="fa fa-filter"></i> Xem báo cáo
+            <i class="fa fa-filter"></i> Filter
         </button>
 
         {% if month or kw %}
@@ -53,7 +53,8 @@
                 <tr>
                     <th>Apartment ID</th>
                     <th>Month</th>
-                    <th class="text-right">Revenue</th>
+                    <th>Revenue</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,13 +63,14 @@
                     <td>{{s[0]}}</td>
                     <td>{{s[1]}}</td>
                     <td class="text-right">{{ "{:,.0f}".format(s[2]) }} VND</td>
+                    <td>{{s[3].name}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot class="bg-warning font-weight-bold text-dark">
                 <tr>
                     <td colspan="2" class="text-center">Total</td>
-                    <td class="text-right text-danger">{{ "{:,.0f}".format(total_revenue) }} VND</td>
+                    <td colspan="2" class="text-right text-danger">{{ "{:,.0f}".format(total_revenue) }} VND</td>
                 </tr>
             </tfoot>
         </table>
@@ -123,7 +125,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Revenue (VND)',
+                        label: "Revenue (VND)",
                         data: data,
                         backgroundColor: colors,
                         borderColor: borderColors,
@@ -136,7 +138,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) { return value.toLocaleString('vi-VN') + 'VND'; }//format lại đơn vị tiền nhe
+                                callback: function(value) { return value.toLocaleString('vi-VN') + ' VND'; }
                             }
                         }
                     }

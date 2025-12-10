@@ -7,7 +7,7 @@ from wtforms import validators, ValidationError
 from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao, utils
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
-                         Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus, ApartmentStatus)
+                         Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus)
 from flask import request
 
 
@@ -23,18 +23,16 @@ class AdminView(ModelView):
 # USER
 # =========================================================
 class ManagerView(AdminView):
-    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role']
+    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role', 'active']
+    column_editable_list = ['active']
     column_searchable_list = ['id', 'full_name', 'username']
-    column_filters = ['user_role']
+    column_filters = ['user_role', 'active']
     form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'user_role', 'active']
-
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
             model.id = get_next_id(Manager, "M", 3)
-
-        if form.password.data:
+        if hasattr(form, 'password') and form.password.data:
             model.password = hash_password(form.password.data)
-
 
 class TenantView(AdminView):
     column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role']
@@ -47,20 +45,20 @@ class TenantView(AdminView):
         if is_created and not model.id:
             model.id = get_next_id(Tenant, "T", 3)
 
-        if form.password.data:
+        if hasattr(form, 'password') and form.password.data:
             model.password = hash_password(form.password.data)
 
 
 class TechnicianView(AdminView):
-    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role']
+    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role', 'active']
     column_searchable_list = ['id', 'full_name']
+    column_editable_list = ['active']
+    column_filters = ['user_role', 'active']
     form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'user_role', 'active']
-
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
             model.id = get_next_id(Technician, "TECH", 3)
-
-        if form.password.data:
+        if hasattr(form, 'password') and form.password.data: #list from không có trường password nên đổi lại vầy
             model.password = hash_password(form.password.data)
 
 
@@ -167,7 +165,7 @@ class StatsView(BaseView):
 
         total_revenue = 0
         for s in stats:
-            if s[2]:
+            if s[3]==PaymentStatus.PAID:
                 total_revenue += s[2]
 
         return self.render('admin/stats.html',

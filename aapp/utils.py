@@ -28,17 +28,17 @@ def revenue_stats(kw =None, month=None):
     query = db.session.query(
         Apartment.id,
         Invoice.month,
-        func.sum(Invoice.total_amount)
+        func.sum(Invoice.total_amount),
+        Invoice.status
     )
     query = query.join(Contract, Contract.apartment_id == Apartment.id) \
         .join(Invoice, Invoice.contract_id == Contract.id)
-    #[('A102', '2024-01', 4730000.0), ('A102', '2024-02', 4725000.0), ('A201', '2024-03', 7110000.0), ('A201', '2024-04', 7080000.0)]
-    #cái ở trên là set dk unpaid mới ra tại chưa có cái ivoice nào em set là paid hếc hehe
-    query = query.filter(Invoice.status == PaymentStatus.PAID)
+    #[('A102', '2024-01', 529950.0, <PaymentStatus.PAID: 'PAID'>), ('A102', '2024-02', 474900.0, <PaymentStatus.PAID: 'PAID'>)]
+    # query = query.filter(Invoice.status == PaymentStatus.PAID)
     if month:
         query = query.filter(Invoice.month == month)
     if kw:
         query = query.filter(Apartment.id.contains(kw))
-    query = query.group_by(Invoice.month, Apartment.id)
+    query = query.group_by(Invoice.month, Apartment.id,Invoice.status)
     query = query.order_by(Invoice.month)
     return query.all()

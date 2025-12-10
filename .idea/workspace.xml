@@ -5,11 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="030f3118-5aac-45f8-9543-02b7524bf3aa" name="Changes" comment="fix bug">
-      <change afterPath="$PROJECT_DIR$/aapp/templates/admin/stats.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/aapp/templates/details.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aapp/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/dao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/index.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/index.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/admin/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/admin/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/admin/stats.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/admin/stats.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/layout/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/layout/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/layout/footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/layout/footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/layout/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/layout/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/apartment.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/tenant/apartment.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/base.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/tenant/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/notifications.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/tenant/notifications.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/payments.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/tenant/payments.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/tenant/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/aapp/templates/tenant/settings.html" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/templates/layout/settings.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/aapp/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/aapp/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,31 +67,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.index.executor&quot;: &quot;Run&quot;,
-    &quot;Python.models.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Mini-Apartment-Management-System&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.index.executor": "Run",
+    "Python.models.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "stats",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "D:/Mini-Apartment-Management-System",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RunManager" selected="Python.index">
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Mini-Apartment-Management-System\aapp\templates\layout" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.models">
     <configuration name="index" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Mini-Apartment-Management-System" />
       <option name="ENV_FILES" value="" />
@@ -150,6 +172,7 @@
       <workItem from="1765007178025" duration="17176000" />
       <workItem from="1765263854744" duration="12139000" />
       <workItem from="1765281666457" duration="29000" />
+      <workItem from="1765350827097" duration="15388000" />
     </task>
     <task id="LOCAL-00001" summary="ApartmentDetail">
       <option name="closed" value="true" />
@@ -179,7 +202,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="fix bug" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$models.coverage" NAME="models Coverage Results" MODIFIED="1765016112922" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
-    <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$index.coverage" NAME="index Coverage Results" MODIFIED="1765280500773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
+    <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$models.coverage" NAME="models Coverage Results" MODIFIED="1765360531194" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
+    <SUITE FILE_PATH="coverage/Mini_Apartment_Management_System$index.coverage" NAME="index Coverage Results" MODIFIED="1765364965313" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/aapp" />
   </component>
 </project>

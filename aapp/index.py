@@ -27,6 +27,10 @@ def index():
     )
     return render_template('index.html', apartments=apartments)
 
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('layout/settings.html')
 @app.route('/login')
 def login_view():
     return render_template('login.html')
@@ -34,6 +38,7 @@ def login_view():
 @app.route('/register')
 def register_view():
     return render_template('register.html')
+
 
 # @app.route('/login', methods=['post'])
 # def login_process():
@@ -72,25 +77,46 @@ def register_process():
     password = request.form.get('password')
     confirm = request.form.get('confirm')
     if password != confirm:
-        err_msg = 'WRONG PASSWORD!'
+        err_msg = 'Wrong password!'
         return render_template('register.html', err_msg=err_msg)
 
+    name = request.form.get('name')
+    username = request.form.get('username')
     avatar = request.files.get('avatar')
+    role = request.form.get('role')
+
     try:
-        dao.add_tenant(avatar=avatar,
-                     name=request.form.get('name'),
-                     username=request.form.get('username'),
-                     password=request.form.get('password'))
+        if role == 'MANAGER':
+            dao.add_manager(name=name, username=username, password=password, avatar=avatar)
+
+        elif role == 'TECHNICIAN':
+            dao.add_technician(name=name, username=username, password=password, avatar=avatar)
+
+        else:
+            dao.add_tenant(name=name, username=username, password=password, avatar=avatar)
+
     except Exception as ex:
-        return render_template('register.html', err_msg="ERROR!")
+        print(ex)
+        return render_template('register.html', err_msg="Error")
 
     return redirect('/login')
-
 @app.route('/logout')
 @login_required
 def logout_process():
     logout_user()
     return redirect('/')
+
+
+# aapp/index.py
+
+@app.route('/apartment/<apartment_id>')
+def apartment_detail(apartment_id):
+    apt = dao.get_apartment_by_id(apartment_id)
+    if not apt:
+        return render_template('404.html'), 404
+
+    return render_template('details.html', apartment=apt)
+
 
 @login.user_loader
 def load_user(user_id):
@@ -136,9 +162,7 @@ def tenant_notifications():
 def tenant_profile():
     return render_template('tenant/profile.html')
 
-@app.route('/tenant/settings')
-def tenant_settings():
-    return render_template('tenant/settings.html')
+
 
 @app.route('/technician/index')
 @login_required

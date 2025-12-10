@@ -193,7 +193,7 @@ if __name__ == "__main__":
                        area=95, price=15000000)
 
         # 4. Details
-        ad1 = ApartmentDetail(id="AD001", apartment_id="A101", manager_id="M001", note="Main manager")
+        ad1 = ApartmentDetail(id="AD001", apartment_id="A101", manager_id="M001", note="So hot")
         ad2 = ApartmentDetail(id="AD002", apartment_id="A102", manager_id="M001", note="Backup manager")
 
         # 5. Contracts

@@ -19,19 +19,21 @@ from aapp.utils import get_next_id, hash_password
 # ============================
 # USER
 # ============================
+
+# aapp/dao.py
+
 def auth_user(username, password):
     hashed = hash_password(password)
+    search_models = [Manager, Tenant, Technician]
 
-    auth_sources = [
-        (Manager, UserRole.MANAGER),
-        (Tenant, UserRole.TENANT),
-        (Technician, UserRole.TECHNICIAN)
-    ]
-
-    for Model, role in auth_sources:
+    for Model in search_models:
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
+
         if user:
-            return user, role
+            if user.active:
+                return user, user.user_role
+            else:
+                return None, None
 
     return None, None
 
@@ -57,7 +59,8 @@ def add_manager(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.MANAGER
+        user_role=UserRole.MANAGER,
+        active=False
     )
     if avatar:
         import cloudinary.uploader
@@ -79,7 +82,8 @@ def add_technician(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.TECHNICIAN
+        user_role=UserRole.TECHNICIAN,
+        active=False
     )
     if avatar:
         import cloudinary.uploader
@@ -115,7 +119,8 @@ def add_tenant(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.TENANT
+        user_role=UserRole.TENANT,
+        active=True
     )
 
     if avatar:
