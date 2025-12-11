@@ -4,13 +4,21 @@
 {% block header_title %}Bills & Payments{% endblock %}
 
 {% block content %}
+
+{% set total_outstanding = 0 %}
+{% for inv in invoices %}
+    {% if inv.status.name == 'UNPAID' %}
+        {% set total_outstanding = total_outstanding + inv.total_amount %}
+    {% endif %}
+{% endfor %}
+
 <div class="row mb-4">
     <div class="col-12">
         <div class="card bg-primary text-white">
             <div class="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="opacity-75">Total Outstanding Amount</h6>
-                    <h2 class="fw-bold mb-0">5.200.000 VND</h2>
+                    <h2 class="fw-bold mb-0">{{ "{:,.0f}".format(total_outstanding) }} VND</h2>
                 </div>
                 <button class="btn btn-light fw-bold text-primary px-4 py-2">
                     <i class="bi bi-credit-card me-2"></i> Pay All
@@ -22,13 +30,37 @@
 
 <div class="card">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h6 class="m-0 fw-bold">Payment History</h6>
+        <div class="d-flex align-items-center gap-3">
+            <h6 class="m-0 fw-bold">Payment History</h6>
+
+            <form action="/tenant/payments" method="get" class="d-flex align-items-center" id="filterForm">
+
+                <div class="input-group input-group-sm" style="max-width: 160px;">
+                    <span class="input-group-text bg-white"><i class="bi bi-calendar3"></i></span>
+
+                    <input type="text"
+                           id="datepicker"
+                           name="month"
+                           class="form-control datepicker-input"
+                           placeholder="Select Month"
+                           value="{{ request.args.get('month', '') }}"
+                           autocomplete="off"
+                           readonly>
+                </div>
+
+                {% if request.args.get('status') %}
+                    <input type="hidden" name="status" value="{{ request.args.get('status') }}">
+                {% endif %}
+            </form>
+        </div>
+
         <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-secondary active">All</button>
-            <button class="btn btn-outline-secondary">Unpaid</button>
-            <button class="btn btn-outline-secondary">Paid</button>
+            <a href="/tenant/payments" class="btn btn-outline-secondary {% if not request.args.get('status') %}active{% endif %}">All</a>
+            <a href="/tenant/payments?status=UNPAID" class="btn btn-outline-secondary {% if request.args.get('status') == 'UNPAID' %}active{% endif %}">Unpaid</a>
+            <a href="/tenant/payments?status=PAID" class="btn btn-outline-secondary {% if request.args.get('status') == 'PAID' %}active{% endif %}">Paid</a>
         </div>
     </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -37,34 +69,70 @@
                         <th class="ps-4">Invoice ID</th>
                         <th>Service Month</th>
                         <th>Amount</th>
-                        <th>Due Date</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
+<tbody>
+                    {% for inv in invoices %}
                     <tr>
-                        <td class="ps-4 fw-bold">#INV-2025-12</td>
-                        <td>December 2025</td>
-                        <td class="fw-bold text-danger">5.200.000 ₫</td>
-                        <td>21/12/2025</td>
-                        <td><span class="badge bg-danger bg-opacity-10 text-danger px-3">Unpaid</span></td>
-                        <td><button class="btn btn-sm btn-primary">Pay</button></td>
+                        <td class="ps-4 fw-bold text-primary">#{{ inv.id }}</td>
+                        <td>{{ inv.month }}</td>
+
+                        <td class="fw-bold {{ 'text-danger' if inv.status.name == 'UNPAID' else 'text-success' }}">
+                            {{ "{:,.0f}".format(inv.total_amount) }} ₫
+                        </td>
+
+                        <td>
+                            {% if inv.status.name == 'PAID' %}
+                                <span class="badge bg-success bg-opacity-10 text-success px-3">Paid</span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-3">Unpaid</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-2">
+                                {% if inv.status.name == 'UNPAID' %}
+                                    <a href="/tenant/invoice/{{ inv.id }}" class="btn btn-sm btn-primary">
+                                        Pay
+                                    </a>
+                                {% endif %}
+
+                                <a href="/tenant/invoice/{{ inv.id }}" class="btn btn-sm btn-outline-secondary" title="Download PDF">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td class="ps-4 fw-bold text-muted">#INV-2025-11</td>
-                        <td>November 2025</td>
-                        <td>5.150.000 ₫</td>
-                        <td>21/11/2025</td>
-                        <td><span class="badge bg-success bg-opacity-10 text-success px-3">Paid</span></td>
-                        <td><button class="btn btn-sm btn-outline-secondary"><i class="bi bi-download"></i></button></td>
+                        <td colspan="6" class="text-center py-5 text-muted">No invoices found.</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+    {% if invoices|length > 10 %}
     <div class="card-footer bg-white text-center py-3">
         <a href="#" class="text-decoration-none small fw-bold">View older invoices</a>
     </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+{% include 'layout/datepicker_widget.html' %}
+
+<script>
+    $(document).ready(function(){
+        $('#datepicker').on('changeDate', function() {
+            $('#filterForm').submit();
+        });
+    });
+</script>
 {% endblock %}

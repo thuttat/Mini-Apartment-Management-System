@@ -148,11 +148,41 @@ def tenant_payments():
     contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
     invoices = []
 
+    req_month = request.args.get('month')
+    req_status = request.args.get('status')
+
     if contracts:
         contract_id = contracts[0].id
-        invoices = dao.load_invoices(contract_id=contract_id)
+        all_invoices = dao.load_invoices(contract_id=contract_id)
+
+        for inv in all_invoices:
+            is_match = True
+            if req_month and inv.month != req_month:
+                is_match = False
+            if req_status and inv.status.name != req_status:
+                is_match = False
+            if is_match:
+                invoices.append(inv)
+
         invoices.sort(key=lambda x: x.month, reverse=True)
-    return render_template('tenant/payments.html', invoices=invoices)
+
+    return render_template('tenant/payments.html',
+                           invoices=invoices,
+                           active_page='bills')
+
+
+@app.route('/tenant/invoice/<invoice_id>')
+@login_required
+def tenant_invoice_detail(invoice_id):
+    invoice = dao.get_invoice_by_id(invoice_id)
+
+    if not invoice:
+        return render_template('404.html'), 404
+
+    if invoice.contract.tenant_id != current_user.id:
+        return "This is not your invoice!", 403
+
+    return render_template('tenant/invoice_detail.html', invoice=invoice)
 
 @app.route('/tenant/notifications')
 def tenant_notifications():
