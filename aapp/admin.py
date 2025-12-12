@@ -1,14 +1,13 @@
-from dateutil.relativedelta import relativedelta
+from datetime import datetime
 from flask_admin.contrib.sqla import ModelView
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
-from flask_admin.form import rules
-from wtforms import validators, ValidationError
+from wtforms import validators, ValidationError, Form
 from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
-                         Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus, ApartmentStatus)
+                         Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus)
 
 
 class AdminView(ModelView):
@@ -41,7 +40,7 @@ class TenantView(AdminView):
     column_searchable_list = ['id', 'full_name', 'username']
     column_filters = ['user_role']
     page_size = 30
-    form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'avatar', 'user_role', 'active']
+    form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'dob', 'avatar', 'user_role', 'active']
 
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
@@ -102,7 +101,7 @@ class ContractView(AdminView):
 
     def on_model_change(self, form, model, is_created):
         if model.start_date and model.rental_period:
-            model.end_date = Contract.calculate_end_date(model.start_date, model.rental_period)
+            model.end_date = dao.calculate_end_date(model.start_date, model.rental_period)
 
         if is_created and not model.id:
             model.id = get_next_id(Contract, "C", 3)
@@ -133,17 +132,19 @@ class InvoiceView(AdminView):
         if is_created and not model.id:
             model.id = get_next_id(Invoice, "INV", 6)
 
-        e_price = dao.get_rule_value(RuleKey.PRICE_ELECTRIC)
-        w_price = dao.get_rule_value(RuleKey.PRICE_WATER)
-        s_price = model.service_fee if model.service_fee else dao.get_rule_value(RuleKey.PRICE_SERVICE)
+        contract = model.contract
 
-        e_fee = (model.electric_usage or 0) * e_price
-        w_fee = (model.water_usage or 0) * w_price
+        fees = dao.calculate_monthly_invoice(
+            contract=contract,
+            electric_usage=model.electric_usage,
+            water_usage=model.water_usage,
+            service_fee=model.service_fee
+        )
 
-        model.electric_fee = e_fee
-        model.water_fee = w_fee
-        model.service_fee = s_price
-        model.total_amount = e_fee + w_fee + s_price
+        model.electric_fee = fees['electric_fee']
+        model.water_fee = fees['water_fee']
+        model.service_fee = fees['service_fee']
+        model.total_amount = fees['total_price']
 
 
 # =========================================================
@@ -155,6 +156,9 @@ class RuleView(AdminView):
     column_editable_list = ['value']
     can_create = False
     can_delete = False
+
+    def on_model_change(self, form, model, is_created):
+        model.last_updated = datetime.now()
 
 
 # =========================================================

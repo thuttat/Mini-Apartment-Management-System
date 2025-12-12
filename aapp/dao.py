@@ -2,6 +2,8 @@ import hashlib
 from datetime import datetime
 
 import cloudinary
+from dateutil.relativedelta import relativedelta
+
 from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole, Technician, User, RuleKey, \
     ContractStatus, ApartmentStatus, PaymentStatus
 from aapp import db
@@ -240,6 +242,10 @@ def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, re
     db.session.commit()
     return contract
 
+# ham tinh ngay het han hop dong
+def calculate_end_date(start_date, rental_period):
+    return start_date + relativedelta(months=rental_period)
+
 def terminate_contract(contract_id):
     c = Contract.query.get(contract_id)
     if c and c.status == ContractStatus.ACTIVE:
@@ -274,22 +280,29 @@ def load_invoices(contract_id=None, month=None, status=None):
 def get_invoice_by_id(iid):
     return Invoice.query.filter(Invoice.id == iid).first()
 
+# ham tinh tong tien + phi
+def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee=None):
+    e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
+    w_price = get_rule_value(RuleKey.PRICE_WATER)
+    s_price = service_fee if service_fee is not None else get_rule_value(RuleKey.PRICE_SERVICE)
+
+    e_fee = (electric_usage or 0) * e_price
+    w_fee = (water_usage or 0) * w_price
+    total_price = e_fee + w_fee + s_price + contract.rent_price
+
+    return {
+        "electric_fee": e_fee,
+        "water_fee": w_fee,
+        "service_fee": s_price,
+        "total_price": total_price
+    }
 
 def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
     contract = Contract.query.get(contract_id)
     if not contract:
         raise Exception("? Contract")
 
-    # Rule -> unit_price
-    e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
-    w_price = get_rule_value(RuleKey.PRICE_WATER)
-    s_price = get_rule_value(RuleKey.PRICE_SERVICE)
-
-    e_fee = electric_usage * e_price
-    w_fee = water_usage * w_price
-
-    # amount
-    total = e_fee + w_fee + s_price
+    fees = calculate_monthly_invoice(contract=contract, electric_usage=electric_usage, water_usage=water_usage)
 
     new_id = get_next_id(Invoice, "INV", 6)
     inv = Invoice(
@@ -298,16 +311,23 @@ def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
         month=month_str,
         electric_usage=electric_usage,
         water_usage=water_usage,
-        electric_fee=e_fee,
-        water_fee=w_fee,
-        service_fee=s_price,
-        total_amount=total,
+        electric_fee=fees['electric_fee'],
+        water_fee=fees['water_fee'],
+        service_fee=fees['service_fee'],
+        total_amount=fees['total_price'],
         status=PaymentStatus.UNPAID
     )
 
     db.session.add(inv)
     db.session.commit()
     return inv
+
+def calculate_due_date(self, start_date):
+    first_month = self.contract.start_date
+    year, month = map(int, self.month.split("-"))
+    date = self.contract.start_date.date()
+    due_date = datetime(year, month, date)
+    return due_date
 
 # ============================
 # RULE
@@ -335,7 +355,7 @@ def update_rule(key: RuleKey, new_value):
     rule = Rule.query.filter(Rule.key == key).first()
     if rule:
         rule.value = str(new_value)
-        rule.last_updated = datetime.utcnow()
+        rule.last_updated = datetime.now()
         db.session.commit()
         return True
     return False

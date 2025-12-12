@@ -1,8 +1,13 @@
-from flask import render_template, request, redirect, url_for
-from flask_login import current_user, login_required, login_user, logout_user
-from aapp import app, dao, login
+from datetime import datetime, timedelta
 
-from aapp.models import UserRole, ApartmentStatus, ContractStatus
+import cloudinary.uploader
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.security import check_password_hash
+
+from aapp import app, dao, login, utils, db
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey
+from aapp.utils import get_tenant_context, hash_password
 
 
 @app.context_processor
@@ -34,20 +39,6 @@ def login_view():
 @app.route('/register')
 def register_view():
     return render_template('register.html')
-
-# @app.route('/login', methods=['post'])
-# def login_process():
-#     username = request.form.get("username")
-#     password = request.form.get("password")
-
-#     manager = dao.auth_manager(username=username, password=password)
-
-#     if manager:
-#         login_user(manager)
-#         return redirect('/admin')
-
-#     return redirect('/?login_failed=1')
-
 
 @app.route('/login', methods=['post'])
 def login_process():
@@ -99,52 +90,95 @@ def load_user(user_id):
 @app.route('/tenant/index')
 @login_required
 def tenant_index():
-    return render_template('tenant/index.html')
+    ctx = get_tenant_context()
+    electric_price = float(Rule.query.filter(Rule.key == RuleKey.PRICE_ELECTRIC).first().value)
+    water_price = float(Rule.query.filter(Rule.key == RuleKey.PRICE_WATER).first().value)
+    time = datetime.now().strftime('%Y-%m')
+    return render_template('tenant/index.html', contract=ctx['contract'], invoices=ctx['invoices'], electric_price=electric_price, water_price=water_price, time=time)
 
 @app.route('/tenant/apartment')
 @login_required
 def tenant_apartment():
-    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
-
-    my_apartment = None
-    my_contract = None
-
-    if contracts:
-        my_contract = contracts[0]
-        my_apartment = dao.get_apartment_by_id(my_contract.apartment_id)
-
-    return render_template('tenant/apartment.html', apartment=my_apartment, contract=my_contract)
+    ctx = get_tenant_context()
+    return render_template('tenant/apartment.html', apartment=ctx['apartment'], contract=ctx['contract'])
 
 
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
-    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
-    invoices = []
+    ctx = get_tenant_context()
+    return render_template('tenant/payments.html', invoices=ctx['invoices'], total_unpaid=ctx['total_unpaid'], due_date=ctx['due_date'])
 
-    if contracts:
-        contract_id = contracts[0].id
-        invoices = dao.load_invoices(contract_id=contract_id)
-        invoices.sort(key=lambda x: x.month, reverse=True)
-    return render_template('tenant/payments.html', invoices=invoices)
+@app.route('/tenant/rules')
+def tenant_rules():
+    rules = Rule.query.all()
+    now = datetime.now()
 
-@app.route('/tenant/notifications')
-def tenant_notifications():
-    return render_template('tenant/notifications.html')
+    for r in rules:
+        r.is_new = (now - r.last_updated) <= timedelta(hours=24)
+    return render_template('tenant/rules.html', rules=rules)
 
 @app.route('/tenant/profile')
 def tenant_profile():
-    return render_template('tenant/profile.html')
-
-@app.route('/tenant/settings')
-def tenant_settings():
-    return render_template('tenant/settings.html')
+    ctx = get_tenant_context()
+    return render_template('tenant/profile.html', apartment=ctx['apartment'], contract=ctx['contract'])
 
 @app.route('/technician/index')
 @login_required
 def technician_index():
     rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
     return render_template('technician/index.html', apartments=rented_apartments)
+
+# upload anh moi
+@app.route('/upload_avatar', methods=['POST'])
+@login_required
+def upload_avatar():
+    if request.method == 'POST':
+        file_to_upload = request.files['avatar']
+
+        if file_to_upload:
+            upload_result = cloudinary.uploader.upload(
+                file_to_upload,
+                folder="skyscraper_avatars",
+                public_id=f"avatar_{current_user.id}",
+                overwrite=True,
+                resource_type="image"
+            )
+            image_url = upload_result['secure_url']
+            current_user.avatar = image_url
+            db.session.commit()
+    return redirect(url_for('tenant_profile'))
+
+# thay doi thong tin cho tenant
+@app.route('/change_info', methods=['POST'])
+@login_required
+def change_user_info():
+    current_user.phone_number = request.form.get("phone_number")
+    current_user.email = request.form.get("email")
+    dob_str = request.form.get("dob")
+    if dob_str:
+        current_user.dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+    db.session.commit()
+    return redirect(url_for('tenant_profile'))
+
+# doi password
+@app.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    if current_user.password != hash_password(request.form.get("current_password")):
+        return redirect(url_for('tenant_profile', tab="password", msg="WRONG PASSWORD!"))
+
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
+
+    if new_pw != confirm_pw:
+        return redirect(url_for('tenant_profile', tab="password", msg="WRONG CONFIRM PASSWORD!"))
+
+    current_user.password = hash_password(new_pw)
+    db.session.commit()
+
+    flash("", "success")
+    return redirect(url_for('tenant_profile', tab="password", msg="CHANGE PASSWORD SUCCESSFULLY!"))
 
 if __name__ == "__main__":
     from aapp import admin
