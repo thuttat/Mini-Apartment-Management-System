@@ -10,45 +10,67 @@
 
 <hr>
 <h5 class="mb-3 text-secondary fw-bold">Dashboard</h5>
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
+<div class="row g-3 mb-5">
+    <div class="col-12 col-md-6 col-xl-3">
         <div class="card h-100 p-3">
             <div class="card-body">
                 <div class="card-icon-bg mb-3">
                     <i class="bi bi-file-earmark-text fs-4 text-primary"></i>
                 </div>
                 <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Contract Status</h6>
-                <h4 class="card-title fw-bold mb-1">Active</h4>
-                <p class="card-text text-success small mb-3"><i class="bi bi-check-circle"></i> Lease ends May 31, 2026</p>
+                <h5 class="card-title fw-bold mb-1">{{contract.status.value}}</h5>
+                <p class="card-text text-success small mb-3"><i class="bi bi-check-circle"></i> Lease ends {{contract.end_date}}</p>
                 <a href="{{ url_for('tenant_apartment') }}" class="text-decoration-none fw-bold stretched-link">Detail <i class="bi bi-arrow-right ms-1"></i></a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+
+    <div class="col-12 col-md-6 col-xl-3">
         <div class="card h-100 p-3">
             <div class="card-body">
                 <div class="card-icon-bg mb-3">
                     <i class="bi bi-currency-dollar fs-4 text-success"></i>
                 </div>
+                {% if invoices[0].status.name == "UNPAID" %}
                 <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Next Payment</h6>
-                <h4 class="card-title fw-bold mb-1">5.200.000 VND</h4>
-                <p class="card-text text-danger small mb-3"><i class="bi bi-clock"></i> Due Dec 21, 2025</p>
+                <h5 class="card-title fw-bold mb-1">{{"{:,.0f}".format(invoices[0].total_amount)}} VND</h5>
+                <p class="card-text text-danger small mb-3"><i class="bi bi-clock"></i> Due {{invoices[0].created_at.strftime('%Y-%m-%d')}}</p>
                 <a href="{{ url_for('tenant_payments') }}" class="text-decoration-none fw-bold stretched-link">Pay now <i class="bi bi-arrow-right ms-1"></i></a>
+                {% else %}
+                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Next Payment</h6>
+                <h5 class="card-title fw-bold mb-1">You have no bills to pay</h5>
+                <p class="card-text text-success small mb-3"><i class="bi bi-check-circle"></i> You have settled your bills.</p>
+                <a href="{{ url_for('tenant_payments') }}" class="text-decoration-none fw-bold stretched-link">Payment detail <i class="bi bi-arrow-right ms-1"></i></a>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-12 col-md-6 col-xl-3">
         <div class="card h-100 p-3">
             <div class="card-body">
                 <div class="card-icon-bg mb-3">
-                    <i class="bi bi-envelope fs-4 text-warning"></i>
+                    <i class="bi bi-plugin fs-4 text-warning"></i>
                 </div>
-                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Latest Notifications</h6>
-                <h5 class="card-title fw-bold mb-1 fs-6">Electrical maintenance</h5>
-                <p class="card-text text-muted small mb-3 text-truncate">Dear residents, we will check...</p>
-                <a href="{{ url_for('tenant_notifications') }}" class="text-decoration-none fw-bold stretched-link">Learn more <i class="bi bi-arrow-right ms-1"></i></a>
+                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Electric Prices</h6>
+                <h5 class="card-title fw-bold mb-1">{{"{:,.0f}".format(electric_price)}} VND/kwh</h5>
+                <p class="card-text text-muted small mb-3 text-truncate"><i class="bi bi-calendar-check"></i> {{time}}</p>
+                <a href="{{ url_for('tenant_rules') }}" class="text-decoration-none fw-bold stretched-link">Learn more <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100 p-3">
+            <div class="card-body">
+                <div class="card-icon-bg mb-3">
+                    <i class="bi bi-droplet fs-4 text-info"></i>
+                </div>
+                <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Water Prices</h6>
+                <h5 class="card-title fw-bold mb-1">{{"{:,.0f}".format(water_price)}} VND/m3</h5>
+                <p class="card-text text-muted small mb-3 text-truncate"><i class="bi bi-calendar-check"></i> {{time}}</p>
+                <a href="{{ url_for('tenant_rules') }}" class="text-decoration-none fw-bold stretched-link">Learn more <i class="bi bi-arrow-right ms-1"></i></a>
             </div>
         </div>
     </div>
@@ -59,7 +81,7 @@
     <h5 class="text-secondary fw-bold m-0">Introducing Skyscraper's Modern Apartments</h5>
 </div>
 
-<div id="apartmentCarousel" class="carousel carousel-dark slide shadow-sm rounded-4 overflow-hidden bg-white" data-bs-ride="carousel">
+<div id="apartmentCarousel" class="carousel carousel-dark slide rounded-4 overflow-hidden bg-white" data-bs-ride="carousel">
     
     <div class="carousel-indicators">
         <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
