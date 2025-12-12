@@ -9,7 +9,6 @@ from aapp import db, app
 from flask_login import UserMixin
 
 
-
 class BaseModel(db.Model):
     __abstract__ = True
     id = Column(String(50), primary_key=True, unique=True, nullable=False)
@@ -76,6 +75,8 @@ class Manager(User):
 
 
 class Tenant(User):
+    dob = Column(Date) #anh mun bo sung ngay sinh thoi hehe
+
     def __str__(self):
         return self.full_name
 
@@ -90,9 +91,9 @@ class Apartment(BaseModel):
     room_type = Column(Enum(RoomType), nullable=False)
     status = Column(Enum(ApartmentStatus), default=ApartmentStatus.AVAILABLE)
     image_urls = Column(String(500), default="https://res.cloudinary.com/dt3btnnxy/image/upload/v1763293575/bifgdnpwfsixbur45xun.png")
-    floor = Column(Integer)
+    floor = Column(Float)
     area = Column(Float)
-    price = Column(Integer)
+    price = Column(Float)
 
     def __str__(self):
         return self.id
@@ -117,8 +118,8 @@ class Contract(BaseModel):
     start_date = Column(Date, nullable=False)
     rental_period = Column(Integer, nullable=False) # thoi han thue (12 thang, 24 thang...)
     end_date = Column(Date, nullable=False) # he thong tinh ngay het han
-    deposit = Column(Integer)
-    rent_price = Column(Integer)
+    deposit = Column(Float)
+    rent_price = Column(Float)
     member_count = Column(Integer, default=1)  # Số người ở
     status = Column(Enum(ContractStatus), default=ContractStatus.ACTIVE)
 
@@ -130,26 +131,22 @@ class Contract(BaseModel):
         if self.start_date and self.rental_period:
             self.end_date = self.start_date + relativedelta(months=self.rental_period)
 
-    @staticmethod
-    def calculate_end_date(start_date, rental_period):
-        return start_date + relativedelta(months=rental_period)
-
 
 #INVOICE
 class Invoice(BaseModel):
     contract_id = Column(String(50), ForeignKey("contract.id"))
-    month = Column(String(20))
+    month = Column(String(20), default=f"{datetime.now().year}-{datetime.now().month}")
 
     # Chỉ số tiêu thụ
-    electric_usage = Column(Integer, default=0)
-    water_usage = Column(Integer, default=0)
+    electric_usage = Column(Float, default=0)
+    water_usage = Column(Float, default=0)
 
     # Thành tiền
-    electric_fee = Column(Integer, default=0)
-    water_fee = Column(Integer, default=0)
-    service_fee = Column(Integer, default=0)
+    electric_fee = Column(Float, default=0)
+    water_fee = Column(Float, default=0)
+    service_fee = Column(Float, default=0)
 
-    total_amount = Column(Integer, default=0)
+    total_amount = Column(Float, default=0)
     status = Column(Enum(PaymentStatus), default=PaymentStatus.UNPAID)
 
     contract = relationship("Contract", backref="invoices", lazy=True)
@@ -161,7 +158,7 @@ class Rule(BaseModel):
     value = Column(String(50), nullable=False)
     name_display = Column(String(100))
     description = Column(Text)
-    last_updated = Column(Date, default=datetime.utcnow)
+    last_updated = Column(DateTime, default=datetime.now)
 
     def __str__(self):
         return f"{self.name_display}: {self.value}"
@@ -184,11 +181,11 @@ if __name__ == "__main__":
 
         # 2. Tenants
         t1 = Tenant(id="T101", full_name="Nguyễn Văn An", phone_number="0908000111", email="an123@gmail.com",
-                    user_role=UserRole.TENANT, username="an123", password=hashlib.md5("123456".encode()).hexdigest())
+                    user_role=UserRole.TENANT, username="an123", password=hashlib.md5("123456".encode()).hexdigest(), dob=datetime(1997, 11, 15))
         t2 = Tenant(id="T102", full_name="Trần Thị Bình", phone_number="0908222333", email="binh@mail.com",
-                    user_role=UserRole.TENANT, username="binhtran", password=hashlib.md5("654321".encode()).hexdigest())
+                    user_role=UserRole.TENANT, username="binhtran", password=hashlib.md5("654321".encode()).hexdigest(), dob=datetime(1990, 8, 9))
         t3 = Tenant(id="T103", full_name="Lê Hoàng Minh", phone_number="0933444555", email="minh@gmail.com",
-                    user_role=UserRole.TENANT, username="minhle", password=hashlib.md5("abcdef".encode()).hexdigest())
+                    user_role=UserRole.TENANT, username="minhle", password=hashlib.md5("abcdef".encode()).hexdigest(), dob=datetime(2000, 7, 29))
 
         # 3. Apartments
         a1 = Apartment(id="A101", room_type=RoomType.ONE_BEDROOM, status=ApartmentStatus.AVAILABLE, floor=1, area=40,
@@ -207,7 +204,7 @@ if __name__ == "__main__":
         ad2 = ApartmentDetail(id="AD002", apartment_id="A102", manager_id="M001", note="Backup manager")
 
         # 5. Contracts
-        c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 1, 1),
+        c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 2, 29),
                       deposit=5000000, rent_price=3500000, member_count=1,
                       status=ContractStatus.ACTIVE, rental_period=12)
         c2 = Contract(id="C002", apartment_id="A201", tenant_id="T102", start_date=datetime(2024, 3, 1),
