@@ -1,0 +1,59 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<h1>THỐNG KÊ TÌNH TRẠNG THUÊ PHÒNG</h1>
+
+<ul>
+    {% for s in stats_data %}
+    <li><strong>{{ s.name }}</strong>: {{ s.count }}</li>
+    {% endfor %}
+</ul>
+
+<div style="width:40%">
+    <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+    window.onload=function(){
+    let data=[];
+    let labels=[];
+
+    {% for s in stats_data %}
+    data.push({{s.count}})
+    labels.push('{{s.name}}')
+    {% endfor %}
+
+    const ctx = document.getElementById('myChart');
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '# Tình trạng thuê phòng',
+          data: data,
+          borderWidth: 1,
+          backgroundColor:['red', 'green', 'blue','yellow']
+        }]
+      },
+
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display:true,
+                position: 'bottom',
+                labels:{
+                    padding:20
+                }
+            }
+        }
+    }
+    });
+    }
+</script>
+
+{% endblock content %}

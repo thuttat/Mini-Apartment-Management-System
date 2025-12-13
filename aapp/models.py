@@ -15,6 +15,7 @@ class BaseModel(db.Model):
     active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.now)
 
+
 class RoomType(AppEnum):
     STUDIO = "STUDIO"
     ONE_BEDROOM = "ONE_BEDROOM"
@@ -56,7 +57,9 @@ class RuleKey(AppEnum):
     DEPOSIT_MONTHS = "DEPOSIT_MONTHS"
 
 
-#USERS
+# ============================
+# USERS
+# ============================
 class User(BaseModel, UserMixin):
     __abstract__ = True
     full_name = Column(String(50), nullable=False)
@@ -75,7 +78,7 @@ class Manager(User):
 
 
 class Tenant(User):
-    dob = Column(Date) #anh mun bo sung ngay sinh thoi hehe
+    dob = Column(Date)  # Bổ sung ngày sinh
 
     def __str__(self):
         return self.full_name
@@ -86,11 +89,14 @@ class Technician(User):
         return self.full_name
 
 
-#APARTMENT
+# ============================
+# APARTMENT
+# ============================
 class Apartment(BaseModel):
     room_type = Column(Enum(RoomType), nullable=False)
     status = Column(Enum(ApartmentStatus), default=ApartmentStatus.AVAILABLE)
-    image_urls = Column(String(500), default="https://res.cloudinary.com/dt3btnnxy/image/upload/v1763293575/bifgdnpwfsixbur45xun.png")
+    image_urls = Column(String(500),
+                        default="https://res.cloudinary.com/dt3btnnxy/image/upload/v1763293575/bifgdnpwfsixbur45xun.png")
     floor = Column(Float)
     area = Column(Float)
     price = Column(Float)
@@ -111,16 +117,18 @@ class ApartmentDetail(BaseModel):
         return f"{self.apartment_id} - {self.manager_id}"
 
 
-#CONTRACT
+# ============================
+# CONTRACT
+# ============================
 class Contract(BaseModel):
     apartment_id = Column(String(50), ForeignKey("apartment.id"), nullable=False)
     tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
     start_date = Column(Date, nullable=False)
-    rental_period = Column(Integer, nullable=False) # thoi han thue (12 thang, 24 thang...)
-    end_date = Column(Date, nullable=False) # he thong tinh ngay het han
+    rental_period = Column(Integer, nullable=False)  # Thời hạn thuê (tháng)
+    end_date = Column(Date, nullable=False)  # Hệ thống tự tính
     deposit = Column(Float)
     rent_price = Column(Float)
-    member_count = Column(Integer, default=1)  # Số người ở
+    member_count = Column(Integer, default=1)
     status = Column(Enum(ContractStatus), default=ContractStatus.ACTIVE)
 
     apartment = relationship("Apartment", backref="contracts", lazy=True)
@@ -128,11 +136,14 @@ class Contract(BaseModel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        # Tự động tính ngày kết thúc dựa trên Start Date + Rental Period
         if self.start_date and self.rental_period:
             self.end_date = self.start_date + relativedelta(months=self.rental_period)
 
 
-#INVOICE
+# ============================
+# INVOICE
+# ============================
 class Invoice(BaseModel):
     contract_id = Column(String(50), ForeignKey("contract.id"))
     month = Column(String(20), default=f"{datetime.now().year}-{datetime.now().month}")
@@ -140,6 +151,12 @@ class Invoice(BaseModel):
     # Chỉ số tiêu thụ
     electric_usage = Column(Float, default=0)
     water_usage = Column(Float, default=0)
+
+    # Chỉ số cuối & hình ảnh (Dành cho Technician)
+    electric_end_reading = Column(Float, default=0)
+    water_end_reading = Column(Float, default=0)
+    electric_image = Column(String(255))
+    water_image = Column(String(255))
 
     # Thành tiền
     electric_fee = Column(Float, default=0)
@@ -152,7 +169,9 @@ class Invoice(BaseModel):
     contract = relationship("Contract", backref="invoices", lazy=True)
 
 
-#RULE
+# ============================
+# RULE
+# ============================
 class Rule(BaseModel):
     key = Column(Enum(RuleKey), unique=True, nullable=False)
     value = Column(String(50), nullable=False)
@@ -165,7 +184,7 @@ class Rule(BaseModel):
 
 
 # =================================================================
-# SEED DATA
+# SEED DATA (KHỞI TẠO DỮ LIỆU MẪU)
 # =================================================================
 if __name__ == "__main__":
     with app.app_context():
@@ -179,15 +198,25 @@ if __name__ == "__main__":
             username="admin", password=hashlib.md5("123456".encode()).hexdigest(), active=True
         )
 
-        # 2. Tenants
-        t1 = Tenant(id="T101", full_name="Nguyễn Văn An", phone_number="0908000111", email="an123@gmail.com",
-                    user_role=UserRole.TENANT, username="an123", password=hashlib.md5("123456".encode()).hexdigest(), dob=datetime(1997, 11, 15))
-        t2 = Tenant(id="T102", full_name="Trần Thị Bình", phone_number="0908222333", email="binh@mail.com",
-                    user_role=UserRole.TENANT, username="binhtran", password=hashlib.md5("654321".encode()).hexdigest(), dob=datetime(1990, 8, 9))
-        t3 = Tenant(id="T103", full_name="Lê Hoàng Minh", phone_number="0933444555", email="minh@gmail.com",
-                    user_role=UserRole.TENANT, username="minhle", password=hashlib.md5("abcdef".encode()).hexdigest(), dob=datetime(2000, 7, 29))
+        # 2. Technician (Bổ sung từ nhánh Technician/HEAD)
+        te1 = Technician(
+            id="TE001", full_name="Nhân viên kỹ thuật", phone_number="097267921",
+            email="technician@system.com", user_role=UserRole.TECHNICIAN,
+            username="technician", password=hashlib.md5("123456".encode()).hexdigest(), active=True
+        )
 
-        # 3. Apartments
+        # 3. Tenants (Gộp DOB và thông tin)
+        t1 = Tenant(id="T101", full_name="Nguyễn Văn An", phone_number="0908000111", email="an123@gmail.com",
+                    user_role=UserRole.TENANT, username="an123",
+                    password=hashlib.md5("123456".encode()).hexdigest(), dob=datetime(1997, 11, 15), active=True)
+        t2 = Tenant(id="T102", full_name="Trần Thị Bình", phone_number="0908222333", email="binh@mail.com",
+                    user_role=UserRole.TENANT, username="binhtran",
+                    password=hashlib.md5("654321".encode()).hexdigest(), dob=datetime(1990, 8, 9), active=True)
+        t3 = Tenant(id="T103", full_name="Lê Hoàng Minh", phone_number="0933444555", email="minh@gmail.com",
+                    user_role=UserRole.TENANT, username="minhle",
+                    password=hashlib.md5("abcdef".encode()).hexdigest(), dob=datetime(2000, 7, 29), active=True)
+
+        # 4. Apartments
         a1 = Apartment(id="A101", room_type=RoomType.ONE_BEDROOM, status=ApartmentStatus.AVAILABLE, floor=1, area=40,
                        price=4500000)
         a2 = Apartment(id="A102", room_type=RoomType.STUDIO, status=ApartmentStatus.AVAILABLE, floor=1, area=30,
@@ -199,22 +228,24 @@ if __name__ == "__main__":
         a5 = Apartment(id="A301", room_type=RoomType.PENTHOUSE, status=ApartmentStatus.LOOKING_FOR_ROOMMATE, floor=3,
                        area=95, price=15000000)
 
-        # 4. Details
+        # 5. Details
         ad1 = ApartmentDetail(id="AD001", apartment_id="A101", manager_id="M001", note="Main manager")
         ad2 = ApartmentDetail(id="AD002", apartment_id="A102", manager_id="M001", note="Backup manager")
 
-        # 5. Contracts
+        # 6. Contracts (Sử dụng rental_period để tính end_date)
         c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 2, 29),
                       deposit=5000000, rent_price=3500000, member_count=1,
                       status=ContractStatus.ACTIVE, rental_period=12)
+
         c2 = Contract(id="C002", apartment_id="A201", tenant_id="T102", start_date=datetime(2024, 3, 1),
                       deposit=6000000, rent_price=6500000, member_count=2,
-                      status=ContractStatus.ACTIVE, rental_period=12)
+                      status=ContractStatus.ACTIVE, rental_period=24)
+
         c3 = Contract(id="C003", apartment_id="A301", tenant_id="T103", start_date=datetime(2024, 5, 1),
                       deposit=6000000, rent_price=6500000, member_count=1,
                       status=ContractStatus.ACTIVE, rental_period=12)
 
-        # 6. Rules
+        # 7. Rules (Sử dụng danh sách đầy đủ)
         rules_list = [
             Rule(id="R1", key=RuleKey.MAX_PER_ROOM, value="4", name_display="Số người tối đa",
                  description="Số người tối đa trong 1 phòng"),
@@ -228,32 +259,31 @@ if __name__ == "__main__":
                  description="Phí quản lý hàng tháng"),
         ]
 
-        # 7. Invoices
+        # 8. Invoices
         inv = [
             Invoice(id="I001", contract_id="C001", month="2024-01",
-                    electric_usage=85.7, water_usage=4,  # Thêm usage
-                    electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000, status='PAID'),
-
+                    electric_usage=85.7, water_usage=4,
+                    electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000,
+                    status=PaymentStatus.PAID),
             Invoice(id="I002", contract_id="C001", month="2024-02",
                     electric_usage=71.4, water_usage=3.75,
                     electric_fee=250000, water_fee=75000, service_fee=150000, total_amount=4725000),
-
             Invoice(id="I003", contract_id="C002", month="2024-03",
                     electric_usage=91.4, water_usage=4.5,
                     electric_fee=320000, water_fee=90000, service_fee=200000, total_amount=7110000),
-
             Invoice(id="I004", contract_id="C002", month="2024-04",
                     electric_usage=88.5, water_usage=4,
                     electric_fee=310000, water_fee=80000, service_fee=200000, total_amount=7080000),
         ]
 
-
+        # Commit Data
         db.session.add_all([
-            m1, t1, t2, t3,
-            a1, a2, a3, a4, a5,
-            ad1, ad2,
-            c1, c2, c3,
-            *inv,
-            *rules_list
+            m1, te1,  # Managers & Tech
+            t1, t2, t3,  # Tenants
+            a1, a2, a3, a4, a5,  # Apartments
+            ad1, ad2,  # Details
+            c1, c2, c3,  # Contracts
+            *inv,  # Invoices
+            *rules_list  # Rules
         ])
         db.session.commit()

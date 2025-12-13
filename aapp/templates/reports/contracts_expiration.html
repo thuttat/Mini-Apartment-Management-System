@@ -1,0 +1,56 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Hợp đồng Sắp hết hạn (trong {{ day_limit }} ngày tới)</h1>
+
+  <form method="GET" class="d-flex align-items-center">
+    <label for="days" class="me-2">Xem trước:</label>
+    <input type="number" id="days" name="days" value="{{ day_limit }}" class="form-control me-2" style="width: 100px;"
+           min="7" max="365">
+    <span class="me-3">ngày</span>
+    <button type="submit" class="btn btn-sm btn-outline-primary">Lọc</button>
+  </form>
+
+  {% if contract_expiration %}
+    <table class="table table-hover table-striped">
+        <thead class="table-dark">
+            <th>Contract ID</th>
+            <th>Apartment ID</th>
+            <th>Tenant Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Days Left</th>
+            <th>Rent Price</th>
+            <th>Status</th>
+
+        </thead>
+        <tbody>
+            {% for contract in contract_expiration %}
+            <tr>
+                <td>{{contract.id}}</td>
+                <td>{{contract.apartment_id}}</td>
+                <td>{{contract.tenant.full_name}}</td>
+                <td>{{ contract.start_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{contract.end_date.strftime('%d/%m/%Y') }}</td>
+                <td>
+                        {% set days_left = (contract.end_date - datetime.now().date()).days %}
+                        {% if days_left <= 30 %}
+                        <span class="badge bg-danger">{{ days_left }} days</span>
+                        {% elif days_left <= 90 %}
+                        <span class="badge bg-warning text-dark">{{ days_left }} days</span>
+                        {% else %}
+                        <span>{{ days_left }} days</span>
+                        {% endif %}
+                </td>
+                <td>{{ contract.rent_price | int }} VND</td>
+                <td>{{ contract.status.value }}</td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">Không có hợp đồng nào sắp hết hạn trong {{ day_limit }} ngày tới.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,25 +1,17 @@
 import hashlib
-from datetime import datetime
-
-import cloudinary
+from datetime import datetime, timedelta
+from sqlalchemy import func
+import cloudinary.uploader
 from dateutil.relativedelta import relativedelta
 
-from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole, Technician, User, RuleKey, \
-    ContractStatus, ApartmentStatus, PaymentStatus
 from aapp import db
+from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoice,
+                         Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus)
 from aapp.utils import get_next_id, hash_password
 
 
-# def auth_user(username, password, role: UserRole):
-#     if role == UserRole.MANAGER:
-#         return auth_manager(username, password)
-#     elif role == UserRole.TENANT:
-#         return auth_tenant(username, password)
-#     else:
-#         return None
-
 # ============================
-# USER
+# AUTH & USER
 # ============================
 def auth_user(username, password):
     hashed = hash_password(password)
@@ -31,6 +23,7 @@ def auth_user(username, password):
     ]
 
     for Model, role in auth_sources:
+        # Tìm user có username và password khớp
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
         if user:
             return user, role
@@ -62,13 +55,13 @@ def add_manager(name, username, password, avatar=None):
         user_role=UserRole.MANAGER
     )
     if avatar:
-        import cloudinary.uploader
         res = cloudinary.uploader.upload(avatar)
         user.avatar = res.get('secure_url')
 
     db.session.add(user)
     db.session.commit()
     return user
+
 
 # ============================
 # TECHNICIAN
@@ -84,7 +77,6 @@ def add_technician(name, username, password, avatar=None):
         user_role=UserRole.TECHNICIAN
     )
     if avatar:
-        import cloudinary.uploader
         res = cloudinary.uploader.upload(avatar)
         user.avatar = res.get('secure_url')
 
@@ -92,20 +84,6 @@ def add_technician(name, username, password, avatar=None):
     db.session.commit()
     return user
 
-# def auth_manager(username, password):
-#     password = hashlib.md5(password.strip().encode('utf-8')).hexdigest()
-#     return Manager.query.filter(
-#         Manager.username == username.strip(),
-#         Manager.password == password
-#     ).first()
-
-
-# def auth_tenant(username, password):
-#     password = hashlib.md5(password.strip().encode('utf-8')).hexdigest()
-#     return Tenant.query.filter(
-#         Tenant.username == username.strip(),
-#         Tenant.password == password
-#     ).first()
 
 # ============================
 # TENANT
@@ -121,7 +99,6 @@ def add_tenant(name, username, password, avatar=None):
     )
 
     if avatar:
-        import cloudinary.uploader
         res = cloudinary.uploader.upload(avatar)
         tenant.avatar = res.get('secure_url')
 
@@ -129,10 +106,11 @@ def add_tenant(name, username, password, avatar=None):
     db.session.commit()
     return tenant
 
+
 # ============================
 # APARTMENT
 # ============================
-def load_apartments(room_type=None, status=None, min_price=None, max_price=None,keyword=None):
+def load_apartments(room_type=None, status=None, min_price=None, max_price=None, keyword=None):
     query = Apartment.query
 
     if room_type:
@@ -162,6 +140,8 @@ def update_apartment_info(apartment_id, status=None, room_type=None, price=None)
     apt = Apartment.query.get(apartment_id)
     if not apt:
         return False
+
+    # Logic kiểm tra số người nếu tìm người ở ghép
     if status == ApartmentStatus.LOOKING_FOR_ROOMMATE:
         max_people = get_rule_value(RuleKey.MAX_PER_ROOM)
         current_people = count_people_in_apartment(apartment_id)
@@ -186,8 +166,33 @@ def update_apartment_info(apartment_id, status=None, room_type=None, price=None)
 
     return False
 
+
+def count_apartments():
+    stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
+        Apartment.status).all()
+    stats_data = []
+
+    for s in stats:
+        status_name = s.status.value
+        display_name = status_name
+        if status_name == ApartmentStatus.AVAILABLE.value:
+            display_name = "Còn Trống"
+        elif status_name == ApartmentStatus.RENTED.value:
+            display_name = "Đã Thuê"
+        elif status_name == ApartmentStatus.MAINTENANCE.value:
+            display_name = "Đang Bảo Trì"
+        elif status_name == ApartmentStatus.LOOKING_FOR_ROOMMATE.value:
+            display_name = "Tìm Người Ở Ghép"
+
+        stats_data.append({
+            'name': display_name,
+            'count': s.count
+        })
+    return stats_data
+
+
 # ============================
-# CONSTRACT
+# CONTRACT
 # ============================
 def load_contracts(tenant_id=None, apartment_id=None, status=None):
     query = Contract.query
@@ -214,6 +219,10 @@ def count_people_in_apartment(apartment_id):
     return 0
 
 
+def calculate_end_date(start_date, rental_period):
+    return start_date + relativedelta(months=rental_period)
+
+
 def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, rent_price, member_count=1):
     max_people = get_rule_value(RuleKey.MAX_PER_ROOM)
     if member_count > int(max_people):
@@ -223,8 +232,9 @@ def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, re
     if current_active:
         raise Exception("This room is active")
 
-    end_date = Contract.calculate_end_date(start_date, rental_period)
+    end_date = calculate_end_date(start_date, rental_period)
     new_id = get_next_id(Contract, "C", 3)
+
     contract = Contract(
         id=new_id,
         tenant_id=tenant_id,
@@ -242,9 +252,6 @@ def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, re
     db.session.commit()
     return contract
 
-# ham tinh ngay het han hop dong
-def calculate_end_date(start_date, rental_period):
-    return start_date + relativedelta(months=rental_period)
 
 def terminate_contract(contract_id):
     c = Contract.query.get(contract_id)
@@ -254,14 +261,24 @@ def terminate_contract(contract_id):
         return True
     return False
 
+
 def get_contract_by_id(cid):
     return Contract.query.filter(Contract.id == cid).first()
+
+
+def get_contract_expiration(day_limit=30):
+    current_date = datetime.now().date()
+    expiration_date = current_date + timedelta(days=day_limit)
+
+    contract = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
+                                     Contract.end_date > current_date,
+                                     Contract.end_date <= expiration_date)
+    return contract.order_by(Contract.end_date.asc()).all()
 
 
 # ============================
 # INVOICE
 # ============================
-
 def load_invoices(contract_id=None, month=None, status=None):
     query = Invoice.query
 
@@ -280,7 +297,11 @@ def load_invoices(contract_id=None, month=None, status=None):
 def get_invoice_by_id(iid):
     return Invoice.query.filter(Invoice.id == iid).first()
 
-# ham tinh tong tien + phi
+
+def get_invoice(contract_id, month_str):
+    return Invoice.query.filter(Invoice.contract_id == contract_id, Invoice.month == month_str).first()
+
+
 def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee=None):
     e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
     w_price = get_rule_value(RuleKey.PRICE_WATER)
@@ -297,10 +318,11 @@ def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee
         "total_price": total_price
     }
 
+
 def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
     contract = Contract.query.get(contract_id)
     if not contract:
-        raise Exception("? Contract")
+        raise Exception("Contract not found")
 
     fees = calculate_monthly_invoice(contract=contract, electric_usage=electric_usage, water_usage=water_usage)
 
@@ -322,17 +344,10 @@ def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
     db.session.commit()
     return inv
 
-def calculate_due_date(self, start_date):
-    first_month = self.contract.start_date
-    year, month = map(int, self.month.split("-"))
-    date = self.contract.start_date.date()
-    due_date = datetime(year, month, date)
-    return due_date
 
 # ============================
-# RULE
+# RULES & READINGS
 # ============================
-
 def get_rule_value(key: RuleKey):
     rule = Rule.query.filter(Rule.key == key).first()
     if not rule:
@@ -345,7 +360,6 @@ def get_rule_value(key: RuleKey):
 
 
 def get_all_rules_as_dict():
-
     rules = Rule.query.all()
     # {'PRICE_ELECTRIC': 3500.0, 'MAX_PER_ROOM': 4.0 ...}
     return {r.key.name: float(r.value) if r.value.replace('.', '', 1).isdigit() else r.value for r in rules}
@@ -359,3 +373,63 @@ def update_rule(key: RuleKey, new_value):
         db.session.commit()
         return True
     return False
+
+
+def get_last_reading_values(apartment_id, reading_type):
+    """
+    Lấy chỉ số điện/nước cuối cùng đã ghi nhận của căn hộ.
+    """
+    contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
+    if not contract:
+        return None
+
+    if reading_type == 'electric':
+        end_reading_column = Invoice.electric_end_reading
+    elif reading_type == 'water':
+        end_reading_column = Invoice.water_end_reading
+    else:
+        raise Exception("Chỉ số bắt buộc là điện hoặc nước")
+
+    last_invoice = (Invoice.query.filter(Invoice.contract_id == contract.id, end_reading_column.isnot(None))
+                    .order_by(Invoice.month.desc()).first())
+
+    if last_invoice:
+        if reading_type == 'electric':
+            return (last_invoice.month, last_invoice.electric_end_reading)
+        else:
+            return (last_invoice.month, last_invoice.water_end_reading)
+
+    return (None, None)
+
+
+def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage, new_reading, image):
+    """
+    Lưu chỉ số điện/nước mới (từ Technician) vào Invoice.
+    """
+    contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
+    if not contract:
+        return False, "Không tìm thấy hợp đồng!"
+
+    invoice = get_invoice(contract.id, month)
+    if not invoice:
+        new_id = get_next_id(Invoice, "INV", 6)
+        invoice = Invoice(id=new_id, contract_id=contract.id, month=month)
+        db.session.add(invoice)
+
+    try:
+        if reading_type == 'electric':
+            invoice.electric_usage = electric_usage
+            invoice.electric_end_reading = new_reading
+            invoice.electric_image = image
+        elif reading_type == 'water':
+            invoice.water_usage = water_usage
+            invoice.water_end_reading = new_reading
+            invoice.water_image = image
+        else:
+            return False, "Loại chỉ số không xác định."
+
+        db.session.commit()
+        return True, f"Lưu chỉ số {reading_type.capitalize()} thành công."
+    except Exception as e:
+        db.session.rollback()
+        return False, f"Lỗi CSDL: {str(e)}"
