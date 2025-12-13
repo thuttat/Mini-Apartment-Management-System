@@ -1,26 +1,32 @@
 {% extends 'layout/base.html' %}
 
+{% block title %}Danh sách căn hộ{% endblock %}
+
 {% block content %}
-<h2 class="mb-4 text-center">BLANK APARTMENT</h2>
+<h2 class="mb-4 text-center">AVAILABLE APARTMENTS</h2>
 
 <div class="row">
     {% for a in apartments %}
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm h-100">
-            <img src="{{ a.image_urls }}" class="card-img-top" alt="Apartment Image" style="height: 200px; object-fit: cover;">
+            <img src="{{ a.image_urls if a.image_urls else 'https://placehold.co/600x400?text=No+Image' }}"
+                 class="card-img-top"
+                 alt="Apartment Image"
+                 style="height: 200px; object-fit: cover;">
 
             <div class="card-body">
                 <h5 class="card-title text-primary">{{ a.id }}</h5>
-                <p class="card-text">Type: <strong>{{ a.room_type.value }}</strong></p>
+                <p class="card-text">Loại phòng: <strong>{{ a.room_type.value }}</strong></p>
+                <p class="card-text">Diện tích: {{ a.area }} m²</p>
                 <h5 class="text-danger font-weight-bold">{{ "{:,.0f}".format(a.price) }} VND</h5>
 
-                <a href="/apartment/{{ a.id }}" class="btn btn-primary w-100">Details</a>
+                <a href="{{ url_for('apartment_detail', apartment_id=a.id) }}" class="btn btn-primary w-100">Xem chi tiết</a>
             </div>
         </div>
     </div>
     {% else %}
-    <div class="col-12 text-center">
-        <p>Hiện không có phòng nào trống.</p>
+    <div class="col-12 text-center py-5">
+        <p class="text-muted">Hiện không có phòng nào trống.</p>
     </div>
     {% endfor %}
 </div>

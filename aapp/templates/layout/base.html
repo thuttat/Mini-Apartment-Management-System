@@ -15,7 +15,7 @@
 <body>
 
 <div class="d-flex wrapper">
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white sidebar">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white sidebar" style="width: 280px; min-height: 100vh;">
         <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none px-2">
             <i class="bi bi-buildings fs-2 me-2"></i>
             <div>
@@ -45,11 +45,13 @@
                             <i class="bi bi-receipt me-2"></i> Bills & Payments
                         </a>
                     </li>
+
                     <li>
-                        <a href="{{ url_for('tenant_notifications') }}" class="nav-link text-white {% if active_page == 'notifications' %}active{% endif %}">
-                            <i class="bi bi-bell me-2"></i> Notifications
+                        <a href="{{ url_for('tenant_rules') }}" class="nav-link text-white {% if active_page == 'rules' %}active{% endif %}">
+                            <i class="bi bi-file-earmark-ruled me-2"></i> Rules
                         </a>
                     </li>
+
                     <li>
                         <a href="{{ url_for('tenant_profile') }}" class="nav-link text-white {% if active_page == 'profile' %}active{% endif %}">
                             <i class="bi bi-person me-2"></i> My Profile
@@ -66,7 +68,7 @@
                 {% elif current_user.user_role.name == 'MANAGER' %}
                     <li>
                         <a href="/admin" class="nav-link text-warning fw-bold">
-                            <i class="bi bi-speedometer2 me-2"></i> Go to adminsite
+                            <i class="bi bi-speedometer2 me-2"></i> Go to Admin Site
                         </a>
                     </li>
                 {% endif %}
@@ -77,15 +79,15 @@
                         <i class="bi bi-box-arrow-in-right me-2"></i> Login
                     </a>
                 </li>
-                            <li>
+                <li>
                     <a href="/register" class="nav-link text-white">
-                        <i class="bi bi-box-arrow-in-right me-2"></i> Register
+                        <i class="bi bi-person-plus me-2"></i> Register
                     </a>
                 </li>
             {% endif %}
 
             <li>
-                <a href="/settings" class="nav-link text-white {% if active_page == 'settings' %}active{% endif %}">
+                <a href="{{ url_for('settings') }}" class="nav-link text-white {% if active_page == 'settings' %}active{% endif %}">
                     <i class="bi bi-gear me-2"></i> Settings
                 </a>
             </li>
@@ -94,13 +96,13 @@
 
     <div class="main-content d-flex flex-column w-100">
 
-        {% include 'layout/header.html' %}
+        {% include 'layout/header.html' ignore missing %}
 
         <div class="container-fluid p-4 flex-grow-1 bg-light">
             {% block content %}{% endblock %}
         </div>
 
-        {% include 'layout/footer.html' %}
+        {% include 'layout/footer.html' ignore missing %}
 
     </div>
 </div>

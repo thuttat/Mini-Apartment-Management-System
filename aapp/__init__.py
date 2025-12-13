@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 app = Flask(__name__)
 app.secret_key = 'iqiwqu3e735ehwsnsio274687928dhgtu'
-app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:%s@localhost/apartmentdb' % quote('admin123@')
+app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:%s@localhost/apartmentdb' % quote('anhthu')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config['SQLALCHEMY_ECHO'] = True
 # cloudinary.config(cloud_name='djviyyvzu',

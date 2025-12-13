@@ -144,7 +144,6 @@ def tenant_apartment():
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
-
     contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
     invoices = []
 
@@ -166,12 +165,11 @@ def tenant_payments():
                 invoices.append(inv)
 
         invoices.sort(key=lambda x: x.month, reverse=True)
-
-    total_outstanding = sum(inv.total_amount for inv in invoices if inv.status.name == 'UNPAID')
+    total_unpaid = sum(inv.total_amount for inv in invoices if inv.status.name == 'UNPAID')
 
     return render_template('tenant/payments.html',
                            invoices=invoices,
-                           total_outstanding=total_outstanding)
+                           total_unpaid=total_unpaid)
 
 
 @app.route('/tenant/invoice/<invoice_id>')
