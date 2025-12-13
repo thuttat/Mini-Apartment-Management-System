@@ -124,8 +124,8 @@ class Contract(BaseModel):
     apartment_id = Column(String(50), ForeignKey("apartment.id"), nullable=False)
     tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
     start_date = Column(Date, nullable=False)
-    rental_period = Column(Integer, nullable=False)  # Thời hạn thuê (tháng)
-    end_date = Column(Date, nullable=False)  # Hệ thống tự tính
+    rental_period = Column(Integer, nullable=False)
+    end_date = Column(Date, nullable=False)
     deposit = Column(Float)
     rent_price = Column(Float)
     member_count = Column(Integer, default=1)
@@ -152,7 +152,7 @@ class Invoice(BaseModel):
     electric_usage = Column(Float, default=0)
     water_usage = Column(Float, default=0)
 
-    # Chỉ số cuối & hình ảnh (Dành cho Technician)
+    # Chỉ số cuối
     electric_end_reading = Column(Float, default=0)
     water_end_reading = Column(Float, default=0)
     electric_image = Column(String(255))
@@ -184,28 +184,28 @@ class Rule(BaseModel):
 
 
 # =================================================================
-# SEED DATA (KHỞI TẠO DỮ LIỆU MẪU)
+# SEED DATA
 # =================================================================
 if __name__ == "__main__":
     with app.app_context():
         db.drop_all()
         db.create_all()
 
-        # 1. Manager
+        # Manager
         m1 = Manager(
             id="M001", full_name="Quản lý hệ thống", phone_number="0909123456",
             email="admin@system.com", user_role=UserRole.MANAGER,
             username="admin", password=hashlib.md5("123456".encode()).hexdigest(), active=True
         )
 
-        # 2. Technician (Bổ sung từ nhánh Technician/HEAD)
+        # Technician
         te1 = Technician(
             id="TE001", full_name="Nhân viên kỹ thuật", phone_number="097267921",
             email="technician@system.com", user_role=UserRole.TECHNICIAN,
             username="technician", password=hashlib.md5("123456".encode()).hexdigest(), active=True
         )
 
-        # 3. Tenants (Gộp DOB và thông tin)
+        # Tenants
         t1 = Tenant(id="T101", full_name="Nguyễn Văn An", phone_number="0908000111", email="an123@gmail.com",
                     user_role=UserRole.TENANT, username="an123",
                     password=hashlib.md5("123456".encode()).hexdigest(), dob=datetime(1997, 11, 15), active=True)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
                     user_role=UserRole.TENANT, username="minhle",
                     password=hashlib.md5("abcdef".encode()).hexdigest(), dob=datetime(2000, 7, 29), active=True)
 
-        # 4. Apartments
+        # Apartments
         a1 = Apartment(id="A101", room_type=RoomType.ONE_BEDROOM, status=ApartmentStatus.AVAILABLE, floor=1, area=40,
                        price=4500000)
         a2 = Apartment(id="A102", room_type=RoomType.STUDIO, status=ApartmentStatus.AVAILABLE, floor=1, area=30,
@@ -228,11 +228,11 @@ if __name__ == "__main__":
         a5 = Apartment(id="A301", room_type=RoomType.PENTHOUSE, status=ApartmentStatus.LOOKING_FOR_ROOMMATE, floor=3,
                        area=95, price=15000000)
 
-        # 5. Details
+        # Details
         ad1 = ApartmentDetail(id="AD001", apartment_id="A101", manager_id="M001", note="Main manager")
         ad2 = ApartmentDetail(id="AD002", apartment_id="A102", manager_id="M001", note="Backup manager")
 
-        # 6. Contracts (Sử dụng rental_period để tính end_date)
+        # Contracts
         c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 2, 29),
                       deposit=5000000, rent_price=3500000, member_count=1,
                       status=ContractStatus.ACTIVE, rental_period=12)
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                       deposit=6000000, rent_price=6500000, member_count=1,
                       status=ContractStatus.ACTIVE, rental_period=12)
 
-        # 7. Rules (Sử dụng danh sách đầy đủ)
+        # Rules
         rules_list = [
             Rule(id="R1", key=RuleKey.MAX_PER_ROOM, value="4", name_display="Số người tối đa",
                  description="Số người tối đa trong 1 phòng"),
@@ -259,7 +259,7 @@ if __name__ == "__main__":
                  description="Phí quản lý hàng tháng"),
         ]
 
-        # 8. Invoices
+        # Invoices
         inv = [
             Invoice(id="I001", contract_id="C001", month="2024-01",
                     electric_usage=85.7, water_usage=4,
@@ -276,14 +276,13 @@ if __name__ == "__main__":
                     electric_fee=310000, water_fee=80000, service_fee=200000, total_amount=7080000),
         ]
 
-        # Commit Data
         db.session.add_all([
-            m1, te1,  # Managers & Tech
-            t1, t2, t3,  # Tenants
-            a1, a2, a3, a4, a5,  # Apartments
-            ad1, ad2,  # Details
-            c1, c2, c3,  # Contracts
-            *inv,  # Invoices
-            *rules_list  # Rules
+            m1, te1,
+            t1, t2, t3,
+            a1, a2, a3, a4, a5,
+            ad1, ad2,
+            c1, c2, c3,
+            *inv,
+            *rules_list
         ])
         db.session.commit()

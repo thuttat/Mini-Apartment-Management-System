@@ -3,11 +3,14 @@ from flask_admin.contrib.sqla import ModelView
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
-from wtforms import validators, ValidationError, Form
+from wtforms import validators
+from flask import request
+
 from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
-                         Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus)
+                         Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus,
+                         ApartmentStatus, PaymentStatus)
 
 
 class AdminView(ModelView):
@@ -22,16 +25,16 @@ class AdminView(ModelView):
 # USER
 # =========================================================
 class ManagerView(AdminView):
-    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role']
+    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role', 'active']
+    column_editable_list = ['active']
     column_searchable_list = ['id', 'full_name', 'username']
-    column_filters = ['user_role']
+    column_filters = ['user_role', 'active']
     form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'user_role', 'active']
 
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
             model.id = get_next_id(Manager, "M", 3)
-
-        if form.password.data:
+        if hasattr(form, 'password') and form.password.data:
             model.password = hash_password(form.password.data)
 
 
@@ -40,26 +43,28 @@ class TenantView(AdminView):
     column_searchable_list = ['id', 'full_name', 'username']
     column_filters = ['user_role']
     page_size = 30
-    form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'dob', 'avatar', 'user_role', 'active']
+    form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'dob', 'avatar', 'user_role',
+                    'active']
 
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
             model.id = get_next_id(Tenant, "T", 3)
 
-        if form.password.data:
+        if hasattr(form, 'password') and form.password.data:
             model.password = hash_password(form.password.data)
 
 
 class TechnicianView(AdminView):
-    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role']
+    column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role', 'active']
     column_searchable_list = ['id', 'full_name']
+    column_editable_list = ['active']
+    column_filters = ['user_role', 'active']
     form_columns = ['full_name', 'username', 'password', 'phone_number', 'email', 'user_role', 'active']
 
     def on_model_change(self, form, model, is_created):
         if is_created and not model.id:
             model.id = get_next_id(Technician, "TECH", 3)
-
-        if form.password.data:
+        if hasattr(form, 'password') and form.password.data:
             model.password = hash_password(form.password.data)
 
 
@@ -96,7 +101,8 @@ class ContractView(AdminView):
     column_searchable_list = ['id']
     can_export = True
 
-    form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'deposit', 'rent_price', 'status']
+    form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'deposit', 'rent_price',
+                    'status']
     form_excluded_columns = ('end_date',)
 
     def on_model_change(self, form, model, is_created):
@@ -134,6 +140,7 @@ class InvoiceView(AdminView):
 
         contract = model.contract
 
+        # Sử dụng hàm tính toán từ DAO (clean hơn)
         fees = dao.calculate_monthly_invoice(
             contract=contract,
             electric_usage=model.electric_usage,
@@ -159,6 +166,35 @@ class RuleView(AdminView):
 
     def on_model_change(self, form, model, is_created):
         model.last_updated = datetime.now()
+
+
+# =========================================================
+# STATS
+# =========================================================
+class StatsView(BaseView):
+    @expose('/')
+    def index(self):
+        selected_month = request.args.get('month')
+        keyword = request.args.get('kw')
+
+        # Gọi hàm từ DAO (đã thêm ở bước trước)
+        stats = dao.stats_revenue(month=selected_month, kw=keyword)
+
+        total_revenue = 0
+        if stats:
+            for s in stats:
+                # s[2] là total_amount, s[3] là status
+                if s[3] == PaymentStatus.PAID:
+                    total_revenue += s[2]
+
+        return self.render('admin/stats.html',
+                           stats=stats,
+                           month=selected_month,
+                           kw=keyword,
+                           total_revenue=total_revenue)
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == UserRole.MANAGER
 
 
 # =========================================================
@@ -189,5 +225,6 @@ admin.add_view(ApartmentDetailView(ApartmentDetail, db.session, name='Apartment 
 admin.add_view(ContractView(Contract, db.session, name='Contract'))
 admin.add_view(InvoiceView(Invoice, db.session, name='Invoice'))
 admin.add_view(RuleView(Rule, db.session, name='Rule'))
+admin.add_view(StatsView(name="Revenue Report", endpoint='stats'))
 
 admin.add_view(LogoutView(name="Logout"))

@@ -1,60 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>Mini Apartment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Skyscraper Portal{% endblock %}</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block head_extra %}{% endblock %}
 </head>
-
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container">
-    <a class="navbar-brand" href="/">Skyscraper Apartment</a>
 
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
+<div class="d-flex wrapper">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white sidebar">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none px-2">
+            <i class="bi bi-buildings fs-2 me-2"></i>
+            <div>
+                <span class="fs-5 fw-bold">Skyscraper</span>
+                <div style="font-size: 0.75rem; opacity: 0.7;">Resident Portal</div>
+            </div>
+        </a>
+        <hr class="border-secondary opacity-25 my-3">
 
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        {% block navbar %}
-        {% endblock %}
-      </ul>
+        <ul class="nav nav-pills flex-column mb-auto">
 
-      <ul class="navbar-nav">
-        {% if current_user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link text-danger" href="/logout">Đăng xuất</a>
-        </li>
-        {% else %}
-        <li class="nav-item">
-          <a class="nav-link text-danger" href="/login">Đăng nhập</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-danger" href="/register">Đăng ký</a>
-        </li>
-        {% endif %}
-      </ul>
+            {% if current_user.is_authenticated %}
+
+                {% if current_user.user_role.name == 'TENANT' %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('tenant_index') }}" class="nav-link text-white {% if active_page == 'index' %}active{% endif %}">
+                            <i class="bi bi-grid me-2"></i> Overview
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('tenant_apartment') }}" class="nav-link text-white {% if active_page == 'apartment' %}active{% endif %}">
+                            <i class="bi bi-house-door me-2"></i> My Apartment
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('tenant_payments') }}" class="nav-link text-white {% if active_page == 'bills' %}active{% endif %}">
+                            <i class="bi bi-receipt me-2"></i> Bills & Payments
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('tenant_notifications') }}" class="nav-link text-white {% if active_page == 'notifications' %}active{% endif %}">
+                            <i class="bi bi-bell me-2"></i> Notifications
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('tenant_profile') }}" class="nav-link text-white {% if active_page == 'profile' %}active{% endif %}">
+                            <i class="bi bi-person me-2"></i> My Profile
+                        </a>
+                    </li>
+
+                {% elif current_user.user_role.name == 'TECHNICIAN' %}
+                    <li>
+                        <a href="{{ url_for('technician_index') }}" class="nav-link text-white">
+                            <i class="bi bi-tools me-2"></i> Tasks
+                        </a>
+                    </li>
+
+                {% elif current_user.user_role.name == 'MANAGER' %}
+                    <li>
+                        <a href="/admin" class="nav-link text-warning fw-bold">
+                            <i class="bi bi-speedometer2 me-2"></i> Go to adminsite
+                        </a>
+                    </li>
+                {% endif %}
+
+            {% else %}
+                <li>
+                    <a href="/login" class="nav-link text-white">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                    </a>
+                </li>
+                            <li>
+                    <a href="/register" class="nav-link text-white">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Register
+                    </a>
+                </li>
+            {% endif %}
+
+            <li>
+                <a href="/settings" class="nav-link text-white {% if active_page == 'settings' %}active{% endif %}">
+                    <i class="bi bi-gear me-2"></i> Settings
+                </a>
+            </li>
+        </ul>
     </div>
-  </div>
-</nav>
 
-<div class="container mt-4">
-    {% block content %}{% endblock %}
+    <div class="main-content d-flex flex-column w-100">
+
+        {% include 'layout/header.html' %}
+
+        <div class="container-fluid p-4 flex-grow-1 bg-light">
+            {% block content %}{% endblock %}
+        </div>
+
+        {% include 'layout/footer.html' %}
+
+    </div>
 </div>
 
-{% include 'layout/footer.html' %}
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

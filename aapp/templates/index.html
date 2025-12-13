@@ -1,7 +1,7 @@
 {% extends 'layout/base.html' %}
 
 {% block content %}
-<h2 class="mb-4 text-center">DANH SÁCH CĂN HỘ TRỐNG</h2>
+<h2 class="mb-4 text-center">BLANK APARTMENT</h2>
 
 <div class="row">
     {% for a in apartments %}
@@ -11,12 +11,10 @@
 
             <div class="card-body">
                 <h5 class="card-title text-primary">{{ a.id }}</h5>
-                <p class="card-text">Loại phòng: <strong>{{ a.room_type.value }}</strong></p>
-                <p class="card-text">Tầng: {{ a.floor }} | Diện tích: {{ a.area }} m2</p>
-
+                <p class="card-text">Type: <strong>{{ a.room_type.value }}</strong></p>
                 <h5 class="text-danger font-weight-bold">{{ "{:,.0f}".format(a.price) }} VND</h5>
 
-                <a href="#" class="btn btn-primary w-100 mt-2">Xem chi tiết</a>
+                <a href="/apartment/{{ a.id }}" class="btn btn-primary w-100">Details</a>
             </div>
         </div>
     </div>

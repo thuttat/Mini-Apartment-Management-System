@@ -1,0 +1,117 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Invoice Detail #{{ invoice.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3 no-print">
+        <a href="/tenant/payments" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Go back
+        </a>
+
+        <button onclick="exportToPDF('invoice-content', 'invoice_{{ invoice.id }}.pdf')"
+                class="btn btn-danger shadow-sm">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </button>
+    </div>
+
+    <div id="invoice-content" class="bg-white p-5 border shadow-sm mx-auto" style="max-width: 900px;">
+
+        <div class="d-flex justify-content-between border-bottom pb-3 mb-4">
+            <div>
+                <h2 class="text-primary fw-bold m-0">SKYSCRAPER</h2>
+                <p class="text-muted small">Apartment Management</p>
+            </div>
+            <div class="text-end">
+                <h4 class="fw-bold">INVOICE</h4>
+                <p class="mb-0">No: #{{ invoice.id }}</p>
+                <p class="mb-0">Date: {{ invoice.month }}</p>
+                <div class="mt-1">
+                    {% if invoice.status.name == 'PAID' %}
+                        <span class="badge bg-success border border-success text-white">PAID</span>
+                    {% else %}
+                        <span class="badge bg-danger border border-danger text-white">UNPAID</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-6">
+                <h6 class="fw-bold text-uppercase text-secondary">Billed To:</h6>
+                {% if invoice.contract and invoice.contract.tenant %}
+                    <h5 class="fw-bold mb-1">{{ invoice.contract.tenant.full_name }}</h5>
+                    <p class="mb-0">Apartment: <strong>{{ invoice.contract.apartment.id }}</strong></p>
+                    <p class="mb-0">Phone: {{ invoice.contract.tenant.phone_number }}</p>
+                {% else %}
+                    <p class="text-danger fst-italic">Tenant info not found</p>
+                {% endif %}
+            </div>
+
+            <div class="col-6 text-end">
+                <h6 class="fw-bold text-uppercase text-secondary">Payable To (Manager):</h6>
+
+                {% if invoice.contract.apartment.details %}
+                    {% set manager = invoice.contract.apartment.details[0].manager %}
+                    <h5 class="fw-bold mb-1">{{ manager.full_name }}</h5>
+                    <p class="mb-0">Role: Manager in charge</p>
+                    <p class="mb-0">Phone: <strong>{{ manager.phone_number }}</strong></p>
+                    <p class="mb-0 small text-muted">{{ manager.email }}</p>
+                {% else %}
+                    <h5 class="fw-bold mb-1">Management Board</h5>
+                    <p class="mb-0">Hotline: 0909.123.456</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered border-dark" style="border-color: #dee2e6;">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th class="py-3" style="width: 15%">Month</th>
+                        <th class="py-3">Rent</th>
+                        <th class="py-3">Electricity <br><small class="fw-normal">({{ invoice.electric_usage }} kWh)</small></th>
+                        <th class="py-3">Water <br><small class="fw-normal">({{ invoice.water_usage }} m³)</small></th>
+                        <th class="py-3">Service Fee</th>
+                        <th class="py-3 bg-light fw-bold">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="text-end">
+                    <tr>
+                        <td class="text-center fw-bold align-middle">{{ invoice.month }}</td>
+                        <td class="align-middle">{{ "{:,.0f}".format(invoice.contract.rent_price) }}</td>
+                        <td class="align-middle">{{ "{:,.0f}".format(invoice.electric_fee) }}</td>
+                        <td class="align-middle">{{ "{:,.0f}".format(invoice.water_fee) }}</td>
+                        <td class="align-middle">{{ "{:,.0f}".format(invoice.service_fee) }}</td>
+                        <td class="fw-bold text-danger fs-5 align-middle bg-light">
+                            {{ "{:,.0f}".format(invoice.total_amount) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12 text-end">
+                <p class="mb-5 fst-italic">Created by</p>
+                <p class="fw-bold mt-5 pt-3">
+                    {% if invoice.contract.apartment.details %}
+                        {{ invoice.contract.apartment.details[0].manager.full_name }}
+                    {% else %}
+                        Management Board
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-4 border-top pt-3 text-center text-muted small fst-italic">
+            <p>Thank you for using our services.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {% include 'layout/pdf_exporter.html' %}
+{% endblock %}

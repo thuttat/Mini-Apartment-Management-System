@@ -60,13 +60,9 @@ def get_tenant_context():
     due_date = None
     if invoices:
         for i in invoices:
-            # Giả định ngày hết hạn là 30 ngày sau ngày tạo (cần logic chính xác hơn từ created_at nếu có)
-            # Ở đây tạm dùng logic đơn giản
             if i.status.name != 'PAID':
                 total_unpaid += i.total_amount
 
-            # Logic due_date tạm thời (nếu model Invoice chưa có created_at, code này có thể lỗi, cần check Model)
-            # due_date = i.created_at + timedelta(days=30)
 
     return {
         'contract': contract,
@@ -130,7 +126,6 @@ def save_result(apartment_id, reading_type, month, usage, new_reading, image):
 
 
 def handle_meter_reading(data):
-
     apartment_id = data['apartment_id']
     month = data['month']
     new_reading_str = data['new_reading_str']

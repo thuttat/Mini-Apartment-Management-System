@@ -25,7 +25,12 @@ def auth_user(username, password):
     for Model, role in auth_sources:
         # Tìm user có username và password khớp
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
+
         if user:
+            # Kiểm tra trạng thái hoạt động (active)
+            if hasattr(user, 'active') and not user.active:
+                return None, None
+
             return user, role
 
     return None, None
@@ -52,7 +57,8 @@ def add_manager(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.MANAGER
+        user_role=UserRole.MANAGER,
+        active=True
     )
     if avatar:
         res = cloudinary.uploader.upload(avatar)
@@ -74,7 +80,8 @@ def add_technician(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.TECHNICIAN
+        user_role=UserRole.TECHNICIAN,
+        active=True
     )
     if avatar:
         res = cloudinary.uploader.upload(avatar)
@@ -95,7 +102,8 @@ def add_tenant(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.TENANT
+        user_role=UserRole.TENANT,
+        active=True
     )
 
     if avatar:
@@ -141,7 +149,7 @@ def update_apartment_info(apartment_id, status=None, room_type=None, price=None)
     if not apt:
         return False
 
-    # Logic kiểm tra số người nếu tìm người ở ghép
+    #kiểm tra số người nếu tìm người ở ghép
     if status == ApartmentStatus.LOOKING_FOR_ROOMMATE:
         max_people = get_rule_value(RuleKey.MAX_PER_ROOM)
         current_people = count_people_in_apartment(apartment_id)
@@ -376,9 +384,6 @@ def update_rule(key: RuleKey, new_value):
 
 
 def get_last_reading_values(apartment_id, reading_type):
-    """
-    Lấy chỉ số điện/nước cuối cùng đã ghi nhận của căn hộ.
-    """
     contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
     if not contract:
         return None
@@ -403,9 +408,6 @@ def get_last_reading_values(apartment_id, reading_type):
 
 
 def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage, new_reading, image):
-    """
-    Lưu chỉ số điện/nước mới (từ Technician) vào Invoice.
-    """
     contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
     if not contract:
         return False, "Không tìm thấy hợp đồng!"
@@ -433,3 +435,23 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
     except Exception as e:
         db.session.rollback()
         return False, f"Lỗi CSDL: {str(e)}"
+
+
+# ============================
+# STATS
+# ============================
+def stats_revenue(kw=None, month=None):
+    query = db.session.query(
+        Contract.apartment_id,
+        Invoice.month,
+        func.sum(Invoice.total_amount),
+        Invoice.status
+    ).join(Invoice, Invoice.contract_id == Contract.id)
+
+    if kw:
+        query = query.filter(Contract.apartment_id.contains(kw))
+
+    if month:
+        query = query.filter(Invoice.month == month)
+
+    return query.group_by(Contract.apartment_id, Invoice.month, Invoice.status).all()

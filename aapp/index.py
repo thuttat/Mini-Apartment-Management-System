@@ -33,6 +33,12 @@ def index():
     return render_template('index.html', apartments=apartments)
 
 
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('layout/settings.html')
+
+
 @app.route('/login')
 def login_view():
     return render_template('login.html')
@@ -66,17 +72,25 @@ def register_process():
     password = request.form.get('password')
     confirm = request.form.get('confirm')
     if password != confirm:
-        err_msg = 'WRONG PASSWORD!'
+        err_msg = 'Wrong password!'
         return render_template('register.html', err_msg=err_msg)
 
+    name = request.form.get('name')
+    username = request.form.get('username')
     avatar = request.files.get('avatar')
+    role = request.form.get('role')
+
     try:
-        dao.add_tenant(avatar=avatar,
-                       name=request.form.get('name'),
-                       username=request.form.get('username'),
-                       password=request.form.get('password'))
+        if role == 'MANAGER':
+            dao.add_manager(name=name, username=username, password=password, avatar=avatar)
+        elif role == 'TECHNICIAN':
+            dao.add_technician(name=name, username=username, password=password, avatar=avatar)
+        else:
+            dao.add_tenant(name=name, username=username, password=password, avatar=avatar)
+
     except Exception as ex:
-        return render_template('register.html', err_msg="ERROR!")
+        print(ex)
+        return render_template('register.html', err_msg="Error")
 
     return redirect('/login')
 
@@ -86,6 +100,15 @@ def register_process():
 def logout_process():
     logout_user()
     return redirect('/')
+
+
+@app.route('/apartment/<apartment_id>')
+def apartment_detail(apartment_id):
+    apt = dao.get_apartment_by_id(apartment_id)
+    if not apt:
+        return render_template('404.html'), 404
+
+    return render_template('details.html', apartment=apt)
 
 
 @login.user_loader
@@ -121,7 +144,7 @@ def tenant_apartment():
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
-    # 1. Logic lọc hóa đơn (đã sửa trước đó)
+
     contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
     invoices = []
 
@@ -144,7 +167,6 @@ def tenant_payments():
 
         invoices.sort(key=lambda x: x.month, reverse=True)
 
-    # 2. Logic tính toán tổng nợ (cho header)
     total_outstanding = sum(inv.total_amount for inv in invoices if inv.status.name == 'UNPAID')
 
     return render_template('tenant/payments.html',
@@ -156,11 +178,12 @@ def tenant_payments():
 @login_required
 def tenant_invoice_detail(invoice_id):
     invoice = dao.get_invoice_by_id(invoice_id)
+
     if not invoice:
         return render_template('404.html'), 404
 
     if invoice.contract.tenant_id != current_user.id:
-        return "Bạn không có quyền truy cập hóa đơn này!", 403
+        return "This is not your invoice!", 403
 
     return render_template('tenant/invoice_detail.html', invoice=invoice)
 
@@ -181,7 +204,7 @@ def tenant_profile():
 
 
 # ==========================================
-# TENANT - PROFILE ACTIONS (FROM HEAD)
+# TENANT - PROFILE ACTIONS
 # ==========================================
 @app.route('/upload_avatar', methods=['POST'])
 @login_required
@@ -235,7 +258,7 @@ def change_password():
 
 
 # ==========================================
-# TECHNICIAN ROUTES (FROM TECHNICIAN BRANCH)
+# TECHNICIAN ROUTES
 # ==========================================
 @app.route('/technician')
 def admin_index():

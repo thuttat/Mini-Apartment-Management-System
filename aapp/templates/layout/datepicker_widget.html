@@ -1,0 +1,26 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<style>
+    .datepicker { padding: 10px; z-index: 9999 !important; }
+    .input-group-text { cursor: pointer; }
+    .datepicker-input { background-color: white !important; cursor: pointer; }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('#datepicker, .datepicker-trigger').datepicker({
+            format: "yyyy-mm",
+            startView: "months",
+            minViewMode: "months",
+            autoclose: true,
+            todayHighlight: true,
+            zIndexOffset: 1000,
+            language: 'en'
+        });
+
+        $('.input-group-text').click(function(){
+            $(this).prev('input').datepicker('show');
+        });
+    });
+</script>
