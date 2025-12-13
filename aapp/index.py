@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 
 from aapp import app, dao, login, utils, db
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey
-from aapp.utils import get_tenant_context, hash_password
+from aapp.utils import get_tenant_context, hash_password, handle_meter_reading, get_months_list
 
 
 @app.context_processor
@@ -32,6 +32,11 @@ def index():
     )
     return render_template('index.html', apartments=apartments)
 
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('layout/settings.html')
+
 @app.route('/login')
 def login_view():
     return render_template('login.html')
@@ -52,6 +57,8 @@ def login_process():
             return redirect('/admin')
         elif role == UserRole.TENANT:
             return redirect('/tenant/index')
+        elif role == 3:
+            return redirect('/technician')
         elif role == UserRole.TECHNICIAN:
             return redirect('/technician/index')
 
@@ -66,14 +73,24 @@ def register_process():
         err_msg = 'WRONG PASSWORD!'
         return render_template('register.html', err_msg=err_msg)
 
+    name = request.form.get('name')
+    username = request.form.get('username')
     avatar = request.files.get('avatar')
+    role = request.form.get('role')
+
     try:
-        dao.add_tenant(avatar=avatar,
-                     name=request.form.get('name'),
-                     username=request.form.get('username'),
-                     password=request.form.get('password'))
+        if role == 'MANAGER':
+            dao.add_manager(name=name, username=username, password=password, avatar=avatar)
+
+        elif role == 'TECHNICIAN':
+            dao.add_technician(name=name, username=username, password=password, avatar=avatar)
+
+        else:
+            dao.add_tenant(name=name, username=username, password=password, avatar=avatar)
+
     except Exception as ex:
-        return render_template('register.html', err_msg="ERROR!")
+        print(ex)
+        return render_template('register.html', err_msg="Error")
 
     return redirect('/login')
 
@@ -82,6 +99,14 @@ def register_process():
 def logout_process():
     logout_user()
     return redirect('/')
+
+@app.route('/apartment/<apartment_id>')
+def apartment_detail(apartment_id):
+    apt = dao.get_apartment_by_id(apartment_id)
+    if not apt:
+        return render_template('404.html'), 404
+
+    return render_template('details.html', apartment=apt)
 
 @login.user_loader
 def load_user(user_id):
@@ -106,8 +131,47 @@ def tenant_apartment():
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
-    ctx = get_tenant_context()
-    return render_template('tenant/payments.html', invoices=ctx['invoices'], total_unpaid=ctx['total_unpaid'], due_date=ctx['due_date'])
+    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
+    invoices = []
+
+    req_month = request.args.get('month')
+    req_status = request.args.get('status')
+
+    total_outstanding = 0
+    if contracts:
+        contract_id = contracts[0].id
+        all_invoices = dao.load_invoices(contract_id=contract_id)
+
+        for inv in all_invoices:
+            is_match = True
+            if req_month and inv.month != req_month:
+                is_match = False
+            if req_status and inv.status.name != req_status:
+                is_match = False
+            if is_match:
+                invoices.append(inv)
+            if inv.status.name == 'UNPAID':
+                total_outstanding += inv.total_amount
+
+        invoices.sort(key=lambda x: x.month, reverse=True)
+
+    return render_template('tenant/payments.html',
+                           invoices=invoices,
+                           active_page='bills',
+                           total_outstanding=total_outstanding)
+
+@app.route('/tenant/invoice/<invoice_id>')
+@login_required
+def tenant_invoice_detail(invoice_id):
+    invoice = dao.get_invoice_by_id(invoice_id)
+
+    if not invoice:
+        return render_template('404.html'), 404
+
+    if invoice.contract.tenant_id != current_user.id:
+        return "This is not your invoice!", 403
+
+    return render_template('tenant/invoice_detail.html', invoice=invoice)
 
 @app.route('/tenant/rules')
 def tenant_rules():
@@ -123,11 +187,6 @@ def tenant_profile():
     ctx = get_tenant_context()
     return render_template('tenant/profile.html', apartment=ctx['apartment'], contract=ctx['contract'])
 
-@app.route('/technician/index')
-@login_required
-def technician_index():
-    rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
-    return render_template('technician/index.html', apartments=rented_apartments)
 
 # upload anh moi
 @app.route('/upload_avatar', methods=['POST'])
@@ -179,6 +238,61 @@ def change_password():
 
     flash("", "success")
     return redirect(url_for('tenant_profile', tab="password", msg="CHANGE PASSWORD SUCCESSFULLY!"))
+
+@app.route('/technician')
+def admin_index():
+    return render_template('technician/index.html')
+
+@app.route('/chart')
+def chart_view():
+    stats_data = dao.count_apartments()
+    return render_template('reports/chart.html', stats_data=stats_data)
+
+@app.route('/technician/index')
+@login_required
+def technician_index():
+    rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
+    return render_template('technician/index.html', apartments=rented_apartments)
+
+
+@app.route('/technician/meter_reading/<string:reading_type>', methods=['GET','POST'])
+@login_required
+def meter_reading_view(reading_type):
+    if not current_user.is_authenticated or current_user.user_role!=UserRole.TECHNICIAN or reading_type not in ['electric','water']:
+        flash('Bạn không có quyền hoặc trang không hợp lệ.', 'danger')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        data = {
+            'apartment_id': request.form.get('apartment_id'),
+            'month': request.form.get('month'),
+            'new_reading_str': request.form.get('new_meter_reading'),
+            'image_file': request.files.get('reading_proof_photo'),
+            'reading_type': reading_type
+        }
+
+        success, message = handle_meter_reading(data)
+
+        if success:
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
+
+        return redirect(url_for('meter_reading_view', reading_type=reading_type))
+
+    apartments=dao.load_apartments(status=ApartmentStatus.RENTED)
+    months=get_months_list()
+    return render_template('technician/meter_reading.html', apartments=apartments, months=months,reading_type=reading_type)
+
+@app.route('/contracts_expiration')
+@login_required
+def report_contracts_expiration():
+    try:
+        days=int(request.args.get('days',30))
+    except ValueError:
+        days=30
+    contract_expiration=dao.get_contract_expiration(day_limit=days)
+    return render_template('reports/contracts_expiration.html', contract_expiration=contract_expiration,day_limit=days,datetime=datetime)
 
 if __name__ == "__main__":
     from aapp import admin

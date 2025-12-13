@@ -1,8 +1,9 @@
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import cloudinary
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import func
 
 from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole, Technician, User, RuleKey, \
     ContractStatus, ApartmentStatus, PaymentStatus
@@ -23,17 +24,16 @@ from aapp.utils import get_next_id, hash_password
 # ============================
 def auth_user(username, password):
     hashed = hash_password(password)
+    search_models = [Manager, Tenant, Technician]
 
-    auth_sources = [
-        (Manager, UserRole.MANAGER),
-        (Tenant, UserRole.TENANT),
-        (Technician, UserRole.TECHNICIAN)
-    ]
-
-    for Model, role in auth_sources:
+    for Model in search_models:
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
+
         if user:
-            return user, role
+            if user.active:
+                return user, user.user_role
+            else:
+                return None, None
 
     return None, None
 
@@ -59,7 +59,8 @@ def add_manager(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.MANAGER
+        user_role=UserRole.MANAGER,
+        active=False
     )
     if avatar:
         import cloudinary.uploader
@@ -81,7 +82,8 @@ def add_technician(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.TECHNICIAN
+        user_role=UserRole.TECHNICIAN,
+        active=False
     )
     if avatar:
         import cloudinary.uploader
@@ -117,7 +119,8 @@ def add_tenant(name, username, password, avatar=None):
         full_name=name,
         username=username.strip(),
         password=hash_password(password),
-        user_role=UserRole.TENANT
+        user_role=UserRole.TENANT,
+        active=True
     )
 
     if avatar:
@@ -359,3 +362,89 @@ def update_rule(key: RuleKey, new_value):
         db.session.commit()
         return True
     return False
+
+def get_last_reading_values(apartment_id, reading_type):
+    contract = Contract.query.filter_by(apartment_id=apartment_id,status=ContractStatus.ACTIVE).first()
+    if not contract:
+        return None
+
+    if reading_type == 'electric':
+        end_reading_column = Invoice.electric_end_reading
+    elif reading_type == 'water':
+        end_reading_column = Invoice.water_end_reading
+    else:
+        raise Exception("Chỉ số bắt buộc là điện hoặc nước")
+
+    last_invoice = (Invoice.query.filter(Invoice.contract_id==contract.id,end_reading_column.isnot(None))
+                    .order_by(Invoice.month.desc()).first())
+
+    if last_invoice:
+        if reading_type == 'electric':
+            return (last_invoice.month, last_invoice.electric_end_reading)
+        else:
+            return (last_invoice.month, last_invoice.water_end_reading)
+    print(f"Last_invoice={last_invoice.month} và {last_invoice.electric_end_reading}")
+    return (None, None)
+
+def get_invoice(contract_id, month_str):
+    return Invoice.query.filter(Invoice.contract_id==contract_id,Invoice.month==month_str).first()
+
+def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage,new_reading, image):
+    contract = Contract.query.filter_by(apartment_id=apartment_id,status=ContractStatus.ACTIVE).first()
+    if not contract:
+        return False,"Không tìm thấy hợp đồng!"
+    invoice=get_invoice(contract.id, month)
+    if not invoice:
+        new_id = get_next_id(Invoice, "INV", 6)
+        invoice=Invoice(id=new_id,contract_id=contract.id,month=month)
+        db.session.add(invoice)
+    try:
+        if reading_type == 'electric':
+            invoice.electric_usage = electric_usage
+            invoice.electric_end_reading = new_reading
+            invoice.electric_image = image
+        elif reading_type == 'water':
+            invoice.water_usage = water_usage
+            invoice.water_end_reading = new_reading
+            invoice.water_image = image
+        else:
+            return False, "Loại chỉ số không xác định."
+
+        db.session.commit()
+        return True, f"Lưu chỉ số {reading_type.capitalize()} thành công."
+    except Exception as e:
+        db.session.rollback()
+        return False, f"Lỗi CSDL: {str(e)}"
+
+
+def count_apartments():
+    stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
+        Apartment.status).all()
+    stats_data = []
+
+    for s in stats:
+        status_name = s.status.value
+        display_name = status_name
+        if status_name == ApartmentStatus.AVAILABLE.value:
+            display_name = "Còn Trống"
+        elif status_name == ApartmentStatus.RENTED.value:
+            display_name = "Đã Thuê"
+        elif status_name == ApartmentStatus.MAINTENANCE.value:
+            display_name = "Đang Bảo Trì"
+        elif status_name == ApartmentStatus.LOOKING_FOR_ROOMMATE.value:
+            display_name = "Tìm Người Ở Ghép"
+
+        stats_data.append({
+            'name': display_name,
+            'count': s.count
+        })
+    return stats_data
+
+def get_contract_expiration(day_limit=30):
+    current_date=datetime.now().date()
+    print(f"DEBUG: Ngày hiện tại của server là: {current_date}")
+    expiration_date = current_date + timedelta(days=day_limit)
+
+    contract=Contract.query.filter(Contract.status== ContractStatus.ACTIVE,Contract.end_date>current_date,
+                                   Contract.end_date<=expiration_date)
+    return contract.order_by(Contract.end_date.asc()).all()

@@ -1,0 +1,84 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Chi tiết căn hộ {{ apartment.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ apartment.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="row g-0">
+                <div class="col-md-6 bg-light d-flex align-items-center justify-content-center p-3">
+                    <img src="{{ apartment.image_urls }}" class="img-fluid rounded shadow-sm" alt="Image" style="max-height: 400px; object-fit: cover; width: 100%;">
+                </div>
+
+                <div class="col-md-6 p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h2 class="fw-bold text-primary mb-3">Apartment {{ apartment.id }}</h2>
+                        
+                        {% if apartment.status.name == 'AVAILABLE' %}
+                            <span class="badge bg-success fs-6">Blank</span>
+                        {% elif apartment.status.name == 'LOOKING_FOR_ROOMMATE' %}
+                            <span class="badge bg-info text-dark fs-6">Looking for roomate</span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="text-danger fw-bold mb-4">{{ "{:,.0f}".format(apartment.price) }} VND <span class="text-muted fs-6 fw-normal">/ tháng</span></h3>
+
+                    <div class="mb-4">
+                        <h5 class="fw-bold border-bottom pb-2">Details</h5>
+                        <div class="row g-3 mt-1">
+                            <div class="col-6">
+                                <span class="text-secondary"><i class="bi bi-box-seam me-2"></i>Type:</span>
+                                <div class="fw-bold mt-1">{{ apartment.room_type.name }}</div>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-secondary"><i class="bi bi-layers me-2"></i>Floor:</span>
+                                <div class="fw-bold mt-1">{{ apartment.floor }}</div>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-secondary"><i class="bi bi-arrows-fullscreen me-2"></i>Area:</span>
+                                <div class="fw-bold mt-1">{{ apartment.area }} m²</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if apartment.details %}
+                    <div class="alert alert-light border mt-4">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-person-badge me-2"></i>Manager information</h6>
+                        {% for detail in apartment.details %}
+                            <div class="d-flex align-items-center mt-2">
+                                <img src="{{ detail.manager.avatar }}" class="rounded-circle me-3" width="40" height="40">
+                                <div>
+                                    <div class="fw-bold">{{ detail.manager.full_name }}</div>
+                                    <div class="small text-muted">{{ detail.manager.phone_number }}</div>
+                                    {% if detail.note %}
+                                        <div class="small text-info fst-italic">Note: {{ detail.note }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4 d-grid gap-2">
+                        {% if apartment.status.name == 'AVAILABLE' or apartment.status.name == 'LOOKING_FOR_ROOMMATE' %}
+                            {% set phone = apartment.details[0].manager.phone_number%}
+                            <a href="tel:{{ phone }}" class="btn btn-primary btn-lg text-white text-decoration-none">
+                                <i class="bi bi-telephone-fill me-2"></i> Liên hệ thuê ngay
+                            </a>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
