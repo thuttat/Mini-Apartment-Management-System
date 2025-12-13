@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum as AppEnum
 
 from sqlalchemy import Column, Integer, String, Boolean, Float, Date, ForeignKey, Enum, Text
@@ -230,14 +230,26 @@ if __name__ == "__main__":
 
         # 5. Contracts
         c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 1, 1),
-                      end_date=datetime(2024, 12, 1), deposit=5000000, rent_price=3500000, member_count=1,
+                      end_date=datetime(2026, 3, 15), deposit=5000000, rent_price=3500000, member_count=1,
                       status=ContractStatus.ACTIVE)
         c2 = Contract(id="C002", apartment_id="A201", tenant_id="T102", start_date=datetime(2024, 3, 1),
-                      end_date=datetime(2025, 3, 1), deposit=6000000, rent_price=6500000, member_count=2,
+                      end_date=datetime(2026, 4, 30), deposit=6000000, rent_price=6500000, member_count=2,
                       status=ContractStatus.ACTIVE)
-        c3 = Contract(id="C003", apartment_id="A201", tenant_id="T103", start_date=datetime(2024, 5, 1),
-                      end_date=datetime(2025, 5, 1), deposit=6000000, rent_price=6500000, member_count=1,
+        c3 = Contract(id="C003", apartment_id="A202", tenant_id="T103", start_date=datetime(2024, 5, 1),
+                      end_date=datetime(2026, 1, 10), deposit=6000000, rent_price=6500000, member_count=1,
                       status=ContractStatus.ACTIVE)
+
+        contract_test = Contract(
+            id="C999",
+            apartment_id="A101",
+            tenant_id="T101",
+            start_date=datetime.now().date(),
+            end_date=datetime.now().date() + timedelta(days=1),  
+            deposit=1, rent_price=1, member_count=1,
+            status=ContractStatus.ACTIVE)
+
+        # db.session.add(contract_test)
+
 
         # 6. Rules
         rules_list = [
@@ -254,13 +266,13 @@ if __name__ == "__main__":
         ]
 
 # <<<<<<< HEAD
-        # Rules
+        #Rules
         # r1 = Rule(id="R001", rule_name="MAX_TENANTS", value="4", description="Tối đa 4 người ở một căn hộ.")
         # r2 = Rule(id="R002", rule_name="MIN_RENT_MONTHS", value="6", description="Hợp đồng tối thiểu 6 tháng.")
         # r3 = Rule(id="R003", rule_name="LATE_FEE", value="150000", description="Phí phạt trễ hạn đóng tiền.")
 
-        db.session.add_all([m1,te1, t1, t2, t3, a1, a2, a3, a4, a5, ad1, ad2, c1, c2, c3])
-        db.session.commit()
+        # db.session.add_all([m1,te1, t1, t2, t3, a1, a2, a3, a4, a5, ad1, ad2, c1, c2, c3])
+        # db.session.commit()
 
 # =======
         # 7. Invoices
@@ -268,7 +280,7 @@ if __name__ == "__main__":
             Invoice(id="I001", contract_id="C001", month="2024-01",
                     electric_usage=85.7, water_usage=4,  # Thêm usage
                     electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000),
-# >>>>>>> 0410f081f12cdbb8bd8e052ad32a3c10d5c70227
+
 
             Invoice(id="I002", contract_id="C001", month="2024-02",
                     electric_usage=71.4, water_usage=3.75,
@@ -298,7 +310,7 @@ if __name__ == "__main__":
             m1, te1, t1, t2, t3,  # Đã thêm te1, t2, t3
             a1, a2, a3, a4, a5,
             ad1, ad2,
-            c1, c2, c3,
+            c1, c2, c3,contract_test,
             *inv,  # Danh sách invoices
             *rules_list  # Danh sách rules HỢP LỆ
         ])

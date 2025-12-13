@@ -1,8 +1,6 @@
 import hashlib
-from datetime import datetime
+from datetime import datetime, timedelta
 
-import cloudinary
-from cloudinary.api import usage
 from sqlalchemy import func
 
 from aapp.models import Manager, Tenant, Apartment, Contract, Invoice, Rule, UserRole, Technician, User, RuleKey, \
@@ -368,16 +366,18 @@ def get_last_reading_values(apartment_id, reading_type):
     elif reading_type == 'water':
         end_reading_column = Invoice.water_end_reading
     else:
-        raise Exception("reading_type must be electric or water")
+        raise Exception("Chỉ số bắt buộc là điện hoặc nước")
 
-    last_invoice = Invoice.query.filter(Invoice.contract_id==contract.id,end_reading_column.isnot(None)).order_by(Invoice.month.desc()).first()
+    last_invoice = (Invoice.query.filter(Invoice.contract_id==contract.id,end_reading_column.isnot(None))
+                    .order_by(Invoice.month.desc()).first())
 
     if last_invoice:
         if reading_type == 'electric':
-            return last_invoice.month, last_invoice.electric_end_reading
+            return (last_invoice.month, last_invoice.electric_end_reading)
         else:
-            return last_invoice.month, last_invoice.water_end_reading
-    return None, None
+            return (last_invoice.month, last_invoice.water_end_reading)
+    print(f"Last_invoice={last_invoice.month} và {last_invoice.electric_end_reading}")
+    return (None, None)
 
 def get_invoice(contract_id, month_str):
     return Invoice.query.filter(Invoice.contract_id==contract_id,Invoice.month==month_str).first()
@@ -386,7 +386,6 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
     contract = Contract.query.filter_by(apartment_id=apartment_id,status=ContractStatus.ACTIVE).first()
     if not contract:
         return False,"Không tìm thấy hợp đồng!"
-
     invoice=get_invoice(contract.id, month)
     if not invoice:
         new_id = get_next_id(Invoice, "INV", 6)
@@ -410,32 +409,38 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
         db.session.rollback()
         return False, f"Lỗi CSDL: {str(e)}"
 
+
 def count_apartments():
-    try:
-        stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
-            Apartment.status).all()
-        stats_data = []
+    stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
+        Apartment.status).all()
+    stats_data = []
 
-        for s in stats:
-            status_name = s.status.value
-            display_name=status_name
-            if status_name == ApartmentStatus.AVAILABLE.value:
-                display_name = "Còn Trống"
-            elif status_name == ApartmentStatus.RENTED.value:
-                display_name = "Đã Thuê"
-            elif status_name == ApartmentStatus.MAINTENANCE.value:
-                display_name = "Đang Bảo Trì"
-            elif status_name == ApartmentStatus.LOOKING_FOR_ROOMMATE.value:
-                display_name = "Tìm Người Ở Ghép"
+    for s in stats:
+        status_name = s.status.value
+        display_name = status_name
+        if status_name == ApartmentStatus.AVAILABLE.value:
+            display_name = "Còn Trống"
+        elif status_name == ApartmentStatus.RENTED.value:
+            display_name = "Đã Thuê"
+        elif status_name == ApartmentStatus.MAINTENANCE.value:
+            display_name = "Đang Bảo Trì"
+        elif status_name == ApartmentStatus.LOOKING_FOR_ROOMMATE.value:
+            display_name = "Tìm Người Ở Ghép"
 
-            stats_data.append({
-                'name': display_name,
-                'count': s.count
-            })
-        return stats_data
-    except Exception as e:
-        print(f"Lỗi truy vấn thống kê: {e}")
-        return []
+        stats_data.append({
+            'name': display_name,
+            'count': s.count
+        })
+    return stats_data
+
+def get_contract_expiration(day_limit=30):
+    current_date=datetime.now().date()
+    print(f"DEBUG: Ngày hiện tại của server là: {current_date}")
+    expiration_date = current_date + timedelta(days=day_limit)
+
+    contract=Contract.query.filter(Contract.status== ContractStatus.ACTIVE,Contract.end_date>current_date,
+                                   Contract.end_date<=expiration_date)
+    return contract.order_by(Contract.end_date.asc()).all()
 
 
 

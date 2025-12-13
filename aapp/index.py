@@ -1,11 +1,14 @@
+from datetime import datetime
+
 from cloudinary.api import usage
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, login_user, logout_user
 from aapp import app, dao, login
-from aapp.utils import get_months_list
-from aapp.dao import get_last_reading_values, save_new_reading
+from aapp.utils import get_months_list, save_result, validate_reading, handle_meter_reading
+from aapp.dao import get_last_reading_values, save_new_reading, get_contract_expiration
 import cloudinary.uploader
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Apartment
+from aapp.utils import process_upload
 
 
 @app.context_processor
@@ -156,7 +159,7 @@ def admin_index():
 @app.route('/chart')
 def chart_view():
     stats_data = dao.count_apartments()
-    return render_template('chart.html', stats_data=stats_data)
+    return render_template('reports/chart.html', stats_data=stats_data)
 
 @app.route('/technician/index')
 @login_required
@@ -164,39 +167,6 @@ def technician_index():
     rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
     return render_template('technician/index.html', apartments=rented_apartments)
 
-
-
-def process_upload(image):
-    if image:
-        try:
-            res=cloudinary.uploader.upload(image)
-            return res.get('secure_url')
-        except Exception as e:
-            print(f"Tải ảnh lên không thành công: {e}")
-            return None
-    return None
-
-def validate_reading(apartment_id,reading_type,new_reading):
-    last_month,last_reading=dao.get_last_reading_values(apartment_id,reading_type)
-    if last_reading is None:
-        last_reading=0.0
-    usage=new_reading-last_reading
-    if usage<0:
-        err_msg=str(f"Chỉ số mới ({new_reading}) nhỏ hơn chỉ số cũ ({last_reading})! ")
-        return False,0.0,err_msg
-    return True,usage,""
-
-def save_result(apartment_id,reading_type,month,usage,new_reading,image):
-    electric_usage=usage if reading_type=='electric' else 0.0
-    water_usage=usage if reading_type=='water' else 0.0
-
-    success,message=dao.save_new_reading(apartment_id=apartment_id,reading_type=reading_type,month=month,
-                                         electric_usage=electric_usage,water_usage=water_usage,
-                                         new_reading=new_reading,image=image)
-    if success:
-        flash(message, 'success')
-    else:
-        flash(f'Lỗi khi lưu dữ liệu: {message}', 'danger')
 
 @app.route('/technician/meter_reading/<string:reading_type>', methods=['GET','POST'])
 @login_required
@@ -206,39 +176,36 @@ def meter_reading_view(reading_type):
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        apartment_id=request.form.get('apartment_id')
-        month=request.form.get('month')
-        new_reading=request.form.get('new_meter_reading')
-        image=request.files.get('reading_proof_photo')
+        data = {
+            'apartment_id': request.form.get('apartment_id'),
+            'month': request.form.get('month'),
+            'new_reading_str': request.form.get('new_meter_reading'),
+            'image_file': request.files.get('reading_proof_photo'),
+            'reading_type': reading_type
+        }
 
-        try:
-            new_reading = float(new_reading)
-        except ValueError:
-            flash('Chỉ số mới phải là số hợp lệ.', 'danger')
-            return redirect(url_for('meter_reading_view', reading_type=reading_type))
+        success, message = handle_meter_reading(data)
 
-        image_url = process_upload(image)
-        if not image:
-            flash('Lỗi khi tải ảnh hoặc ảnh không hợp lệ.', 'danger')
-            return redirect(url_for('meter_reading_view', reading_type=reading_type))
+        if success:
+            flash(message, 'success')
+        else:
+            flash(message, 'danger')
 
-        is_valid, usage, validation_msg = validate_reading(apartment_id=apartment_id, reading_type=reading_type,
-                                                           new_reading=new_reading)
-        if not is_valid:
-            flash(validation_msg, 'danger')
-            return redirect(url_for('meter_reading_view', reading_type=reading_type))
-
-        save_result(apartment_id=apartment_id, reading_type=reading_type, month=month, usage=usage,
-                    new_reading=new_reading, image=image_url)
         return redirect(url_for('meter_reading_view', reading_type=reading_type))
 
     apartments=dao.load_apartments(status=ApartmentStatus.RENTED)
     months=get_months_list()
     return render_template('technician/meter_reading.html', apartments=apartments, months=months,reading_type=reading_type)
 
-
-
-
+@app.route('/contracts_expiration')
+@login_required
+def report_contracts_expiration():
+    try:
+        days=int(request.args.get('days',30))
+    except ValueError:
+        days=30
+    contract_expiration=dao.get_contract_expiration(day_limit=days)
+    return render_template('reports/contracts_expiration.html', contract_expiration=contract_expiration,day_limit=days,datetime=datetime)
 
 if __name__ == "__main__":
     from aapp import admin
