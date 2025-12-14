@@ -1,38 +1,35 @@
-       <header class="p-3 border-bottom bg-white sticky-top">
-            <div class="container-fluid d-flex justify-content-between align-items-center">
-                <form class="d-none d-md-flex w-50" role="search">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 border text-secondary"><i class="bi bi-search"></i></span>
-                        <input type="search" class="form-control border-start-0 bg-light border ps-0" placeholder="Find..." aria-label="Search">
-                    </div>
-                </form>
-
-                <div class="d-flex align-items-center ms-auto">
-                    <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://ui-avatars.com/api/?name={{ current_user.full_name if current_user.is_authenticated else 'User' }}&background=random" alt="user" class="rounded-circle avatar-circle me-2">
-                            <div class="d-none d-sm-block lh-1 text-start">
-                                <div class="fw-bold small">
-                                    {% if current_user.is_authenticated %}
-                                        {{ current_user.full_name }}
-                                    {% else %}
-                                        Guest
-                                    {% endif %}
-                                </div>
-                                <div class="text-muted" style="font-size: 0.75rem;">Resident</div>
-                            </div>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end text-small shadow">
-                            <li><a class="dropdown-item" href="/settings">Setting</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            {% if current_user.is_authenticated %}
-                                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
-                            {% else %}
-                                <li><a class="dropdown-item text-primary" href="/login">Login</a></li>
-                                <li><a class="dropdown-item text-primary" href="/register">Register</a></li>
-                            {% endif %}
-                        </ul>
-                    </div>
+<div class="d-flex align-items-center ms-auto">
+    <div class="dropdown">
+        <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://ui-avatars.com/api/?name={{ current_user.full_name if current_user.is_authenticated else 'User' }}&background=random" alt="user" class="rounded-circle avatar-circle me-2">
+            <div class="d-none d-sm-block lh-1 text-start">
+                <div class="fw-bold small">
+                    {% if current_user.is_authenticated %}
+                        {{ current_user.full_name }}
+                    {% else %}
+                        Guest
+                    {% endif %}
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem;">
+                    {% if current_user.is_authenticated %}
+                        {{ current_user.user_role.name }}
+                    {% else %}
+                        Visitor
+                    {% endif %}
                 </div>
             </div>
-        </header>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end text-small shadow">
+
+            <li><a class="dropdown-item" href="/settings">Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+
+            {% if current_user.is_authenticated %}
+                <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+            {% else %}
+                <li><a class="dropdown-item text-primary" href="/login">Login</a></li>
+                <li><a class="dropdown-item text-primary" href="/register">Register</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>

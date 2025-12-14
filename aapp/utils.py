@@ -4,8 +4,7 @@ import cloudinary.uploader
 from flask_login import current_user
 
 from aapp import db, dao
-from aapp.models import Tenant, UserRole, ContractStatus, RuleKey
-
+from aapp.models import ContractStatus
 
 # ============================
 # BASIC UTILS
@@ -57,19 +56,16 @@ def get_tenant_context():
         invoices.sort(key=lambda x: x.month, reverse=True)
 
     total_unpaid = 0
-    due_date = None
     if invoices:
         for i in invoices:
             if i.status.name != 'PAID':
                 total_unpaid += i.total_amount
 
-
     return {
         'contract': contract,
         'apartment': apartment,
         'invoices': invoices,
-        'total_unpaid': total_unpaid,
-        'due_date': due_date
+        'total_unpaid': total_unpaid
     }
 
 
@@ -109,22 +105,6 @@ def validate_reading(apartment_id, reading_type, new_reading):
     return True, usage, ""
 
 
-def save_result(apartment_id, reading_type, month, usage, new_reading, image):
-    electric_usage = usage if reading_type == 'electric' else 0.0
-    water_usage = usage if reading_type == 'water' else 0.0
-
-    success, message = dao.save_new_reading(
-        apartment_id=apartment_id,
-        reading_type=reading_type,
-        month=month,
-        electric_usage=electric_usage,
-        water_usage=water_usage,
-        new_reading=new_reading,
-        image=image
-    )
-    return success, message
-
-
 def handle_meter_reading(data):
     apartment_id = data['apartment_id']
     month = data['month']
@@ -161,11 +141,15 @@ def handle_meter_reading(data):
         require_delete_uploaded_image(image_public_id)
         return False, validation_msg
 
-    success, message = save_result(
+    electric_usage = usage if reading_type == 'electric' else 0.0
+    water_usage = usage if reading_type == 'water' else 0.0
+
+    success, message = dao.save_new_reading(
         apartment_id=apartment_id,
         reading_type=reading_type,
         month=month,
-        usage=usage,
+        electric_usage=electric_usage,
+        water_usage=water_usage,
         new_reading=new_reading,
         image=image_url
     )

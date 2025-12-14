@@ -4,7 +4,7 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db
-from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )
@@ -318,6 +318,31 @@ def report_contracts_expiration():
     contract_expiration = dao.get_contract_expiration(day_limit=days)
     return render_template('reports/contracts_expiration.html', contract_expiration=contract_expiration, day_limit=days,
                            datetime=datetime)
+
+
+@app.route('/manager/revenue-report')
+@login_required
+def report_revenue():
+    if current_user.user_role != UserRole.MANAGER:
+        return redirect('/')  # Hoặc trang lỗi 403
+
+    kw = request.args.get('kw')
+    month = request.args.get('month')
+
+    stats = dao.stats_revenue(kw=kw, month=month)
+
+    total_revenue = 0
+    if stats:
+        for s in stats:
+            if s[3] == PaymentStatus.PAID:
+                total_revenue += s[2]
+
+    # Lưu ý: render template mới nằm trong thư mục reports
+    return render_template('reports/revenue.html',
+                           stats=stats,
+                           month=month,
+                           kw=kw,
+                           total_revenue=total_revenue)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,129 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-danger border-bottom pb-2">Statistical Revenue</h2>
+
+    <div class="card p-3 mb-4 shadow-sm bg-light">
+        <form action="" method="get" class="d-flex align-items-center flex-wrap">
+
+            <div class="me-3 mb-2">
+                <label class="fw-bold me-2">Month:</label>
+                <input type="month" name="month" class="form-control d-inline-block"
+                       value="{{ month if month }}" style="width: 180px;">
+            </div>
+
+            <div class="me-3 mb-2">
+                <label class="fw-bold me-2">Room:</label>
+                <input type="text" name="kw" class="form-control d-inline-block"
+                       placeholder="Apartment ID..." value="{{ kw if kw }}" style="width: 150px;">
+            </div>
+
+            <button type="submit" class="btn btn-info text-white shadow-sm me-2 mb-2">
+                Filter
+            </button>
+
+            {% if month or kw %}
+            <a href="{{ url_for('report_revenue') }}" class="btn btn-secondary shadow-sm mb-2">
+                Reset
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5 col-12 mb-4">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover shadow-sm bg-white">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Apartment</th>
+                            <th>Month</th>
+                            <th class="text-end">Revenue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if stats %}
+                            {% for s in stats %}
+                            <tr>
+                                <td>{{s[0]}}</td>
+                                <td>{{s[1]}}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(s[2]) }} VND</td>
+                                <td>
+                                    {% if s[3].name == 'PAID' %}
+                                        <span class="badge bg-success">PAID</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">UNPAID</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No data available</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot class="bg-warning">
+                        <tr class="fw-bold">
+                            <td colspan="2" class="text-center">TOTAL PAID</td>
+                            <td colspan="2" class="text-end text-danger">{{ "{:,.0f}".format(total_revenue) }} VND</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-md-7 col-12">
+            <div class="card shadow-sm p-3">
+                <canvas id="revenueChartId"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let labels = [], data = [], colors = [], borderColors = [];
+    let r, g, b;
+
+    {% if stats %}
+        {% for s in stats %}
+            labels.push('{{s[0]}} - {{s[1]}}');
+            data.push({{s[2]}});
+            r = parseInt(Math.random() * 255); g = parseInt(Math.random() * 255); b = parseInt(Math.random() * 255);
+            colors.push(`rgba(${r},${g},${b}, 0.5)`);
+            borderColors.push(`rgba(${r},${g},${b}, 1)`);
+        {% endfor %}
+    {% endif %}
+
+    window.onload = function() {
+        const ctx = document.getElementById('revenueChartId').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Revenue (VND)",
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return value.toLocaleString('en-US') + ' VND'; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

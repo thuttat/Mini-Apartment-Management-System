@@ -309,14 +309,49 @@ def get_invoice_by_id(iid):
 def get_invoice(contract_id, month_str):
     return Invoice.query.filter(Invoice.contract_id == contract_id, Invoice.month == month_str).first()
 
+def calculate_usage(contract_id, current_month, electric_end, water_end):
+    prev_invoice = Invoice.query.filter(
+        Invoice.contract_id == contract_id,
+        Invoice.month < current_month,
+        Invoice.active == True
+    ).order_by(Invoice.month.desc()).first()
+
+    if prev_invoice:
+        start_elec = prev_invoice.electric_end_reading
+        start_water = prev_invoice.water_end_reading
+    else:
+        start_elec = 0.0
+        start_water = 0.0
+
+    e_end = float(electric_end) if electric_end is not None else 0.0
+    w_end = float(water_end) if water_end is not None else 0.0
+
+    new_elec_usage = e_end - start_elec
+    new_water_usage = w_end - start_water
+
+    return {
+        'electric_usage': new_elec_usage if new_elec_usage > 0 else 0.0,
+        'water_usage': new_water_usage if new_water_usage > 0 else 0.0
+    }
+
 
 def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee=None):
     e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
     w_price = get_rule_value(RuleKey.PRICE_WATER)
-    s_price = service_fee if service_fee is not None else get_rule_value(RuleKey.PRICE_SERVICE)
 
-    e_fee = (electric_usage or 0) * e_price
-    w_fee = (water_usage or 0) * w_price
+    if service_fee is not None:
+        try:
+            s_price = float(service_fee)
+        except:
+            s_price = get_rule_value(RuleKey.PRICE_SERVICE)
+    else:
+        s_price = get_rule_value(RuleKey.PRICE_SERVICE)
+
+    usage_e = float(electric_usage) if electric_usage else 0.0
+    usage_w = float(water_usage) if water_usage else 0.0
+
+    e_fee = usage_e * e_price
+    w_fee = usage_w * w_price
     total_price = e_fee + w_fee + s_price + contract.rent_price
 
     return {
@@ -351,6 +386,8 @@ def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
     db.session.add(inv)
     db.session.commit()
     return inv
+
+
 
 
 # ============================
