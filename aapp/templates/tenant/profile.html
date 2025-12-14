@@ -16,8 +16,8 @@
                         <input type="file" name="avatar" id="fileInput" accept="image/*" onchange="document.getElementById('avatarForm').submit()">
                     </form>
 
-                    <button class="btn btn-primary btn-sm" type="button">
-                        <i class="bi bi-camera me-1"></i> Upload New Photo
+                    <button class="btn btn-primary btn-sm" type="button" onclick="document.getElementById('fileInput').click();">
+                         Upload New Photo
                     </button>
                     <a href="{{ url_for('logout_process') }}" class="btn btn-outline-danger btn-sm">Log Out</a>
                 </div>

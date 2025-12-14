@@ -10,7 +10,7 @@ from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
                          Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus,
-                         ApartmentStatus, PaymentStatus)
+                         ApartmentStatus, PaymentStatus, ContractAssignment)
 
 
 class AdminView(ModelView):
@@ -124,6 +124,13 @@ class ContractView(AdminView):
                 raise validators.ValidationError(f"Room {model.apartment.id} has active constract!")
 
 
+class ContractAssignmentView(AdminView):
+    column_list = ['id', 'contract', 'old_tenant', 'new_tenant', 'effective_date']
+    column_filters = ['contract', 'effective_date']
+    column_searchable_list = ['id']
+
+    form_columns = ['id', 'contract', 'old_tenant', 'new_tenant', 'effective_date']
+
 # =========================================================
 # INVOICE
 # =========================================================
@@ -223,6 +230,7 @@ admin.add_view(ApartmentView(Apartment, db.session, name='Apartment'))
 admin.add_view(ApartmentDetailView(ApartmentDetail, db.session, name='Apartment Detail'))
 
 admin.add_view(ContractView(Contract, db.session, name='Contract'))
+admin.add_view(ContractAssignmentView(ContractAssignment, db.session, name='Contract Assignment'))
 admin.add_view(InvoiceView(Invoice, db.session, name='Invoice'))
 admin.add_view(RuleView(Rule, db.session, name='Rule'))
 admin.add_view(StatsView(name="Revenue Report", endpoint='stats'))

@@ -141,6 +141,21 @@ class Contract(BaseModel):
             self.end_date = self.start_date + relativedelta(months=self.rental_period)
 
 
+# bang de luu lich su chuyen nhuong contract
+class ContractAssignment(BaseModel):
+    contract_id = Column(String(50), ForeignKey("contract.id"), nullable=False)
+    old_tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
+    new_tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
+    effective_date = Column(Date, default=datetime.now)
+    note = Column(String(225))
+
+    contract = relationship("Contract", backref="assignments")
+    old_tenant = relationship("Tenant", foreign_keys=[old_tenant_id])
+    new_tenant = relationship("Tenant", foreign_keys=[new_tenant_id])
+
+    def __str__(self):
+        return f"Transfer history of contract {self.contract_id}"
+
 # ============================
 # INVOICE
 # ============================

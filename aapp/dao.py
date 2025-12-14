@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 from aapp import db
 from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoice,
-                         Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus)
+                         Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus, ContractAssignment)
 from aapp.utils import get_next_id, hash_password
 
 
@@ -283,6 +283,34 @@ def get_contract_expiration(day_limit=30):
                                      Contract.end_date <= expiration_date)
     return contract.order_by(Contract.end_date.asc()).all()
 
+# ham xu ly chuyen nhuong hop dong
+def handle_assign_contract(contract_id, new_tenant_id, effective_date=None):
+    contract = get_contract_by_id(contract_id)
+    if not contract:
+        raise ValueError(f"Contract {contract_id} not found!")
+
+    if contract.status.name != ContractStatus.ACTIVE:
+        raise ValueError("Only active contract allowed!")
+
+    old_tenant_id = contract.tenant_id
+
+    if old_tenant_id == new_tenant_id:
+        raise ValueError("Can't assign contract to same tenant!")
+
+    contract_assignment = ContractAssignment(
+        contract_id=contract.id,
+        old_tenant_id=old_tenant_id,
+        new_tenant_id=new_tenant_id,
+        effective_date=effective_date if effective_date else datetime.now()
+    )
+
+    contract.tenant_id = new_tenant_id
+
+    db.session.add(contract_assignment)
+    db.session.commit()
+
+    return contract_assignment
+
 
 # ============================
 # INVOICE
@@ -313,10 +341,24 @@ def get_invoice(contract_id, month_str):
 def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee=None):
     e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
     w_price = get_rule_value(RuleKey.PRICE_WATER)
-    s_price = service_fee if service_fee is not None else get_rule_value(RuleKey.PRICE_SERVICE)
 
-    e_fee = (electric_usage or 0) * e_price
-    w_fee = (water_usage or 0) * w_price
+    if service_fee in (None, 0):
+        s_price = get_rule_value(RuleKey.PRICE_SERVICE)
+    else:
+        s_price = float(service_fee)
+
+    try:
+        usage_e = float(electric_usage) if electric_usage else 0.0
+    except (ValueError, TypeError):
+        usage_e = 0.0
+
+    try:
+        usage_w = float(water_usage) if water_usage else 0.0
+    except (ValueError, TypeError):
+        usage_w = 0.0
+
+    e_fee = usage_e * e_price
+    w_fee = usage_w * w_price
     total_price = e_fee + w_fee + s_price + contract.rent_price
 
     return {
