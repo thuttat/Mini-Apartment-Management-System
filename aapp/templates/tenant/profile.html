@@ -7,17 +7,25 @@
     <div class="col-md-4 col-lg-3">
         <div class="card text-center p-3 mb-4">
             <div class="card-body">
-                <img src="{{current_user.avatar}}" class="rounded-circle mx-auto d-block shadow-sm border border-3 border-white mb-3"
-             style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
+                <img src="{{current_user.avatar}}"
+                     class="rounded-circle mx-auto d-block shadow-sm border border-3 border-white mb-3"
+                     style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar">
                 <h5 class="fw-bold mb-1">{{current_user.full_name}}</h5>
+                {% if contract %}
                 <p class="text-muted mb-3">Room {{apartment.id}} - Owner</p>
+                {% else %}
+                <p class="text-muted mb-3">You don't own an apartment yet.</p>
+                {% endif %}
                 <div class="d-grid gap-2">
-                    <form id="avatarForm" action="{{url_for('upload_avatar')}}" method="POST" enctype="multipart/form-data" style="display: none;">
-                        <input type="file" name="avatar" id="fileInput" accept="image/*" onchange="document.getElementById('avatarForm').submit()">
+                    <form id="avatarForm" action="{{url_for('upload_avatar')}}" method="POST"
+                          enctype="multipart/form-data" style="display: none;">
+                        <input type="file" name="avatar" id="fileInput" accept="image/*"
+                               onchange="document.getElementById('avatarForm').submit()">
                     </form>
 
-                    <button class="btn btn-primary btn-sm" type="button" onclick="document.getElementById('fileInput').click();">
-                         Upload New Photo
+                    <button class="btn btn-primary btn-sm" type="button"
+                            onclick="document.getElementById('fileInput').click();">
+                        Upload New Photo
                     </button>
                     <a href="{{ url_for('logout_process') }}" class="btn btn-outline-danger btn-sm">Log Out</a>
                 </div>
@@ -27,9 +35,17 @@
         <div class="card">
             <div class="card-body">
                 <h6 class="fw-bold text-secondary mb-3">Need Help?</h6>
-                <p class="small text-muted mb-2"><i class="bi bi-person me-2"></i> {{apartment.details[0].manager.full_name}}</p>
-                <p class="small text-muted mb-2"><i class="bi bi-telephone me-2"></i> Hotline: {{apartment.details[0].manager.phone_number}}</p>
-                <p class="small text-muted m-0"><i class="bi bi-envelope me-2"></i> {{apartment.details[0].manager.email}}</p>
+                {% if contract and apartment.details %}
+                <p class="small text-muted mb-2"><i class="bi bi-person me-2"></i>
+                    {{apartment.details[0].manager.full_name}}</p>
+                <p class="small text-muted mb-2"><i class="bi bi-telephone me-2"></i> Hotline:
+                    {{apartment.details[0].manager.phone_number}}</p>
+                <p class="small text-muted m-0"><i class="bi bi-envelope me-2"></i>
+                    {{apartment.details[0].manager.email}}</p>
+                {% else %}
+                <p class="small text-muted mb-2"><i class="bi bi-telephone me-2"></i> Hotline: 1900 8386</p>
+                <p class="small text-muted m-0"><i class="bi bi-envelope me-2"></i> admin@skyscrasper.com</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -39,10 +55,19 @@
             <div class="card-header bg-white p-0 border-bottom-0">
                 <ul class="nav nav-tabs px-3 pt-3" id="profileTab" role="tablist">
                     <li class="nav-item">
-                        <button class="nav-link active fw-bold" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button">Personal Info</button>
+                        <button class="nav-link active fw-bold" id="info-tab" data-bs-toggle="tab"
+                                data-bs-target="#info" type="button">Personal Info
+                        </button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link fw-bold" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button">Security</button>
+                        <button class="nav-link fw-bold" id="password-tab" data-bs-toggle="tab"
+                                data-bs-target="#password" type="button">Security
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold" id="apartment-tab" data-bs-toggle="tab"
+                                data-bs-target="#apartment" type="button">Switch Apartment
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -58,15 +83,19 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small">Phone Number</label>
-                                    <input type="text" class="form-control" value="{{current_user.phone_number}}" name="phone_number">
+                                    <input type="text" class="form-control" value="{{current_user.phone_number}}"
+                                           name="phone_number">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small">Email Address</label>
-                                    <input type="email" class="form-control" value="{{current_user.email}}" name="email">
+                                    <input type="email" class="form-control" value="{{current_user.email}}"
+                                           name="email">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-muted small">Date of Birth</label>
-                                    <input type="date" class="form-control" value="{{current_user.dob.strftime('%Y-%m-%d') if current_user.dob else ''}}" name="dob">
+                                    <input type="date" class="form-control"
+                                           value="{{current_user.dob.strftime('%Y-%m-%d') if current_user.dob else ''}}"
+                                           name="dob">
                                 </div>
                                 <div class="col-12 mt-4">
                                     <button type="submit" class="btn btn-primary px-4">Save Changes</button>
@@ -76,7 +105,7 @@
                     </div>
 
                     <div class="tab-pane fade" id="password">
-                         <form method="POST" action="{{url_for('change_password')}}">
+                        <form method="POST" action="{{url_for('change_password')}}">
                             <div class="mb-3">
                                 <label class="form-label small">Current Password</label>
                                 <input type="password" class="form-control" name="current_password">
@@ -85,16 +114,57 @@
                                 <label class="form-label small">New Password</label>
                                 <input type="password" class="form-control" name="new_password">
                             </div>
-                             <div class="mb-3">
+                            <div class="mb-3">
                                 <label class="form-label small">Confirm Password</label>
                                 <input type="password" class="form-control" name="confirm_password">
-                             </div>
-                             <button type="submit" class="btn btn-danger">Update Password</button>
-                         </form>
+                            </div>
+                            <button type="submit" class="btn btn-danger">Update Password</button>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="apartment">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold m-0">Your Apartments</h6>
+                            <span class="badge bg-primary rounded-pill">{{contracts|length}} Available</span>
+                        </div>
+
+                        <div class="list-group">
+                            {% for c in contracts %}
+                            <div class="list-group-item list-group-item-action p-3
+        {% if c.id == contract.id %}bg-light border-primary{% endif %}">
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">
+                                            Room {{ c.apartment.id }}
+                                            {% if c.id == contract.id %}
+                                            <span class="badge bg-primary ms-2"
+                                                  style="font-size: 0.6rem;">CURRENT</span>
+                                            {% endif %}
+                                        </h6>
+                                        <small class="text-muted">
+                                            Role: {{ "Owner" if c.tenant_id == current_user.id else "Tenant" }}
+                                        </small>
+                                    </div>
+
+                                    {% if c.id != contract.id %}
+                                    <form method="POST"
+                                          action="{{ url_for('switch_apartment', contract_id=c.id) }}">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            Switch <i class="bi bi-arrow-right ms-1"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-secondary disabled">Selected</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}

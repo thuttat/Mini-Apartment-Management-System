@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 import cloudinary.uploader
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db
-from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )
@@ -138,21 +138,23 @@ def tenant_index():
 @login_required
 def tenant_apartment():
     ctx = get_tenant_context()
-    return render_template('tenant/apartment.html', apartment=ctx['apartment'], contract=ctx['contract'])
+
+    return render_template(
+        'tenant/apartment.html', apartment=ctx['apartment'], contract=ctx['contract'])
 
 
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
-    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
+    ctx = get_tenant_context()
+    contract = ctx['contract']
     invoices = []
 
     req_month = request.args.get('month')
     req_status = request.args.get('status')
 
-    if contracts:
-        contract_id = contracts[0].id
-        all_invoices = dao.load_invoices(contract_id=contract_id)
+    if contract:
+        all_invoices = dao.load_invoices(contract_id=contract.id)
 
         for inv in all_invoices:
             is_match = True
@@ -169,7 +171,10 @@ def tenant_payments():
 
     return render_template('tenant/payments.html',
                            invoices=invoices,
-                           total_unpaid=total_unpaid)
+                           total_unpaid=total_unpaid,
+                           contract=contract,
+                           apartment=ctx['apartment']
+                           )
 
 
 @app.route('/tenant/invoice/<invoice_id>')
@@ -198,7 +203,9 @@ def tenant_rules():
 @app.route('/tenant/profile')
 def tenant_profile():
     ctx = get_tenant_context()
-    return render_template('tenant/profile.html', apartment=ctx['apartment'], contract=ctx['contract'])
+
+    return render_template('tenant/profile.html', apartment=ctx['apartment'],
+                           contract=ctx['contract'], contracts=ctx['contracts'])
 
 
 # ==========================================
@@ -254,6 +261,18 @@ def change_password():
     flash("Password changed successfully!", "success")
     return redirect(url_for('tenant_profile', tab="password", msg="CHANGE PASSWORD SUCCESSFULLY!"))
 
+# xu ly doi can ho cho tenant
+@app.route('/switch_apartment/<contract_id>', methods=['POST'])
+@login_required
+def switch_apartment(contract_id):
+    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
+
+    for c in contracts:
+        if contract_id != c.id:
+            continue
+
+    session['current_contract_id'] = contract_id
+    return redirect(url_for('tenant_profile', contract_id=contract_id))
 
 # ==========================================
 # TECHNICIAN ROUTES
@@ -318,6 +337,31 @@ def report_contracts_expiration():
     contract_expiration = dao.get_contract_expiration(day_limit=days)
     return render_template('reports/contracts_expiration.html', contract_expiration=contract_expiration, day_limit=days,
                            datetime=datetime)
+
+
+@app.route('/manager/revenue-report')
+@login_required
+def report_revenue():
+    if current_user.user_role != UserRole.MANAGER:
+        return redirect('/')  # Hoặc trang lỗi 403
+
+    kw = request.args.get('kw')
+    month = request.args.get('month')
+
+    stats = dao.stats_revenue(kw=kw, month=month)
+
+    total_revenue = 0
+    if stats:
+        for s in stats:
+            if s[3] == PaymentStatus.PAID:
+                total_revenue += s[2]
+
+    # Lưu ý: render template mới nằm trong thư mục reports
+    return render_template('reports/revenue.html',
+                           stats=stats,
+                           month=month,
+                           kw=kw,
+                           total_revenue=total_revenue)
 
 
 if __name__ == "__main__":

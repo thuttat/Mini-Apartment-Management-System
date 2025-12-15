@@ -1,11 +1,16 @@
+import typing as t
 from datetime import datetime
+
+from flask_admin._types import T_ORM_MODEL, T_SQLALCHEMY_MODEL
 from flask_admin.contrib.sqla import ModelView
+from markupsafe import Markup
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
-from wtforms import validators
-from flask import request
+from wtforms import validators, Form, ValidationError
+from flask import request,flash
 
+from aapp.dao import handle_assign_contract
 from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
@@ -118,10 +123,18 @@ class ContractView(AdminView):
                 f"The quantity is ({model.member_count})/({int(max_people)})."
             )
 
-        if is_created and model.status == ContractStatus.ACTIVE:
-            existing = Contract.query.filter_by(apartment_id=model.apartment.id, status=ContractStatus.ACTIVE).first()
+        if is_created:
+            existing = Contract.query.filter(
+                Contract.apartment_id == model.apartment.id,
+                Contract.status == ContractStatus.ACTIVE,
+                Contract.id != model.id
+            ).first()
+
             if existing:
-                raise validators.ValidationError(f"Room {model.apartment.id} has active constract!")
+                raise ValidationError(f"Room {model.apartment.id} has active contract!")
+
+        # model.rent_price = model.apartment.
+        model.apartment.status = ApartmentStatus.RENTED # chuyen doi trang thai can ho
 
 
 class ContractAssignmentView(AdminView):
@@ -129,36 +142,105 @@ class ContractAssignmentView(AdminView):
     column_filters = ['contract', 'effective_date']
     column_searchable_list = ['id']
 
-    form_columns = ['id', 'contract', 'old_tenant', 'new_tenant', 'effective_date']
+    form_columns = ['contract', 'new_tenant', 'effective_date', 'note']
+    can_delete = False
+
+    def create_model(self, form):
+        try:
+            handle_assign_contract(
+                contract_id=form.contract.data.id,
+                new_tenant_id=form.new_tenant.data.id,
+                effective_date=form.effective_date.data,
+                note=form.note.data
+            )
+            return True
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 # =========================================================
 # INVOICE
 # =========================================================
+
 class InvoiceView(AdminView):
-    column_list = ['id', 'contract', 'month', 'total_amount', 'status']
-    column_filters = ['status', 'month']
+    can_create = False
+    can_edit = True
+    can_delete = True  # này chỉ ẩn thôi
+    can_export = True  # cái này xuất đc excel có sẵn nên sài thoai hehe
+
+    column_list = ['id', 'contract', 'month', 'electric_usage', 'water_usage', 'total_amount', 'status']
+    column_filters = ['status', 'month', 'contract.apartment.id']
     column_searchable_list = ['id', 'contract.id']
-    can_export = True
-    form_columns = ['contract', 'month', 'electric_usage', 'water_usage', 'service_fee', 'status']
+    column_default_sort = ('month', True)
+
+    def _money_formatter(view, context, model, name):
+        if model.total_amount:
+            return f"{model.total_amount:,.0f} VNĐ"
+        return "0 VNĐ"
+
+    column_formatters = {
+        'total_amount': _money_formatter,
+    }
+
+    form_columns = [
+        'contract',
+        'month',
+        'electric_end_reading', 'electric_usage',
+        'water_end_reading', 'water_usage',
+        'service_fee',
+        'total_amount',
+        'status'
+    ]
+#khóa
+    form_widget_args = {
+        'contract': {'disabled': True},
+        'month': {'disabled': True},
+        'electric_usage': {'disabled': True},
+        'water_usage': {'disabled': True},
+        'total_amount': {'disabled': True}
+    }
 
     def on_model_change(self, form, model, is_created):
-        if is_created and not model.id:
-            model.id = get_next_id(Invoice, "INV", 6)
+        usage_data = dao.calculate_usage(
+            contract_id=model.contract.id,
+            current_month=model.month,
+            electric_end=model.electric_end_reading,
+            water_end=model.water_end_reading
+        )
+        model.electric_usage = usage_data['electric_usage']
+        model.water_usage = usage_data['water_usage']
 
-        contract = model.contract
-
-        # Sử dụng hàm tính toán từ DAO (clean hơn)
-        fees = dao.calculate_monthly_invoice(
-            contract=contract,
+        money_data = dao.calculate_monthly_invoice(
+            contract=model.contract,
             electric_usage=model.electric_usage,
             water_usage=model.water_usage,
             service_fee=model.service_fee
         )
+        model.electric_fee = money_data['electric_fee']
+        model.water_fee = money_data['water_fee']
+        model.total_amount = money_data['total_price']
 
-        model.electric_fee = fees['electric_fee']
-        model.water_fee = fees['water_fee']
-        model.service_fee = fees['service_fee']
-        model.total_amount = fees['total_price']
+    def delete_model(self, model):
+
+        try:
+            if model.status == PaymentStatus.PAID:
+                flash(f'Can not delete {model.id} has paid', 'error')
+                return False
+            #chỉ ẩn đi thôi
+            model.active = False
+            self.session.commit()
+            return True
+        except Exception as ex:
+            if not self.handle_view_exception(ex):
+                flash(f'{str(ex)}', 'error')
+            self.session.rollback()
+            return False
+
+    def get_query(self):
+        return super(InvoiceView, self).get_query().filter(self.model.active == True)
+
+    def get_count_query(self):
+        return super(InvoiceView, self).get_count_query().filter(self.model.active == True)
 
 
 # =========================================================
@@ -173,35 +255,6 @@ class RuleView(AdminView):
 
     def on_model_change(self, form, model, is_created):
         model.last_updated = datetime.now()
-
-
-# =========================================================
-# STATS
-# =========================================================
-class StatsView(BaseView):
-    @expose('/')
-    def index(self):
-        selected_month = request.args.get('month')
-        keyword = request.args.get('kw')
-
-        # Gọi hàm từ DAO (đã thêm ở bước trước)
-        stats = dao.stats_revenue(month=selected_month, kw=keyword)
-
-        total_revenue = 0
-        if stats:
-            for s in stats:
-                # s[2] là total_amount, s[3] là status
-                if s[3] == PaymentStatus.PAID:
-                    total_revenue += s[2]
-
-        return self.render('admin/stats.html',
-                           stats=stats,
-                           month=selected_month,
-                           kw=keyword,
-                           total_revenue=total_revenue)
-
-    def is_accessible(self):
-        return current_user.is_authenticated and current_user.user_role == UserRole.MANAGER
 
 
 # =========================================================
@@ -233,6 +286,5 @@ admin.add_view(ContractView(Contract, db.session, name='Contract'))
 admin.add_view(ContractAssignmentView(ContractAssignment, db.session, name='Contract Assignment'))
 admin.add_view(InvoiceView(Invoice, db.session, name='Invoice'))
 admin.add_view(RuleView(Rule, db.session, name='Rule'))
-admin.add_view(StatsView(name="Revenue Report", endpoint='stats'))
 
 admin.add_view(LogoutView(name="Logout"))

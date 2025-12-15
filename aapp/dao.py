@@ -284,13 +284,15 @@ def get_contract_expiration(day_limit=30):
     return contract.order_by(Contract.end_date.asc()).all()
 
 # ham xu ly chuyen nhuong hop dong
-def handle_assign_contract(contract_id, new_tenant_id, effective_date=None):
+def handle_assign_contract(contract_id, new_tenant_id, effective_date=None, note=None):
+    id = get_next_id(ContractAssignment, "CA", "3"),
     contract = get_contract_by_id(contract_id)
-    if not contract:
-        raise ValueError(f"Contract {contract_id} not found!")
 
-    if contract.status.name != ContractStatus.ACTIVE:
+    if contract.status != ContractStatus.ACTIVE:
         raise ValueError("Only active contract allowed!")
+
+    if contract.end_date - effective_date <= timedelta(days=30):
+        raise ValueError("You can only transfer the contract more than 30 days before the contract expires!")
 
     old_tenant_id = contract.tenant_id
 
@@ -298,10 +300,12 @@ def handle_assign_contract(contract_id, new_tenant_id, effective_date=None):
         raise ValueError("Can't assign contract to same tenant!")
 
     contract_assignment = ContractAssignment(
+        id=id,
         contract_id=contract.id,
         old_tenant_id=old_tenant_id,
         new_tenant_id=new_tenant_id,
-        effective_date=effective_date if effective_date else datetime.now()
+        effective_date=effective_date if effective_date else datetime.now(),
+        note=note
     )
 
     contract.tenant_id = new_tenant_id
@@ -337,25 +341,46 @@ def get_invoice_by_id(iid):
 def get_invoice(contract_id, month_str):
     return Invoice.query.filter(Invoice.contract_id == contract_id, Invoice.month == month_str).first()
 
+def calculate_usage(contract_id, current_month, electric_end, water_end):
+    prev_invoice = Invoice.query.filter(
+        Invoice.contract_id == contract_id,
+        Invoice.month < current_month,
+        Invoice.active == True
+    ).order_by(Invoice.month.desc()).first()
+
+    if prev_invoice:
+        start_elec = prev_invoice.electric_end_reading
+        start_water = prev_invoice.water_end_reading
+    else:
+        start_elec = 0.0
+        start_water = 0.0
+
+    e_end = float(electric_end) if electric_end is not None else 0.0
+    w_end = float(water_end) if water_end is not None else 0.0
+
+    new_elec_usage = e_end - start_elec
+    new_water_usage = w_end - start_water
+
+    return {
+        'electric_usage': new_elec_usage if new_elec_usage > 0 else 0.0,
+        'water_usage': new_water_usage if new_water_usage > 0 else 0.0
+    }
+
 
 def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee=None):
     e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
     w_price = get_rule_value(RuleKey.PRICE_WATER)
 
-    if service_fee in (None, 0):
-        s_price = get_rule_value(RuleKey.PRICE_SERVICE)
+    if service_fee is not None:
+        try:
+            s_price = float(service_fee)
+        except:
+            s_price = get_rule_value(RuleKey.PRICE_SERVICE)
     else:
-        s_price = float(service_fee)
+        s_price = get_rule_value(RuleKey.PRICE_SERVICE)
 
-    try:
-        usage_e = float(electric_usage) if electric_usage else 0.0
-    except (ValueError, TypeError):
-        usage_e = 0.0
-
-    try:
-        usage_w = float(water_usage) if water_usage else 0.0
-    except (ValueError, TypeError):
-        usage_w = 0.0
+    usage_e = float(electric_usage) if electric_usage else 0.0
+    usage_w = float(water_usage) if water_usage else 0.0
 
     e_fee = usage_e * e_price
     w_fee = usage_w * w_price

@@ -78,7 +78,7 @@ class Manager(User):
 
 
 class Tenant(User):
-    dob = Column(Date)  # Bổ sung ngày sinh
+    dob = Column(Date)
 
     def __str__(self):
         return self.full_name
@@ -136,10 +136,8 @@ class Contract(BaseModel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Tự động tính ngày kết thúc dựa trên Start Date + Rental Period
         if self.start_date and self.rental_period:
             self.end_date = self.start_date + relativedelta(months=self.rental_period)
-
 
 # bang de luu lich su chuyen nhuong contract
 class ContractAssignment(BaseModel):
@@ -275,21 +273,33 @@ if __name__ == "__main__":
         ]
 
         # Invoices
-        inv = [
-            Invoice(id="I001", contract_id="C001", month="2024-01",
-                    electric_usage=85.7, water_usage=4,
-                    electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000,
-                    status=PaymentStatus.PAID),
-            Invoice(id="I002", contract_id="C001", month="2024-02",
-                    electric_usage=71.4, water_usage=3.75,
-                    electric_fee=250000, water_fee=75000, service_fee=150000, total_amount=4725000),
-            Invoice(id="I003", contract_id="C002", month="2024-03",
-                    electric_usage=91.4, water_usage=4.5,
-                    electric_fee=320000, water_fee=90000, service_fee=200000, total_amount=7110000),
-            Invoice(id="I004", contract_id="C002", month="2024-04",
-                    electric_usage=88.5, water_usage=4,
-                    electric_fee=310000, water_fee=80000, service_fee=200000, total_amount=7080000),
-        ]
+
+        # Contract C001
+        # Tháng 1: Dùng 85.7 điện, 4 nước -> Chỉ số cuối = 85.7, 4
+        i1 = Invoice(id="I001", contract_id="C001", month="2024-01",
+                     electric_usage=85.7, water_usage=4,
+                     electric_end_reading=85.7, water_end_reading=4,
+                     electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000,
+                     status=PaymentStatus.PAID)
+
+        # Tháng 2: Dùng 71.4 điện, 3.75 nước -> Chỉ số cuối = 85.7 + 71.4 = 157.1, 4 + 3.75 = 7.75
+        i2 = Invoice(id="I002", contract_id="C001", month="2024-02",
+                     electric_usage=71.4, water_usage=3.75,
+                     electric_end_reading=157.1, water_end_reading=7.75,
+                     electric_fee=250000, water_fee=75000, service_fee=150000, total_amount=4725000)
+
+        # Contract C002
+        # Tháng 3: Dùng 91.4 điện, 4.5 nước -> Chỉ số cuối = 91.4, 4.5
+        i3 = Invoice(id="I003", contract_id="C002", month="2024-03",
+                     electric_usage=91.4, water_usage=4.5,
+                     electric_end_reading=91.4, water_end_reading=4.5,
+                     electric_fee=320000, water_fee=90000, service_fee=200000, total_amount=7110000)
+
+        # Tháng 4: Dùng 88.5 điện, 4 nước -> Chỉ số cuối = 91.4 + 88.5 = 179.9, 4.5 + 4 = 8.5
+        i4 = Invoice(id="I004", contract_id="C002", month="2024-04",
+                     electric_usage=88.5, water_usage=4,
+                     electric_end_reading=179.9, water_end_reading=8.5,
+                     electric_fee=310000, water_fee=80000, service_fee=200000, total_amount=7080000)
 
         db.session.add_all([
             m1, te1,
@@ -297,7 +307,7 @@ if __name__ == "__main__":
             a1, a2, a3, a4, a5,
             ad1, ad2,
             c1, c2, c3,
-            *inv,
+            i1, i2, i3, i4,
             *rules_list
         ])
         db.session.commit()

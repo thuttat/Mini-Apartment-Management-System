@@ -29,63 +29,95 @@
 
             {% if current_user.is_authenticated %}
 
-                {% if current_user.user_role.name == 'TENANT' %}
-                    <li class="nav-item">
-                        <a href="{{ url_for('tenant_index') }}" class="nav-link text-white {% if active_page == 'index' %}active{% endif %}">
-                            <i class="bi bi-grid me-2"></i> Overview
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('tenant_apartment') }}" class="nav-link text-white {% if active_page == 'apartment' %}active{% endif %}">
-                            <i class="bi bi-house-door me-2"></i> My Apartment
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('tenant_payments') }}" class="nav-link text-white {% if active_page == 'bills' %}active{% endif %}">
-                            <i class="bi bi-receipt me-2"></i> Bills & Payments
-                        </a>
-                    </li>
+            {% if current_user.user_role.name == 'TENANT' %}
+            <li class="nav-item">
+                <a href="{{ url_for('tenant_index') }}"
+                   class="nav-link text-white {% if active_page == 'index' %}active{% endif %}">
+                    <i class="bi bi-grid me-2"></i> Overview
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tenant_apartment') }}"
+                   class="nav-link text-white {% if active_page == 'apartment' %}active{% endif %}">
+                    <i class="bi bi-house-door me-2"></i> My Apartment
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('tenant_payments') }}"
+                   class="nav-link text-white {% if active_page == 'bills' %}active{% endif %}">
+                    <i class="bi bi-receipt me-2"></i> Bills & Payments
+                </a>
+            </li>
 
-                    <li>
-                        <a href="{{ url_for('tenant_rules') }}" class="nav-link text-white {% if active_page == 'rules' %}active{% endif %}">
-                            <i class="bi bi-file-earmark-ruled me-2"></i> Rules
-                        </a>
-                    </li>
+            <li>
+                <a href="{{ url_for('tenant_rules') }}"
+                   class="nav-link text-white {% if active_page == 'rules' %}active{% endif %}">
+                    <i class="bi bi-file-earmark-ruled me-2"></i> Rules
+                </a>
+            </li>
 
-                    <li>
-                        <a href="{{ url_for('tenant_profile') }}" class="nav-link text-white {% if active_page == 'profile' %}active{% endif %}">
-                            <i class="bi bi-person me-2"></i> My Profile
-                        </a>
-                    </li>
+            <li>
+                <a href="{{ url_for('tenant_profile') }}"
+                   class="nav-link text-white {% if active_page == 'profile' %}active{% endif %}">
+                    <i class="bi bi-person me-2"></i> My Profile
+                </a>
+            </li>
 
-                {% elif current_user.user_role.name == 'TECHNICIAN' %}
-                    <li>
-                        <a href="{{ url_for('technician_index') }}" class="nav-link text-white">
-                            <i class="bi bi-tools me-2"></i> Tasks
-                        </a>
-                    </li>
+            {% elif current_user.user_role.name == 'TECHNICIAN' %}
+            <li>
+                <a href="{{ url_for('technician_index') }}" class="nav-link text-white">
+                    <i class="bi bi-tools me-2"></i> Tasks
+                </a>
+            </li>
 
-                {% elif current_user.user_role.name == 'MANAGER' %}
-                    <li>
-                        <a href="/admin" class="nav-link text-warning fw-bold">
-                            <i class="bi bi-speedometer2 me-2"></i> Go to Admin Site
-                        </a>
-                    </li>
-                {% endif %}
+            {% elif current_user.user_role.name == 'MANAGER' %}
 
-            {% else %}
-                <li>
-                    <a href="/login" class="nav-link text-white">
-                        <i class="bi bi-box-arrow-in-right me-2"></i> Login
-                    </a>
-                </li>
-                <li>
-                    <a href="/register" class="nav-link text-white">
-                        <i class="bi bi-person-plus me-2"></i> Register
-                    </a>
-                </li>
+            <li>
+                <a href="/admin" class="nav-link text-warning fw-bold">
+                    <i class="bi bi-speedometer2 me-2"></i> Go to Admin Site
+                </a>
+            </li>
+
+            <hr class="border-secondary opacity-25 my-2">
+
+            <li>
+                <a href="{{ url_for('report_revenue') }}" class="nav-link text-white">
+                    <i class="bi bi-cash-stack me-2"></i> Revenue
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('chart_view') }}" class="nav-link text-white">
+                    <i class="bi bi-pie-chart me-2"></i> Occupancy
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('report_contracts_expiration') }}" class="nav-link text-white">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Expiration Alert
+                </a>
+            </li>
+
             {% endif %}
 
+            {% else %}
+            <li>
+                <a href="/login" class="nav-link text-white">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                </a>
+            </li>
+            <li>
+                <a href="/register" class="nav-link text-white">
+                    <i class="bi bi-person-plus me-2"></i> Register
+                </a>
+            </li>
+            {% endif %}
+
+            <hr class="border-secondary opacity-25 my-3">
+            <li>
+                <a href="{{ url_for('settings') }}"
+                   class="nav-link text-white {% if active_page == 'settings' %}active{% endif %}">
+                    <i class="bi bi-gear me-2"></i> Settings
+                </a>
+            </li>
         </ul>
     </div>
 
