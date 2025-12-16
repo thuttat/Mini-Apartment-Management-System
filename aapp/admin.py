@@ -133,8 +133,8 @@ class ContractView(AdminView):
             if existing:
                 raise ValidationError(f"Room {model.apartment.id} has active contract!")
 
-        # model.rent_price = model.apartment.
-        model.apartment.status = ApartmentStatus.RENTED # chuyen doi trang thai can ho
+        if model.status == ContractStatus.ACTIVE:
+            model.apartment.status = ApartmentStatus.RENTED # chuyen doi trang thai can ho
 
 
 class ContractAssignmentView(AdminView):

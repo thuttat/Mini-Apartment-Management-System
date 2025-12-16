@@ -32,6 +32,7 @@ class ApartmentStatus(AppEnum):
 
 
 class ContractStatus(AppEnum):
+    PENDING = "PENDING" # them trang thai hop dong chua duoc bat dau neu gia han
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"

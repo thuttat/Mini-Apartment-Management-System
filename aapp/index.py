@@ -4,7 +4,8 @@ from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db
-from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus
+from aapp.dao import renew_contract
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Contract
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )
@@ -114,6 +115,22 @@ def apartment_detail(apartment_id):
 @login.user_loader
 def load_user(user_id):
     return dao.get_user_by_id(user_id)
+
+# man hinh gia han hop dong cua admin
+@app.route("/admin/renew_contracts", methods=["GET", "POST"])
+def renew_contract_view():
+    if request.method == "POST":
+        contract_id = request.form["contract_id"]
+        rental_period = int(request.form["rental_period"])
+
+        renew_contract(contract_id, rental_period)
+        flash("Contract renewed successfully!")
+        return redirect(url_for("renew_contract_view"))
+
+    active_contracts = Contract.query.filter(Contract.status == ContractStatus.ACTIVE).all()
+
+    return render_template(
+        "admin/renew_contracts.html", contracts=active_contracts)
 
 
 # ==========================================

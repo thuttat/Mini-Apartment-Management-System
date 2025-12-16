@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from sqlalchemy import func
 import cloudinary.uploader
 from dateutil.relativedelta import relativedelta
@@ -291,8 +291,9 @@ def handle_assign_contract(contract_id, new_tenant_id, effective_date=None, note
     if contract.status != ContractStatus.ACTIVE:
         raise ValueError("Only active contract allowed!")
 
-    if contract.end_date - effective_date <= timedelta(days=30):
-        raise ValueError("You can only transfer the contract more than 30 days before the contract expires!")
+    # chi cho chuyen nhuong truoc ngay het han la 30 ngay
+    if contract.end_date - effective_date < timedelta(days=30):
+        raise ValueError("You can only transfer the contract at least 30 days before the contract expires!")
 
     old_tenant_id = contract.tenant_id
 
@@ -315,6 +316,34 @@ def handle_assign_contract(contract_id, new_tenant_id, effective_date=None, note
 
     return contract_assignment
 
+# ham gia han hop dong
+def renew_contract(old_contract_id, rental_period):
+    old_contract = Contract.query.get(old_contract_id)
+
+    if not old_contract or old_contract.status != ContractStatus.ACTIVE:
+        raise ValueError("Only active contract allowed!")
+
+    # chi cho gia han truoc ngay het han la 30 ngay
+    if date.today() + timedelta(days=30) > old_contract.end_date:
+        raise ValueError("You can only renew the contract at least 30 days before the contract expires!")
+
+    new_contract = Contract(
+        id=get_next_id(Contract, "C", "3"),
+        apartment_id=old_contract.apartment_id,
+        tenant_id=old_contract.tenant_id,
+        start_date=old_contract.end_date + timedelta(days=1),
+        rental_period=rental_period,
+        member_count=old_contract.member_count,
+        deposit=old_contract.deposit,
+        rent_price=old_contract.rent_price,
+        status=ContractStatus.PENDING,
+    )
+
+    new_contract.end_date = calculate_end_date(new_contract.start_date, new_contract.rental_period)
+
+    db.session.add(new_contract)
+    db.session.commit()
+    return new_contract
 
 # ============================
 # INVOICE
