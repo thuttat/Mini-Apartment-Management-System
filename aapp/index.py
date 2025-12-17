@@ -338,7 +338,7 @@ def meter_reading_view(reading_type):
 
         return redirect(url_for('meter_reading_view', reading_type=reading_type))
 
-    apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
+    apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
     months = get_months_list()
     return render_template('technician/meter_reading.html', apartments=apartments, months=months,
                            reading_type=reading_type)

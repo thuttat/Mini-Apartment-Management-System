@@ -103,12 +103,26 @@ class ApartmentDetailView(AdminView):
 class ContractView(AdminView):
     column_list = ['id', 'apartment', 'tenant', 'start_date', 'end_date', 'member_count', 'rent_price', 'status']
     column_filters = ['status', 'apartment.id', 'tenant.id']
-    column_searchable_list = ['id']
+    column_searchable_list = ['id', 'apartment.id', 'tenant.full_name']
+    column_editable_list = ('member_count', 'status')
+
+    can_delete = False
     can_export = True
 
-    form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'deposit', 'rent_price',
-                    'status']
-    form_excluded_columns = ('end_date',)
+    form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'status']
+    form_excluded_columns = ('end_date', 'rent_price', 'deposit')
+
+    # chi cho edit mot so field
+    def edit_form(self, obj=None):
+        form = super().edit_form(obj)
+
+        for name, field in form._fields.items():
+            if name not in ['member_count', 'status']:
+                field.render_kw = field.render_kw or {}
+                field.render_kw['readonly'] = True
+                field.render_kw['disabled'] = True
+
+        return form
 
     def on_model_change(self, form, model, is_created):
         if model.start_date and model.rental_period:
@@ -116,6 +130,8 @@ class ContractView(AdminView):
 
         if is_created and not model.id:
             model.id = get_next_id(Contract, "C", 3)
+            model.rent_price = model.apartment.price
+            model.deposit = model.apartment.price
 
         max_people = dao.get_rule_value(RuleKey.MAX_PER_ROOM)
         if model.member_count > int(max_people):
@@ -144,6 +160,7 @@ class ContractAssignmentView(AdminView):
 
     form_columns = ['contract', 'new_tenant', 'effective_date', 'note']
     can_delete = False
+    can_edit = False
 
     def create_model(self, form):
         try:

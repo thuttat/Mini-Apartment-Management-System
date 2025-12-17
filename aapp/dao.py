@@ -288,8 +288,12 @@ def handle_assign_contract(contract_id, new_tenant_id, effective_date=None, note
     id = get_next_id(ContractAssignment, "CA", "3"),
     contract = get_contract_by_id(contract_id)
 
-    if contract.status != ContractStatus.ACTIVE:
-        raise ValueError("Only active contract allowed!")
+#neu hop dong da duoc gia han nhung giua chung chuyen nhuong -> doi tenant luon hop dong moi
+#neu chu moi muon huy hop dong moi -> set status = canceled =))))
+#nhung cach nay se bat admin nhap lai 2 lan -> neu muon thi a se sua de admin chi nhap hop dong cu
+    # roi hop dong moi cung tu doi tenant theo
+    if contract.status != ContractStatus.ACTIVE and contract.status != ContractStatus.PENDING:
+        raise ValueError("Only active and pending contract allowed!")
 
     # chi cho chuyen nhuong truoc ngay het han la 30 ngay
     if contract.end_date - effective_date < timedelta(days=30):
