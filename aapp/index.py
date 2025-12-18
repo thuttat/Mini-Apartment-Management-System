@@ -3,7 +3,7 @@ import cloudinary.uploader
 from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
-from aapp import app, dao, login, db
+from aapp import app, dao, login, db, init_extensions
 from aapp.dao import renew_contract
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Contract
 from aapp.utils import (
@@ -308,7 +308,7 @@ def chart_view():
 @app.route('/technician/index')
 @login_required
 def technician_index():
-    rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
+    rented_apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
     return render_template('technician/index.html', apartments=rented_apartments)
 
 
@@ -380,6 +380,7 @@ def report_revenue():
                            kw=kw,
                            total_revenue=total_revenue)
 
+init_extensions()
 
 if __name__ == "__main__":
     from aapp import admin

@@ -4,10 +4,10 @@ from sqlalchemy import func
 import cloudinary.uploader
 from dateutil.relativedelta import relativedelta
 
-from aapp import db
+from aapp import db, app
 from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoice,
                          Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus, ContractAssignment)
-from aapp.utils import get_next_id, hash_password
+from .utils import get_next_id, hash_password
 
 
 # ============================
@@ -279,7 +279,7 @@ def get_contract_expiration(day_limit=30):
     expiration_date = current_date + timedelta(days=day_limit)
 
     contract = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
-                                     Contract.end_date > current_date,
+                                     Contract.end_date >= current_date, #vd end_date la ngay 18 thi van phai hien thi -> sang ngay 19 moi chinh thuc het han
                                      Contract.end_date <= expiration_date)
     return contract.order_by(Contract.end_date.asc()).all()
 
@@ -298,6 +298,10 @@ def handle_assign_contract(contract_id, new_tenant_id, effective_date=None, note
     # chi cho chuyen nhuong truoc ngay het han la 30 ngay
     if contract.end_date - effective_date < timedelta(days=30):
         raise ValueError("You can only transfer the contract at least 30 days before the contract expires!")
+
+    for inv in contract.invoices:
+        if inv.status == PaymentStatus.UNPAID:
+            raise Exception("Can't assign contract while there are outstanding invoices!")
 
     old_tenant_id = contract.tenant_id
 
@@ -348,6 +352,27 @@ def renew_contract(old_contract_id, rental_period):
     db.session.add(new_contract)
     db.session.commit()
     return new_contract
+
+#ham update trang thai can ho tu dong
+def auto_update_contract_status():
+    with app.app_context():
+        #hop dong pending -> active
+        pending_contracts = Contract.query.filter(Contract.status == ContractStatus.PENDING,
+                                                  Contract.start_date <= date.today()).all()
+
+        for contract in pending_contracts:
+            contract.status = ContractStatus.ACTIVE
+            contract.apartment.status = ApartmentStatus.RENTED
+
+        #hop dong het han -> expired
+        expired_contracts = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
+                                                  Contract.end_date < date.today()).all()
+
+        for contract in expired_contracts:
+            contract.status = ContractStatus.EXPIRED
+            contract.apartment.status = ApartmentStatus.AVAILABLE
+
+        db.session.commit()
 
 # ============================
 # INVOICE
@@ -426,31 +451,27 @@ def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee
         "total_price": total_price
     }
 
+# tao invoice dau tien ngay khi contract duoc tao
+def create_first_invoice(contract):
+    deposit_fee = contract.deposit
+    service_fee = get_rule_value(RuleKey.PRICE_SERVICE)
 
-def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
-    contract = Contract.query.get(contract_id)
-    if not contract:
-        raise Exception("Contract not found")
-
-    fees = calculate_monthly_invoice(contract=contract, electric_usage=electric_usage, water_usage=water_usage)
-
-    new_id = get_next_id(Invoice, "INV", 6)
     inv = Invoice(
-        id=new_id,
-        contract_id=contract_id,
-        month=month_str,
-        electric_usage=electric_usage,
-        water_usage=water_usage,
-        electric_fee=fees['electric_fee'],
-        water_fee=fees['water_fee'],
-        service_fee=fees['service_fee'],
-        total_amount=fees['total_price'],
+        id=get_next_id(Invoice, "INV", 6),
+        contract_id=contract.id,
+        month=f"{contract.start_date.year}-{contract.start_date.month}",
+        electric_usage=0,
+        water_usage=0,
+        electric_fee=0,
+        water_fee=0,
+        service_fee=service_fee,
+        total_amount=contract.rent_price + service_fee + deposit_fee,
         status=PaymentStatus.UNPAID
     )
 
     db.session.add(inv)
     db.session.commit()
-    return inv
+
 
 
 # ============================

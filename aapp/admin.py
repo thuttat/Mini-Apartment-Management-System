@@ -1,16 +1,14 @@
 import typing as t
 from datetime import datetime
 
-from flask_admin._types import T_ORM_MODEL, T_SQLALCHEMY_MODEL
 from flask_admin.contrib.sqla import ModelView
-from markupsafe import Markup
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
 from wtforms import validators, Form, ValidationError
 from flask import request,flash
 
-from aapp.dao import handle_assign_contract
+from aapp.dao import handle_assign_contract, create_first_invoice
 from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
@@ -106,23 +104,12 @@ class ContractView(AdminView):
     column_searchable_list = ['id', 'apartment.id', 'tenant.full_name']
     column_editable_list = ('member_count', 'status')
 
-    can_delete = False
+    # can_delete = False
     can_export = True
+    can_edit = True
 
     form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'status']
     form_excluded_columns = ('end_date', 'rent_price', 'deposit')
-
-    # chi cho edit mot so field
-    def edit_form(self, obj=None):
-        form = super().edit_form(obj)
-
-        for name, field in form._fields.items():
-            if name not in ['member_count', 'status']:
-                field.render_kw = field.render_kw or {}
-                field.render_kw['readonly'] = True
-                field.render_kw['disabled'] = True
-
-        return form
 
     def on_model_change(self, form, model, is_created):
         if model.start_date and model.rental_period:
@@ -149,12 +136,22 @@ class ContractView(AdminView):
             if existing:
                 raise ValidationError(f"Room {model.apartment.id} has active contract!")
 
+
+    def after_model_change(self, form, model, is_created):
+        if not is_created:
+            return
+
         if model.status == ContractStatus.ACTIVE:
-            model.apartment.status = ApartmentStatus.RENTED # chuyen doi trang thai can ho
+            model.apartment.status = ApartmentStatus.RENTED #chuyen doi trang thai can ho
+            db.session.add(model.apartment)
+
+        create_first_invoice(model) #tao invoice thang dau
+
+        db.session.commit()
 
 
 class ContractAssignmentView(AdminView):
-    column_list = ['id', 'contract', 'old_tenant', 'new_tenant', 'effective_date']
+    column_list = ['id', 'contract', 'old_tenant', 'new_tenant', 'effective_date', 'note']
     column_filters = ['contract', 'effective_date']
     column_searchable_list = ['id']
 

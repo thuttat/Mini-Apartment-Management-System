@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import cloudinary.uploader
 from flask import session
 from flask_login import current_user
-
+from flask_apscheduler import APScheduler
 from aapp import db, dao
 from aapp.models import ContractStatus
 
@@ -169,3 +169,18 @@ def handle_meter_reading(data):
         return False, message
 
     return True, message
+
+scheduler = APScheduler()
+
+#dong ho hen gio moi ngay de cap nhat hop dong
+def init_scheduler(app):
+    scheduler.init_app(app)
+    from .dao import auto_update_contract_status
+    scheduler.add_job(
+        id="auto_contract_status",
+        func=auto_update_contract_status,
+        trigger="cron",
+        hour=0,
+        minute=0
+    )
+    scheduler.start()

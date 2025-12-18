@@ -31,7 +31,7 @@
                 <td>{{contract.apartment_id}}</td>
                 <td>{{contract.tenant.full_name}}</td>
                 <td>{{ contract.start_date.strftime('%Y-%m-%d') }}</td>
-                <td>{{contract.end_date.strftime('%d/%m/%Y') }}</td>
+                <td>{{contract.end_date.strftime('%Y-%m-%d') }}</td>
                 <td>
                         {% set days_left = (contract.end_date - datetime.now().date()).days %}
                         {% if days_left <= 30 %}
