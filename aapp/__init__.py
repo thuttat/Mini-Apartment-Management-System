@@ -11,6 +11,7 @@ app.secret_key = 'iqiwqu3e735ehwsnsio274687928dhgtu'
 app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:%s@localhost/apartmentdb' % quote('admin123@')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config['SQLALCHEMY_ECHO'] = True
+app.config['PAGE_SIZE'] = 6
 # cloudinary.config(cloud_name='djviyyvzu',
 #                   api_key='516671461397882',
 #                   api_secret='oqcwKadypdGiiyJreDZprPf2K10')
@@ -24,7 +25,6 @@ vnpay_client = VNPay(
     hash_secret='U29VMF3ERO9SCYQWPEGMGHELZZQ5YADY',
     payment_url=' https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
 )
-
 
 db = SQLAlchemy(app=app)
 login = LoginManager(app=app)

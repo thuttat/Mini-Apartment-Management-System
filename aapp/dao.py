@@ -4,7 +4,7 @@ from sqlalchemy import func
 import cloudinary.uploader
 from dateutil.relativedelta import relativedelta
 
-from aapp import db
+from aapp import db, app
 from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoice,
                          Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus)
 from aapp.utils import get_next_id, hash_password
@@ -118,7 +118,7 @@ def add_tenant(name, username, password, avatar=None):
 # ============================
 # APARTMENT
 # ============================
-def load_apartments(room_type=None, status=None, min_price=None, max_price=None, keyword=None):
+def _build_query(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
     query = Apartment.query
 
     if room_type:
@@ -129,16 +129,30 @@ def load_apartments(room_type=None, status=None, min_price=None, max_price=None,
             query = query.filter(Apartment.status.in_(status))
         else:
             query = query.filter(Apartment.status == status)
-    if min_price:
-        query = query.filter(Apartment.price >= min_price)
 
-    if max_price:
-        query = query.filter(Apartment.price <= max_price)
+    if from_price:
+        query = query.filter(Apartment.price.__ge__(float(from_price)))
+
+    if to_price:
+        query = query.filter(Apartment.price.__le__(float(to_price)))
+
     if keyword:
-        query = query.filter(Apartment.id.contains(keyword))
+        query = query.filter(Apartment.name.contains(keyword))
 
-    return query.order_by(Apartment.id).all()
+    return query
 
+def load_apartments(room_type=None, status=None, from_price=None, to_price=None, keyword=None,page =1):
+    query = _build_query(room_type, status, from_price, to_price, keyword)
+    query = query.order_by(Apartment.id.desc())
+    if page is not None:
+        start = (page -1)*app.config["PAGE_SIZE"]
+        query = query.slice(start,start+app.config["PAGE_SIZE"])
+
+    return query.all()
+
+def count_for_pagination(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
+    query = _build_query(room_type, status, from_price, to_price, keyword)
+    return query.count()
 
 def get_apartment_by_id(apartment_id):
     return Apartment.query.filter(Apartment.id == apartment_id).first()
@@ -178,7 +192,6 @@ def update_apartment_info(apartment_id, status=None, room_type=None, price=None)
 def count_apartments():
     stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
         Apartment.status).all()
-
     status_map = {
         ApartmentStatus.AVAILABLE: "Còn Trống",
         ApartmentStatus.RENTED: "Đã Thuê",
@@ -187,7 +200,7 @@ def count_apartments():
     }
     stats_data = []
     for s in stats:
-        display_name=status_map.get(s.status, s.status.value if s.status else "Chưa xác định")
+        display_name = status_map.get(s.status, s.status.value if s.status else "Chưa xác định")
 
         stats_data.append({
             'name': display_name,
@@ -276,7 +289,7 @@ def get_contract_expiration(day_limit=30):
     expiration_date = current_date + timedelta(days=day_limit)
 
     contract = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
-                                     Contract.end_date > current_date,
+                                     Contract.end_date>=current_date,
                                      Contract.end_date <= expiration_date)
     return contract.order_by(Contract.end_date.asc()).all()
 

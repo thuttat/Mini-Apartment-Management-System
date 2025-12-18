@@ -1,59 +1,61 @@
 {% extends 'layout/base.html' %} 
 
-{% block title %}Ghi Chỉ số Đồng hồ{% endblock %}
-
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Ghi Chỉ số {{ "Điện" if reading_type == 'electric' else "Nước" }}</h1>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="container mt-4">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {% if category == 'success' %}
-            <strong>Thành công:</strong>
-            {% elif category == 'danger' %}
-            <strong>Thất bại:</strong>
-            {% else %}
-            <strong>Thông báo:</strong>
-            {% endif %}
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
+<div class="container mt-1">
+    <div class="text-center mb-4">
+        <h1>Ghi Chỉ số {{ "Điện" if reading_type == 'electric' else "Nước" }}</h1>
     </div>
-    {% endif %}
-    {% endwith %}
 
-    <form method="POST" action="{{ url_for('meter_reading_view',reading_type=reading_type) }}" enctype="multipart/form-data">
-        
-        <div class="mb-3">
-            <label for="apartment_id" class="form-label">Apartment number</label>
-            <select class="form-select" id="apartment_id" name="apartment_id" required>
-                <option value="">Select</option>
-                {% for apt in apartments %}
-                <option value="{{ apt.id }}">{{ apt.id }}</option>
-                {% endfor %}
-            </select>
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                            <i class="fas {% if category == 'success' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card shadow-sm p-4" style="border-radius: 15px;">
+                <form method="POST" action="{{ url_for('meter_reading_view', reading_type=reading_type) }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="apartment_id" class="form-label fw-bold text-secondary">Apartment number</label>
+                        <select class="form-select border-2" id="apartment_id" name="apartment_id" required>
+                            <option value="">Select</option>
+                            {% for apt in apartments %}
+                            <option value="{{ apt.id }}">{{ apt.id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="month" class="form-label fw-bold text-secondary">Month</label>
+                        <input type="month" class="form-control border-2" id="month" name="month" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_meter_reading" class="form-label fw-bold text-secondary">New Meter Reading</label>
+                        <input type="number" step="0.01" class="form-control border-2" id="new_meter_reading" name="new_meter_reading" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="reading_image" class="form-label fw-bold text-secondary">Reading Proof Photo</label>
+                        <input type="file" class="form-control border-2" id="reading_image" name="reading_proof_photo" accept="image/*" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label for="month" class="form-label">Month</label>
-            <input type="month" class="form-control" id="month" name="month" required> 
-        </div>
-
-        <div class="mb-3">
-            <label for="new_meter_reading" class="form-label">New Meter Reading</label>
-            <input type="number" step="0.01" class="form-control" id="new_meter_reading" name="new_meter_reading" required> 
-        </div>
-
-        <div class="mb-3">
-            <label for="reading_image" class="form-label">Reading Proof Photo</label>
-            <input type="file" class="form-control" id="reading_image" name="reading_proof_photo" accept="image/*" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-lg mt-3">Save</button>
-    </form>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,183 @@
+{
+  "managers": [
+    { "id": "M001", "full_name": "Nguyễn Văn Quản", "phone_number": "0909123456", "email": "quanly1@system.com", "username": "manager1", "password": "123456", "user_role": "MANAGER", "active": true },
+    { "id": "M002", "full_name": "Trần Thị Lý", "phone_number": "0909222333", "email": "quanly2@system.com", "username": "manager2", "password": "123456", "user_role": "MANAGER", "active": true },
+    { "id": "M003", "full_name": "Lê Hoàn Hảo", "phone_number": "0909444555", "email": "quanly3@system.com", "username": "manager3", "password": "123456", "user_role": "MANAGER", "active": true }
+  ],
+  "technicians": [
+    { "id": "TE001", "full_name": "Phạm Kỹ Thuật", "phone_number": "0972000001", "email": "tech1@system.com", "username": "tech1", "password": "123456", "user_role": "TECHNICIAN", "active": true },
+    { "id": "TE002", "full_name": "Vũ Sửa Chữa", "phone_number": "0972000002", "email": "tech2@system.com", "username": "tech2", "password": "123456", "user_role": "TECHNICIAN", "active": true }
+  ],
+  "tenants": [
+    { "id": "T101", "full_name": "Phạm Văn A", "phone_number": "0911000101", "email": "a@gmail.com", "username": "tenant_a", "password": "123456", "dob": "1995-01-01", "user_role": "TENANT", "active": true },
+    { "id": "T102", "full_name": "Nguyễn Thị B", "phone_number": "0911000102", "email": "b@gmail.com", "username": "tenant_b", "password": "123456", "dob": "1996-02-02", "user_role": "TENANT", "active": true },
+    { "id": "T103", "full_name": "Trần Văn C", "phone_number": "0911000103", "email": "c@gmail.com", "username": "tenant_c", "password": "123456", "dob": "1997-03-03", "user_role": "TENANT", "active": true },
+    { "id": "T104", "full_name": "Lê Thị D", "phone_number": "0911000104", "email": "d@gmail.com", "username": "tenant_d", "password": "123456", "dob": "1998-04-04", "user_role": "TENANT", "active": true },
+    { "id": "T105", "full_name": "Hoàng Văn E", "phone_number": "0911000105", "email": "e@gmail.com", "username": "tenant_e", "password": "123456", "dob": "1999-05-05", "user_role": "TENANT", "active": true },
+    { "id": "T106", "full_name": "Đặng Thị F", "phone_number": "0911000106", "email": "f@gmail.com", "username": "tenant_f", "password": "123456", "dob": "1994-06-06", "user_role": "TENANT", "active": true },
+    { "id": "T107", "full_name": "Bùi Văn G", "phone_number": "0911000107", "email": "g@gmail.com", "username": "tenant_g", "password": "123456", "dob": "1993-07-07", "user_role": "TENANT", "active": true },
+    { "id": "T108", "full_name": "Đỗ Thị H", "phone_number": "0911000108", "email": "h@gmail.com", "username": "tenant_h", "password": "123456", "dob": "1992-08-08", "user_role": "TENANT", "active": true }
+  ],
+  "rules": [
+    { "id": "R1", "key": "MAX_PER_ROOM", "value": "4", "name_display": "Số người tối đa", "description": "Số người tối đa trong 1 phòng" },
+    { "id": "R2", "key": "PRICE_ELECTRIC", "value": "3500", "name_display": "Giá điện", "description": "Đơn giá VND/kwh" },
+    { "id": "R3", "key": "PRICE_WATER", "value": "20000", "name_display": "Giá nước", "description": "Đơn giá VND/m3" },
+    { "id": "R4", "key": "DEPOSIT_MONTHS", "value": "1", "name_display": "Số tháng cọc", "description": "Số tháng tiền cọc bắt buộc" },
+    { "id": "R5", "key": "PRICE_SERVICE", "value": "150000", "name_display": "Phí dịch vụ", "description": "Phí quản lý hàng tháng" }
+  ],
+  "apartments": [
+    { "id": "A101", "room_type": "STUDIO", "status": "RENTED", "floor": 1, "area": 30, "price": 3500000 },
+    { "id": "A102", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 32, "price": 3600000 },
+    { "id": "A103", "room_type": "STUDIO", "status": "RENTED", "floor": 1, "area": 28, "price": 3400000 },
+    { "id": "A104", "room_type": "STUDIO", "status": "MAINTENANCE", "floor": 1, "area": 30, "price": 3500000 },
+    { "id": "A105", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 35, "price": 3800000 },
+    { "id": "A106", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 30, "price": 3500000 },
+    { "id": "A107", "room_type": "STUDIO", "status": "LOOKING_FOR_ROOMMATE", "floor": 1, "area": 32, "price": 3600000 },
+    { "id": "A108", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 30, "price": 3500000 },
+    { "id": "A109", "room_type": "STUDIO", "status": "RENTED", "floor": 1, "area": 34, "price": 3700000 },
+    { "id": "A110", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 30, "price": 3500000 },
+
+    { "id": "A201", "room_type": "ONE_BEDROOM", "status": "RENTED", "floor": 2, "area": 45, "price": 5000000 },
+    { "id": "A202", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 48, "price": 5200000 },
+    { "id": "A203", "room_type": "ONE_BEDROOM", "status": "LOOKING_FOR_ROOMMATE", "floor": 2, "area": 45, "price": 5000000 },
+    { "id": "A204", "room_type": "ONE_BEDROOM", "status": "RENTED", "floor": 2, "area": 50, "price": 5500000 },
+    { "id": "A205", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 45, "price": 5000000 },
+    { "id": "A206", "room_type": "ONE_BEDROOM", "status": "MAINTENANCE", "floor": 2, "area": 42, "price": 4800000 },
+    { "id": "A207", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 45, "price": 5000000 },
+    { "id": "A208", "room_type": "ONE_BEDROOM", "status": "RENTED", "floor": 2, "area": 48, "price": 5200000 },
+    { "id": "A209", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 45, "price": 5000000 },
+    { "id": "A210", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 50, "price": 5500000 },
+
+    { "id": "A301", "room_type": "TWO_BEDROOM", "status": "RENTED", "floor": 3, "area": 65, "price": 7500000 },
+    { "id": "A302", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 70, "price": 8000000 },
+    { "id": "A303", "room_type": "TWO_BEDROOM", "status": "RENTED", "floor": 3, "area": 68, "price": 7800000 },
+    { "id": "A304", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 65, "price": 7500000 },
+    { "id": "A305", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 65, "price": 7500000 },
+    { "id": "A306", "room_type": "TWO_BEDROOM", "status": "LOOKING_FOR_ROOMMATE", "floor": 3, "area": 70, "price": 8000000 },
+    { "id": "A307", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 68, "price": 7800000 },
+    { "id": "A308", "room_type": "TWO_BEDROOM", "status": "RENTED", "floor": 3, "area": 65, "price": 7500000 },
+    { "id": "A309", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 72, "price": 8200000 },
+    { "id": "A310", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 65, "price": 7500000 },
+
+    { "id": "A401", "room_type": "DUPLEX", "status": "RENTED", "floor": 4, "area": 90, "price": 12000000 },
+    { "id": "A402", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 95, "price": 13000000 },
+    { "id": "A403", "room_type": "DUPLEX", "status": "RENTED", "floor": 4, "area": 92, "price": 12500000 },
+    { "id": "A404", "room_type": "DUPLEX", "status": "MAINTENANCE", "floor": 4, "area": 90, "price": 12000000 },
+    { "id": "A405", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 95, "price": 13000000 },
+    { "id": "A406", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 90, "price": 12000000 },
+    { "id": "A407", "room_type": "DUPLEX", "status": "RENTED", "floor": 4, "area": 98, "price": 13500000 },
+    { "id": "A408", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 90, "price": 12000000 },
+    { "id": "A409", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 92, "price": 12500000 },
+    { "id": "A410", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 90, "price": 12000000 },
+
+    { "id": "A501", "room_type": "PENTHOUSE", "status": "RENTED", "floor": 5, "area": 120, "price": 20000000 },
+    { "id": "A502", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 130, "price": 22000000 },
+    { "id": "A503", "room_type": "PENTHOUSE", "status": "LOOKING_FOR_ROOMMATE", "floor": 5, "area": 125, "price": 21000000 },
+    { "id": "A504", "room_type": "PENTHOUSE", "status": "RENTED", "floor": 5, "area": 120, "price": 20000000 },
+    { "id": "A505", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 140, "price": 25000000 },
+    { "id": "A506", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 120, "price": 20000000 },
+    { "id": "A507", "room_type": "PENTHOUSE", "status": "RENTED", "floor": 5, "area": 135, "price": 23000000 },
+    { "id": "A508", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 120, "price": 20000000 },
+    { "id": "A509", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 125, "price": 21000000 },
+    { "id": "A510", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 150, "price": 30000000 }
+  ],
+  "apartment_details": [
+    { "id": "AD001", "apartment_id": "A101", "manager_id": "M001", "note": "Giao cho quản lý 1" },
+    { "id": "AD002", "apartment_id": "A102", "manager_id": "M002", "note": "" },
+    { "id": "AD003", "apartment_id": "A103", "manager_id": "M003", "note": "" },
+    { "id": "AD004", "apartment_id": "A104", "manager_id": "M001", "note": "Đang bảo trì đường điện" },
+    { "id": "AD005", "apartment_id": "A105", "manager_id": "M002", "note": "" },
+    { "id": "AD006", "apartment_id": "A106", "manager_id": "M003", "note": "" },
+    { "id": "AD007", "apartment_id": "A107", "manager_id": "M001", "note": "Cần tìm nam ở ghép" },
+    { "id": "AD008", "apartment_id": "A108", "manager_id": "M002", "note": "" },
+    { "id": "AD009", "apartment_id": "A109", "manager_id": "M003", "note": "" },
+    { "id": "AD010", "apartment_id": "A110", "manager_id": "M001", "note": "" },
+
+    { "id": "AD011", "apartment_id": "A201", "manager_id": "M002", "note": "" },
+    { "id": "AD012", "apartment_id": "A202", "manager_id": "M003", "note": "" },
+    { "id": "AD013", "apartment_id": "A203", "manager_id": "M001", "note": "Tìm nữ ở ghép" },
+    { "id": "AD014", "apartment_id": "A204", "manager_id": "M002", "note": "" },
+    { "id": "AD015", "apartment_id": "A205", "manager_id": "M003", "note": "" },
+    { "id": "AD016", "apartment_id": "A206", "manager_id": "M001", "note": "Sơn lại tường" },
+    { "id": "AD017", "apartment_id": "A207", "manager_id": "M002", "note": "" },
+    { "id": "AD018", "apartment_id": "A208", "manager_id": "M003", "note": "" },
+    { "id": "AD019", "apartment_id": "A209", "manager_id": "M001", "note": "" },
+    { "id": "AD020", "apartment_id": "A210", "manager_id": "M002", "note": "" },
+
+    { "id": "AD021", "apartment_id": "A301", "manager_id": "M003", "note": "" },
+    { "id": "AD022", "apartment_id": "A302", "manager_id": "M001", "note": "" },
+    { "id": "AD023", "apartment_id": "A303", "manager_id": "M002", "note": "" },
+    { "id": "AD024", "apartment_id": "A304", "manager_id": "M003", "note": "" },
+    { "id": "AD025", "apartment_id": "A305", "manager_id": "M001", "note": "" },
+    { "id": "AD026", "apartment_id": "A306", "manager_id": "M002", "note": "Tìm người sạch sẽ" },
+    { "id": "AD027", "apartment_id": "A307", "manager_id": "M003", "note": "" },
+    { "id": "AD028", "apartment_id": "A308", "manager_id": "M001", "note": "" },
+    { "id": "AD029", "apartment_id": "A309", "manager_id": "M002", "note": "" },
+    { "id": "AD030", "apartment_id": "A310", "manager_id": "M003", "note": "" },
+
+    { "id": "AD031", "apartment_id": "A401", "manager_id": "M001", "note": "VIP Customer" },
+    { "id": "AD032", "apartment_id": "A402", "manager_id": "M002", "note": "" },
+    { "id": "AD033", "apartment_id": "A403", "manager_id": "M003", "note": "" },
+    { "id": "AD034", "apartment_id": "A404", "manager_id": "M001", "note": "Sửa đường nước" },
+    { "id": "AD035", "apartment_id": "A405", "manager_id": "M002", "note": "" },
+    { "id": "AD036", "apartment_id": "A406", "manager_id": "M003", "note": "" },
+    { "id": "AD037", "apartment_id": "A407", "manager_id": "M001", "note": "" },
+    { "id": "AD038", "apartment_id": "A408", "manager_id": "M002", "note": "" },
+    { "id": "AD039", "apartment_id": "A409", "manager_id": "M003", "note": "" },
+    { "id": "AD040", "apartment_id": "A410", "manager_id": "M001", "note": "" },
+
+    { "id": "AD041", "apartment_id": "A501", "manager_id": "M002", "note": "Super VIP" },
+    { "id": "AD042", "apartment_id": "A502", "manager_id": "M003", "note": "" },
+    { "id": "AD043", "apartment_id": "A503", "manager_id": "M001", "note": "Cần tìm người nước ngoài" },
+    { "id": "AD044", "apartment_id": "A504", "manager_id": "M002", "note": "" },
+    { "id": "AD045", "apartment_id": "A505", "manager_id": "M003", "note": "" },
+    { "id": "AD046", "apartment_id": "A506", "manager_id": "M001", "note": "" },
+    { "id": "AD047", "apartment_id": "A507", "manager_id": "M002", "note": "" },
+    { "id": "AD048", "apartment_id": "A508", "manager_id": "M003", "note": "" },
+    { "id": "AD049", "apartment_id": "A509", "manager_id": "M001", "note": "" },
+    { "id": "AD050", "apartment_id": "A510", "manager_id": "M002", "note": "Căn hộ đắt nhất" }
+  ],
+  "contracts": [
+    { "id": "C001", "apartment_id": "A101", "tenant_id": "T101", "start_date": "2024-01-01", "rental_period": 12, "deposit": 3500000, "rent_price": 3500000, "member_count": 1, "status": "ACTIVE" },
+    { "id": "C002", "apartment_id": "A103", "tenant_id": "T102", "start_date": "2024-02-01", "rental_period": 6, "deposit": 3400000, "rent_price": 3400000, "member_count": 1, "status": "ACTIVE" },
+    { "id": "C003", "apartment_id": "A201", "tenant_id": "T103", "start_date": "2024-03-15", "rental_period": 12, "deposit": 5000000, "rent_price": 5000000, "member_count": 2, "status": "ACTIVE" },
+    { "id": "C004", "apartment_id": "A204", "tenant_id": "T104", "start_date": "2024-04-01", "rental_period": 12, "deposit": 5500000, "rent_price": 5500000, "member_count": 1, "status": "ACTIVE" },
+    { "id": "C005", "apartment_id": "A208", "tenant_id": "T105", "start_date": "2024-01-10", "rental_period": 24, "deposit": 5200000, "rent_price": 5200000, "member_count": 2, "status": "ACTIVE" },
+    { "id": "C006", "apartment_id": "A301", "tenant_id": "T106", "start_date": "2024-05-01", "rental_period": 12, "deposit": 7500000, "rent_price": 7500000, "member_count": 3, "status": "ACTIVE" },
+    { "id": "C007", "apartment_id": "A303", "tenant_id": "T107", "start_date": "2024-02-20", "rental_period": 12, "deposit": 7800000, "rent_price": 7800000, "member_count": 2, "status": "ACTIVE" },
+    { "id": "C008", "apartment_id": "A401", "tenant_id": "T108", "start_date": "2024-01-01", "rental_period": 36, "deposit": 12000000, "rent_price": 12000000, "member_count": 4, "status": "ACTIVE" },
+    { "id": "C009", "apartment_id": "A403", "tenant_id": "T101", "start_date": "2024-06-01", "rental_period": 12, "deposit": 12500000, "rent_price": 12500000, "member_count": 2, "status": "ACTIVE" },
+    { "id": "C010", "apartment_id": "A501", "tenant_id": "T102", "start_date": "2024-03-01", "rental_period": 24, "deposit": 20000000, "rent_price": 20000000, "member_count": 4, "status": "ACTIVE" },
+    { "id": "C011", "apartment_id": "A109", "tenant_id": "T103", "start_date": "2024-07-01", "rental_period": 12, "deposit": 3700000, "rent_price": 3700000, "member_count": 1, "status": "ACTIVE" },
+    { "id": "C012", "apartment_id": "A308", "tenant_id": "T104", "start_date": "2024-07-15", "rental_period": 12, "deposit": 7500000, "rent_price": 7500000, "member_count": 2, "status": "ACTIVE" },
+    { "id": "C013", "apartment_id": "A407", "tenant_id": "T105", "start_date": "2024-08-01", "rental_period": 12, "deposit": 13500000, "rent_price": 13500000, "member_count": 3, "status": "ACTIVE" },
+    { "id": "C014", "apartment_id": "A504", "tenant_id": "T106", "start_date": "2024-08-10", "rental_period": 24, "deposit": 20000000, "rent_price": 20000000, "member_count": 4, "status": "ACTIVE" },
+    { "id": "C015", "apartment_id": "A507", "tenant_id": "T107", "start_date": "2024-05-20", "rental_period": 12, "deposit": 23000000, "rent_price": 23000000, "member_count": 3, "status": "ACTIVE" }
+  ],
+  "invoices": [
+    {
+      "id": "I001", "contract_id": "C001", "month": "2024-02",
+      "electric_usage": 50, "water_usage": 5, "electric_end_reading": 150, "water_end_reading": 20,
+      "electric_fee": 175000, "water_fee": 100000, "service_fee": 150000,
+      "total_amount": 3925000, "status": "PAID"
+    },
+    {
+      "id": "I002", "contract_id": "C001", "month": "2024-03",
+      "electric_usage": 60, "water_usage": 6, "electric_end_reading": 210, "water_end_reading": 26,
+      "electric_fee": 210000, "water_fee": 120000, "service_fee": 150000,
+      "total_amount": 3980000, "status": "UNPAID"
+    },
+    {
+      "id": "I003", "contract_id": "C008", "month": "2024-02",
+      "electric_usage": 200, "water_usage": 15, "electric_end_reading": 500, "water_end_reading": 50,
+      "electric_fee": 700000, "water_fee": 300000, "service_fee": 150000,
+      "total_amount": 13150000, "status": "PAID"
+    },
+    {
+      "id": "I004", "contract_id": "C006", "month": "2024-06",
+      "electric_usage": 100, "water_usage": 10, "electric_end_reading": 1100, "water_end_reading": 80,
+      "electric_fee": 350000, "water_fee": 200000, "service_fee": 150000,
+      "total_amount": 8200000, "status": "UNPAID"
+    }
+  ]
+}

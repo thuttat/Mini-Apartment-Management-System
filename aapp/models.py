@@ -166,6 +166,20 @@ class Invoice(BaseModel):
     status = Column(Enum(PaymentStatus), default=PaymentStatus.UNPAID)
 
     contract = relationship("Contract", backref="invoices", lazy=True)
+    #invoice ko có mối quan hệ trực tiếp với apartment + rule => làm thuộc tính ảo để lấy giá thuê(contract/apartment)
+    @property
+    def rent_price(self):
+        if self.contract:
+            return self.contract.rent_price
+        return 0
+
+    @property
+    def apartment_id(self):
+        if self.contract:
+            return self.contract.apartment_id
+        return None
+
+
 
 
 # ============================
@@ -180,120 +194,3 @@ class Rule(BaseModel):
 
     def __str__(self):
         return f"{self.name_display}: {self.value}"
-
-
-# =================================================================
-# SEED DATA
-# =================================================================
-if __name__ == "__main__":
-    with app.app_context():
-        db.drop_all()
-        db.create_all()
-
-        # Manager
-        m1 = Manager(
-            id="M001", full_name="Quản lý hệ thống", phone_number="0909123456",
-            email="admin@system.com", user_role=UserRole.MANAGER,
-            username="admin", password=hashlib.md5("123456".encode()).hexdigest(), active=True
-        )
-
-        # Technician
-        te1 = Technician(
-            id="TE001", full_name="Nhân viên kỹ thuật", phone_number="097267921",
-            email="technician@system.com", user_role=UserRole.TECHNICIAN,
-            username="technician", password=hashlib.md5("123456".encode()).hexdigest(), active=True
-        )
-
-        # Tenants
-        t1 = Tenant(id="T101", full_name="Nguyễn Văn An", phone_number="0908000111", email="an123@gmail.com",
-                    user_role=UserRole.TENANT, username="an123",
-                    password=hashlib.md5("123456".encode()).hexdigest(), dob=datetime(1997, 11, 15), active=True)
-        t2 = Tenant(id="T102", full_name="Trần Thị Bình", phone_number="0908222333", email="binh@mail.com",
-                    user_role=UserRole.TENANT, username="binhtran",
-                    password=hashlib.md5("654321".encode()).hexdigest(), dob=datetime(1990, 8, 9), active=True)
-        t3 = Tenant(id="T103", full_name="Lê Hoàng Minh", phone_number="0933444555", email="minh@gmail.com",
-                    user_role=UserRole.TENANT, username="minhle",
-                    password=hashlib.md5("abcdef".encode()).hexdigest(), dob=datetime(2000, 7, 29), active=True)
-
-        # Apartments
-        a1 = Apartment(id="A101", room_type=RoomType.ONE_BEDROOM, status=ApartmentStatus.AVAILABLE, floor=1, area=40,
-                       price=4500000)
-        a2 = Apartment(id="A102", room_type=RoomType.STUDIO, status=ApartmentStatus.AVAILABLE, floor=1, area=30,
-                       price=3500000)
-        a3 = Apartment(id="A201", room_type=RoomType.TWO_BEDROOM, status=ApartmentStatus.RENTED, floor=2, area=55,
-                       price=6000000)
-        a4 = Apartment(id="A202", room_type=RoomType.DUPLEX, status=ApartmentStatus.MAINTENANCE, floor=2, area=75,
-                       price=9000000)
-        a5 = Apartment(id="A301", room_type=RoomType.PENTHOUSE, status=ApartmentStatus.LOOKING_FOR_ROOMMATE, floor=3,
-                       area=95, price=15000000)
-
-        # Details
-        ad1 = ApartmentDetail(id="AD001", apartment_id="A101", manager_id="M001", note="Main manager")
-        ad2 = ApartmentDetail(id="AD002", apartment_id="A102", manager_id="M001", note="Backup manager")
-
-        # Contracts
-        c1 = Contract(id="C001", apartment_id="A102", tenant_id="T101", start_date=datetime(2024, 2, 29),
-                      deposit=5000000, rent_price=3500000, member_count=1,
-                      status=ContractStatus.ACTIVE, rental_period=12)
-
-        c2 = Contract(id="C002", apartment_id="A201", tenant_id="T102", start_date=datetime(2024, 3, 1),
-                      deposit=6000000, rent_price=6500000, member_count=2,
-                      status=ContractStatus.ACTIVE, rental_period=24)
-
-        c3 = Contract(id="C003", apartment_id="A301", tenant_id="T103", start_date=datetime(2024, 5, 1),
-                      deposit=6000000, rent_price=6500000, member_count=1,
-                      status=ContractStatus.ACTIVE, rental_period=12)
-
-        # Rules
-        rules_list = [
-            Rule(id="R1", key=RuleKey.MAX_PER_ROOM, value="4", name_display="Số người tối đa",
-                 description="Số người tối đa trong 1 phòng"),
-            Rule(id="R2", key=RuleKey.PRICE_ELECTRIC, value="3500", name_display="Giá điện",
-                 description="Đơn giá VND/kwh"),
-            Rule(id="R3", key=RuleKey.PRICE_WATER, value="20000", name_display="Giá nước",
-                 description="Đơn giá VND/m3"),
-            Rule(id="R4", key=RuleKey.DEPOSIT_MONTHS, value="1", name_display="Số tháng cọc",
-                 description="Số tháng tiền cọc bắt buộc"),
-            Rule(id="R5", key=RuleKey.PRICE_SERVICE, value="150000", name_display="Phí dịch vụ",
-                 description="Phí quản lý hàng tháng"),
-        ]
-
-        # Invoices
-
-        # Contract C001
-        # Tháng 1: Dùng 85.7 điện, 4 nước -> Chỉ số cuối = 85.7, 4
-        i1 = Invoice(id="I001", contract_id="C001", month="2024-01",
-                     electric_usage=85.7, water_usage=4,
-                     electric_end_reading=85.7, water_end_reading=4,
-                     electric_fee=300000, water_fee=80000, service_fee=150000, total_amount=4730000,
-                     status=PaymentStatus.PAID)
-
-        # Tháng 2: Dùng 71.4 điện, 3.75 nước -> Chỉ số cuối = 85.7 + 71.4 = 157.1, 4 + 3.75 = 7.75
-        i2 = Invoice(id="I002", contract_id="C001", month="2024-02",
-                     electric_usage=71.4, water_usage=3.75,
-                     electric_end_reading=157.1, water_end_reading=7.75,
-                     electric_fee=250000, water_fee=75000, service_fee=150000, total_amount=4725000)
-
-        # Contract C002
-        # Tháng 3: Dùng 91.4 điện, 4.5 nước -> Chỉ số cuối = 91.4, 4.5
-        i3 = Invoice(id="I003", contract_id="C002", month="2024-03",
-                     electric_usage=91.4, water_usage=4.5,
-                     electric_end_reading=91.4, water_end_reading=4.5,
-                     electric_fee=320000, water_fee=90000, service_fee=200000, total_amount=7110000)
-
-        # Tháng 4: Dùng 88.5 điện, 4 nước -> Chỉ số cuối = 91.4 + 88.5 = 179.9, 4.5 + 4 = 8.5
-        i4 = Invoice(id="I004", contract_id="C002", month="2024-04",
-                     electric_usage=88.5, water_usage=4,
-                     electric_end_reading=179.9, water_end_reading=8.5,
-                     electric_fee=310000, water_fee=80000, service_fee=200000, total_amount=7080000)
-
-        db.session.add_all([
-            m1, te1,
-            t1, t2, t3,
-            a1, a2, a3, a4, a5,
-            ad1, ad2,
-            c1, c2, c3,
-            i1, i2, i3, i4,
-            *rules_list
-        ])
-        db.session.commit()

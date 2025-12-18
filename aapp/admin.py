@@ -132,20 +132,33 @@ class ContractView(AdminView):
 class InvoiceView(AdminView):
     can_create = False
     can_edit = True
-    can_delete = True  # này chỉ ẩn thôi
-    can_export = True  # cái này xuất đc excel có sẵn nên sài thoai hehe
+    can_delete = True
+    can_export = True
 
-    column_list = ['id', 'contract', 'month', 'electric_usage', 'water_usage', 'total_amount', 'status']
+    column_list = ['id', 'contract', 'month', 'rent_price', 'electric_usage', 'water_usage', 'total_amount', 'status']
+
     column_filters = ['status', 'month', 'contract.apartment.id']
     column_searchable_list = ['id', 'contract.id']
     column_default_sort = ('month', True)
 
+    column_labels = {
+        'contract': 'Hợp đồng',
+        'month': 'Tháng',
+        'rent_price': 'Tiền phòng',
+        'electric_usage': 'Điện (kWh)',
+        'water_usage': 'Nước (m3)',
+        'total_amount': 'Tổng cộng',
+        'status': 'Trạng thái'
+    }
+
     def _money_formatter(view, context, model, name):
-        if model.total_amount:
-            return f"{model.total_amount:,.0f} VNĐ"
+        val = getattr(model, name)
+        if val:
+            return f"{val:,.0f} VNĐ"
         return "0 VNĐ"
 
     column_formatters = {
+        'rent_price': _money_formatter,
         'total_amount': _money_formatter,
     }
 
@@ -158,7 +171,8 @@ class InvoiceView(AdminView):
         'total_amount',
         'status'
     ]
-#khóa
+
+    # Khóa
     form_widget_args = {
         'contract': {'disabled': True},
         'month': {'disabled': True},
@@ -188,12 +202,10 @@ class InvoiceView(AdminView):
         model.total_amount = money_data['total_price']
 
     def delete_model(self, model):
-
         try:
             if model.status == PaymentStatus.PAID:
                 flash(f'Can not delete {model.id} has paid', 'error')
                 return False
-            #chỉ ẩn đi thôi
             model.active = False
             self.session.commit()
             return True

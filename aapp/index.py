@@ -1,4 +1,7 @@
+import math
 from datetime import datetime, timedelta
+from sys import exception
+
 import cloudinary.uploader
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, login_user, logout_user
@@ -18,19 +21,34 @@ def inject_rules():
 @app.route('/')
 def index():
     req_status = request.args.get('status')
+    room_type = request.args.get('room_type')
+    from_price = request.args.get('from_price')
+    to_price = request.args.get('to_price')
+    keyword = request.args.get('keyword')
+    page = int(request.args.get('page', 1))
+
+
     status_filter = req_status if req_status else [
         ApartmentStatus.AVAILABLE,
         ApartmentStatus.LOOKING_FOR_ROOMMATE
     ]
 
     apartments = dao.load_apartments(
-        room_type=request.args.get('room_type'),
+        room_type=room_type,
         status=status_filter,
-        min_price=request.args.get('min_price'),
-        max_price=request.args.get('max_price'),
-        keyword=request.args.get('keyword')
+        from_price=from_price,
+        to_price=to_price,
+        keyword=keyword,
+        page=page
     )
-    return render_template('index.html', apartments=apartments)
+    total_count = dao.count_for_pagination(
+        room_type=room_type,
+        status=status_filter,
+        from_price=from_price,
+        to_price=to_price,
+        keyword=keyword
+    )
+    return render_template('index.html', apartments=apartments, pages=math.ceil(total_count / app.config['PAGE_SIZE']))
 
 
 @app.route('/settings')
@@ -264,6 +282,7 @@ def admin_index():
 
 
 @app.route('/chart')
+@login_required
 def chart_view():
     stats_data = dao.count_apartments()
     return render_template('reports/chart.html', stats_data=stats_data)
@@ -273,7 +292,9 @@ def chart_view():
 @login_required
 def technician_index():
     rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
-    return render_template('technician/index.html', apartments=rented_apartments)
+    total_rented = dao.count_for_pagination(status=ApartmentStatus.RENTED)
+    return render_template('technician/index.html', apartments=rented_apartments
+                           ,total_rented=total_rented)
 
 
 @app.route('/technician/meter_reading/<string:reading_type>', methods=['GET', 'POST'])
@@ -302,7 +323,7 @@ def meter_reading_view(reading_type):
 
         return redirect(url_for('meter_reading_view', reading_type=reading_type))
 
-    apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
+    apartments = dao.load_apartments(status=ApartmentStatus.RENTED,page=None)
     months = get_months_list()
     return render_template('technician/meter_reading.html', apartments=apartments, months=months,
                            reading_type=reading_type)
@@ -348,6 +369,7 @@ def report_revenue():
 def payment():
     invoice_id = request.args.get('invoice_id')
     amount = request.args.get('amount')
+    txn_ref = f"{invoice_id}_{int(datetime.now().timestamp())}"
     if not invoice_id or not amount:
         return "Thiếu thông tin hóa đơn", 400
 
@@ -363,7 +385,7 @@ def payment():
         'vnp_OrderInfo': f"Thanh toan hao don {invoice_id}",
         'vnp_OrderType': 'billpayment',
         'vnp_ReturnUrl': url_for('payment_return',_external=True),
-        'vnp_TxnRef': str(invoice_id),
+        'vnp_TxnRef': txn_ref,
     }
     pay_url=vnpay_client.get_payment_url(params)
     return redirect(pay_url)
@@ -374,20 +396,32 @@ def payment_return():
     if vnpay_client.validate_response(data):
         vnp_txn_ref = data.get('vnp_TxnRef')
         response_code = data.get('vnp_ResponseCode')
-        invoice_id = vnp_txn_ref.split('_')[0]
-        if response_code=='00':
-            invoice=Invoice.query.get(int(invoice_id))
-            if invoice:
-                invoice.status=PaymentStatus.PAID
-                db.session.commit()
-                db.session.refresh(invoice)
-            flash(f"Thanh toán thành công hóa đơn #{invoice_id}!", "success")
+        vnp_amount = int(data.get('vnp_Amount',0))/100
+
+        try:
+            invoice_id_str= vnp_txn_ref.split('_')[0]
+        except Exception as e:
+            flash("Mã giao dịch không hợp lệ!", "danger")
             return redirect(url_for('tenant_payments'))
+        invoice_id = str(invoice_id_str)
+        invoice = Invoice.query.get(str(invoice_id))
+        if response_code=='00':
+            if invoice:
+                if abs(invoice.total_amount-vnp_amount) < 1:
+                    invoice.status=PaymentStatus.PAID
+                    db.session.commit()
+                    db.session.refresh(invoice)
+                    flash(f"Thanh toán thành công hóa đơn #{invoice_id}!", "success")
+                else:
+                    flash(f"Số tiền thanh toán({vnp_amount}) không khớp với hóa đơn!", "danger")
+            else:
+                flash(f"Không tìm thấy hóa đơn!", "danger")
         else:
             flash(f"Thanh toán không thành công. Mã lỗi: {response_code}", "danger")
-            return redirect(url_for('tenant_payments'))
+        return redirect(url_for('tenant_payments'))
     else:
         return "Xác thực không hợp lệ!",400
+
 
 if __name__ == "__main__":
     from aapp import admin
