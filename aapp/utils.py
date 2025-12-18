@@ -3,8 +3,9 @@ from datetime import datetime, timedelta
 import cloudinary.uploader
 from flask_login import current_user
 
-from aapp import db, dao
-from aapp.models import ContractStatus
+from aapp import db, dao,app
+from aapp.models import ContractStatus, Apartment,ApartmentStatus
+
 
 # ============================
 # BASIC UTILS
@@ -39,9 +40,13 @@ def get_months_list(num_months=12):
         months_list.append(target_date.strftime('%Y-%m'))
     return months_list
 
+# ============================
+# INDEX
+# ============================
+
 
 # ============================
-# TENANT CONTEXT
+# TENANT
 # ============================
 def get_tenant_context():
     contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
@@ -70,7 +75,7 @@ def get_tenant_context():
 
 
 # ============================
-# TECHNICIAN / METER READING UTILS
+# TECHNICIAN
 # ============================
 def process_upload(image):
     if image:

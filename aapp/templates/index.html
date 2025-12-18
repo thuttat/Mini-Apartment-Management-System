@@ -3,31 +3,121 @@
 {% block title %}Danh sách căn hộ{% endblock %}
 
 {% block content %}
-<h2 class="mb-4 text-center">AVAILABLE APARTMENTS</h2>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
-<div class="row">
-    {% for a in apartments %}
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-            <img src="{{ a.image_urls if a.image_urls else 'https://placehold.co/600x400?text=No+Image' }}"
-                 class="card-img-top"
-                 alt="Apartment Image"
-                 style="height: 200px; object-fit: cover;">
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">AVAILABLE APARTMENTS</h2>
 
-            <div class="card-body">
-                <h5 class="card-title text-primary">{{ a.id }}</h5>
-                <p class="card-text">Loại phòng: <strong>{{ a.room_type.value }}</strong></p>
-                <p class="card-text">Diện tích: {{ a.area }} m²</p>
-                <h5 class="text-danger font-weight-bold">{{ "{:,.0f}".format(a.price) }} VND</h5>
+    <form action="/" method="GET" class="mb-5">
 
-                <a href="{{ url_for('apartment_detail', apartment_id=a.id) }}" class="btn btn-primary w-100">Xem chi tiết</a>
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-8">
+                <div class="search-container">
+                    <input type="text" name="keyword" class="form-control search-input shadow-sm"
+                           placeholder="Tìm kiếm tên căn hộ..."
+                           value="{{ request.args.get('keyword', '') }}">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
             </div>
         </div>
+
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-10 text-center">
+                <div class="btn-group filter-group flex-wrap" role="group">
+                    <button type="submit" name="room_type" value=""
+                            class="btn {{ 'btn-primary' if not request.args.get('room_type') else 'btn-outline-primary' }} mb-2">
+                        Tất cả
+                    </button>
+
+                    <button type="submit" name="room_type" value="STUDIO"
+                            class="btn {{ 'btn-primary' if request.args.get('room_type') == 'STUDIO' else 'btn-outline-primary' }} mb-2">
+                        Studio
+                    </button>
+                    <button type="submit" name="room_type" value="ONE_BEDROOM"
+                            class="btn {{ 'btn-primary' if request.args.get('room_type') == 'ONE_BEDROOM' else 'btn-outline-primary' }} mb-2">
+                        One bedroom
+                    </button>
+                    <button type="submit" name="room_type" value="TWO_BEDROOM"
+                            class="btn {{ 'btn-primary' if request.args.get('room_type') == 'TWO_BEDROOM' else 'btn-outline-primary' }} mb-2">
+                        Two bedrooms
+                    </button>
+                    <button type="submit" name="room_type" value="DUPLEX"
+                            class="btn {{ 'btn-primary' if request.args.get('room_type') == 'DUPLEX' else 'btn-outline-primary' }} mb-2">
+                        Duplex
+                    </button>
+                     <button type="submit" name="room_type" value="PENTHOUSE"
+                            class="btn {{ 'btn-primary' if request.args.get('room_type') == 'PENTHOUSE' else 'btn-outline-primary' }} mb-2">
+                        Penthouse
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center g-2">
+            <div class="col-md-2">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="AVAILABLE" {{ 'selected' if request.args.get('status') == 'AVAILABLE' }}>Còn trống</option>
+                    <option value="LOOKING_FOR_ROOMMATE" {{ 'selected' if request.args.get('status') == 'LOOKING_FOR_ROOMMATE' }}>Tìm người ở ghép</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="from_price" class="form-control" placeholder="Giá từ..." value="{{ request.args.get('from_price', '') }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="to_price" class="form-control" placeholder="Đến giá..." value="{{ request.args.get('to_price', '') }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-dark w-100"><i class="fas fa-filter"></i> Lọc</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for a in apartments %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <img src="{{ a.image_urls if a.image_urls else 'https://placehold.co/600x400?text=No+Image' }}"
+                         class="card-img-top"
+                         alt="Apartment Image"
+                         style="height: 200px; object-fit: cover;">
+
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ a.id }}</h5>
+                        <p class="card-text">Loại phòng: <strong>{{ a.room_type.value }}</strong></p>
+                        <p class="card-text">Diện tích: {{ a.area }} m²</p>
+                        <h5 class="text-danger font-weight-bold">{{ "{:,.0f}".format(a.price) }} VND</h5>
+
+                        <a href="{{ url_for('apartment_detail', apartment_id=a.id) }}" class="btn btn-primary w-100">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-warning">
+                    <i class="fas fa-search me-2"></i> Không tìm thấy phòng nào phù hợp với từ khóa hoặc bộ lọc của bạn.
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if pages > 1 %}
+            <ul class="pagination justify-content-center mt-4">
+                {% for i in range(1, pages + 1) %}
+                    <li class="page-item {{ 'active' if i == request.args.get('page', 1)|int else '' }}">
+                        <a class="page-link"
+                           href="{{ url_for('index',
+                                    page=i,
+                                    keyword=request.args.get('keyword'),
+                                    room_type=request.args.get('room_type'),
+                                    status=request.args.get('status'),
+                                    from_price=request.args.get('from_price'),
+                                    to_price=request.args.get('to_price')) }}">
+                           {{ i }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="col-12 text-center py-5">
-        <p class="text-muted">Hiện không có phòng nào trống.</p>
-    </div>
-    {% endfor %}
 </div>
 {% endblock %}

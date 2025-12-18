@@ -9,6 +9,12 @@ app.secret_key = 'iqiwqu3e735ehwsnsio274687928dhgtu'
 app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:%s@localhost/apartmentdb' % quote('anhthu')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config['SQLALCHEMY_ECHO'] = True
+app.config['PAGE_SIZE'] = 6
+app.config['SECRET_KEY'] = 'YEGBUABCOIWIDHGBHIUIYTYYUIUSNL56782UGW2RSETRWWY'
+db = SQLAlchemy(app=app)
+login = LoginManager(app=app)
+
+
 # cloudinary.config(cloud_name='djviyyvzu',
 #                   api_key='516671461397882',
 #                   api_secret='oqcwKadypdGiiyJreDZprPf2K10')
@@ -17,5 +23,4 @@ cloudinary.config(cloud_name='dyupzyqwj',
                   api_key='497522642724389',
                   api_secret='1qiLwjHVPTBX9_BYZKsRB2FfWJA')
 
-db = SQLAlchemy(app=app)
-login = LoginManager(app=app)
+

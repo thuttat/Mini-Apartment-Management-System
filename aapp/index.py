@@ -3,11 +3,13 @@ import cloudinary.uploader
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, login_user, logout_user
 
-from aapp import app, dao, login, db
+from aapp import app, dao, login, db,utils
+from aapp.dao import count_apartments, count_for_pagination
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )
+import math
 
 
 @app.context_processor
@@ -18,19 +20,34 @@ def inject_rules():
 @app.route('/')
 def index():
     req_status = request.args.get('status')
+    room_type = request.args.get('room_type')
+    from_price = request.args.get('from_price')
+    to_price = request.args.get('to_price')
+    keyword = request.args.get('keyword')
+    page = int(request.args.get('page', 1))
+
+
     status_filter = req_status if req_status else [
         ApartmentStatus.AVAILABLE,
         ApartmentStatus.LOOKING_FOR_ROOMMATE
     ]
 
     apartments = dao.load_apartments(
-        room_type=request.args.get('room_type'),
+        room_type=room_type,
         status=status_filter,
-        min_price=request.args.get('min_price'),
-        max_price=request.args.get('max_price'),
-        keyword=request.args.get('keyword')
+        from_price=from_price,
+        to_price=to_price,
+        keyword=keyword,
+        page=page
     )
-    return render_template('index.html', apartments=apartments)
+    total_count = dao.count_for_pagination(
+        room_type=room_type,
+        status=status_filter,
+        from_price=from_price,
+        to_price=to_price,
+        keyword=keyword
+    )
+    return render_template('index.html', apartments=apartments,pages=math.ceil(total_count/app.config['PAGE_SIZE']))
 
 
 @app.route('/settings')
@@ -337,7 +354,7 @@ def report_revenue():
             if s[3] == PaymentStatus.PAID:
                 total_revenue += s[2]
 
-    # Lưu ý: render template mới nằm trong thư mục reports
+
     return render_template('reports/revenue.html',
                            stats=stats,
                            month=month,

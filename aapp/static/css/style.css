@@ -85,3 +85,39 @@ footer {
     background-color: #dbedff;
 }
 
+.search-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+
+.search-input {
+    padding-left: 40px;
+    border-radius: 30px;
+    height: 50px;
+    border: 1px solid #ced4da;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 18px;
+}
+
+
+.filter-group .btn {
+    border-radius: 20px;
+    margin: 0 5px;
+    font-weight: 500;
+}
+

@@ -69,10 +69,17 @@
 
                     <div class="mt-4 d-grid gap-2">
                         {% if apartment.status.name == 'AVAILABLE' or apartment.status.name == 'LOOKING_FOR_ROOMMATE' %}
-                            {% set phone = apartment.details[0].manager.phone_number%}
-                            <a href="tel:{{ phone }}" class="btn btn-primary btn-lg text-white text-decoration-none">
-                                <i class="bi bi-telephone-fill me-2"></i> Liên hệ thuê ngay
-                            </a>
+                            {% if apartment.details and apartment.details|length > 0 %}
+                                {% set phone = apartment.details[0].manager.phone_number %}
+                                <a href="tel:{{ phone }}" class="btn btn-primary btn-lg text-white text-decoration-none">
+                                    <i class="bi bi-telephone-fill me-2"></i> Liên hệ thuê ngay
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary btn-lg" disabled>
+                                    <i class="bi bi-exclamation-circle me-2"></i> Chưa có thông tin liên hệ
+                                </button>
+                            {% endif %}
+
                         {% endif %}
                     </div>
 

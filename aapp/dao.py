@@ -4,7 +4,7 @@ from sqlalchemy import func
 import cloudinary.uploader
 from dateutil.relativedelta import relativedelta
 
-from aapp import db
+from aapp import db,app
 from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoice,
                          Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus)
 from aapp.utils import get_next_id, hash_password
@@ -23,11 +23,9 @@ def auth_user(username, password):
     ]
 
     for Model, role in auth_sources:
-        # Tìm user có username và password khớp
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
 
         if user:
-            # Kiểm tra trạng thái hoạt động (active)
             if hasattr(user, 'active') and not user.active:
                 return None, None
 
@@ -118,7 +116,7 @@ def add_tenant(name, username, password, avatar=None):
 # ============================
 # APARTMENT
 # ============================
-def load_apartments(room_type=None, status=None, min_price=None, max_price=None, keyword=None):
+def _build_query(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
     query = Apartment.query
 
     if room_type:
@@ -129,15 +127,29 @@ def load_apartments(room_type=None, status=None, min_price=None, max_price=None,
             query = query.filter(Apartment.status.in_(status))
         else:
             query = query.filter(Apartment.status == status)
-    if min_price:
-        query = query.filter(Apartment.price >= min_price)
 
-    if max_price:
-        query = query.filter(Apartment.price <= max_price)
+    if from_price:
+        query = query.filter(Apartment.price.__ge__(float(from_price)))
+
+    if to_price:
+        query = query.filter(Apartment.price.__le__(float(to_price)))
+
     if keyword:
-        query = query.filter(Apartment.id.contains(keyword))
+        query = query.filter(Apartment.name.contains(keyword))
 
-    return query.order_by(Apartment.id).all()
+    return query
+def load_apartments(room_type=None, status=None, from_price=None, to_price=None, keyword=None,page =1):
+    query = _build_query(room_type, status, from_price, to_price, keyword)
+    query = query.order_by(Apartment.id.desc())
+    if page:
+        start = (page -1)*app.config["PAGE_SIZE"]
+        query = query.slice(start,start+app.config["PAGE_SIZE"])
+
+    return query.all()
+
+def count_for_pagination(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
+    query = _build_query(room_type, status, from_price, to_price, keyword)
+    return query.count()
 
 
 def get_apartment_by_id(apartment_id):
@@ -176,27 +188,10 @@ def update_apartment_info(apartment_id, status=None, room_type=None, price=None)
 
 
 def count_apartments():
-    stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
-        Apartment.status).all()
-    stats_data = []
+    stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')) \
+        .group_by(Apartment.status).all()
 
-    for s in stats:
-        status_name = s.status.value
-        display_name = status_name
-        if status_name == ApartmentStatus.AVAILABLE.value:
-            display_name = "Còn Trống"
-        elif status_name == ApartmentStatus.RENTED.value:
-            display_name = "Đã Thuê"
-        elif status_name == ApartmentStatus.MAINTENANCE.value:
-            display_name = "Đang Bảo Trì"
-        elif status_name == ApartmentStatus.LOOKING_FOR_ROOMMATE.value:
-            display_name = "Tìm Người Ở Ghép"
-
-        stats_data.append({
-            'name': display_name,
-            'count': s.count
-        })
-    return stats_data
+    return [{'name': s.status.value, 'count': s.count} for s in stats]
 
 
 # ============================
@@ -367,18 +362,29 @@ def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
     if not contract:
         raise Exception("Contract not found")
 
-    fees = calculate_monthly_invoice(contract=contract, electric_usage=electric_usage, water_usage=water_usage)
+    service_rule = Rule.query.filter(Rule.key == RuleKey.PRICE_SERVICE).first()
+    current_service_fee = float(service_rule.value) if service_rule else 0
+
+    fees = calculate_monthly_invoice(
+        contract=contract,
+        electric_usage=electric_usage,
+        water_usage=water_usage,
+        service_fee=current_service_fee
+    )
 
     new_id = get_next_id(Invoice, "INV", 6)
+
     inv = Invoice(
         id=new_id,
         contract_id=contract_id,
         month=month_str,
         electric_usage=electric_usage,
         water_usage=water_usage,
+
         electric_fee=fees['electric_fee'],
         water_fee=fees['water_fee'],
         service_fee=fees['service_fee'],
+
         total_amount=fees['total_price'],
         status=PaymentStatus.UNPAID
     )
