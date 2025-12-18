@@ -3,8 +3,8 @@ import cloudinary.uploader
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, login_user, logout_user
 
-from aapp import app, dao, login, db
-from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus
+from aapp import app, dao, login, db, vnpay_client
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )
@@ -344,6 +344,50 @@ def report_revenue():
                            kw=kw,
                            total_revenue=total_revenue)
 
+@app.route('/payment')
+def payment():
+    invoice_id = request.args.get('invoice_id')
+    amount = request.args.get('amount')
+    if not invoice_id or not amount:
+        return "Thiếu thông tin hóa đơn", 400
+
+    params = {
+        'vnp_Version': '2.1.0',
+        'vnp_Command': 'pay',
+        'vnp_TmnCode': vnpay_client.tmn_code,
+        'vnp_Amount': int(float(amount)) * 100,
+        'vnp_CreateDate': datetime.now().strftime('%Y%m%d%H%M%S'),
+        'vnp_CurrCode': 'VND',
+        'vnp_IpAddr': request.remote_addr,
+        'vnp_Locale': 'vn',
+        'vnp_OrderInfo': f"Thanh toan hao don {invoice_id}",
+        'vnp_OrderType': 'billpayment',
+        'vnp_ReturnUrl': url_for('payment_return',_external=True),
+        'vnp_TxnRef': str(invoice_id),
+    }
+    pay_url=vnpay_client.get_payment_url(params)
+    return redirect(pay_url)
+
+@app.route('/payment_return',methods=['GET'])
+def payment_return():
+    data=request.args.to_dict()
+    if vnpay_client.validate_response(data):
+        vnp_txn_ref = data.get('vnp_TxnRef')
+        response_code = data.get('vnp_ResponseCode')
+        invoice_id = vnp_txn_ref.split('_')[0]
+        if response_code=='00':
+            invoice=Invoice.query.get(int(invoice_id))
+            if invoice:
+                invoice.status=PaymentStatus.PAID
+                db.session.commit()
+                db.session.refresh(invoice)
+            flash(f"Thanh toán thành công hóa đơn #{invoice_id}!", "success")
+            return redirect(url_for('tenant_payments'))
+        else:
+            flash(f"Thanh toán không thành công. Mã lỗi: {response_code}", "danger")
+            return redirect(url_for('tenant_payments'))
+    else:
+        return "Xác thực không hợp lệ!",400
 
 if __name__ == "__main__":
     from aapp import admin

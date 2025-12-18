@@ -69,11 +69,11 @@
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             {% if i.status.name != "PAID" %}
-                            <button class="btn btn-sm btn-primary"
-                                    style="min-width: 80px;"
-                                    onclick="alert('Tính năng thanh toán đang phát triển!')">
+                            <a href="{{ url_for('payment', invoice_id=i.id, amount=i.total_amount) }}"
+                               class="btn btn-sm btn-primary"
+                               style="min-width: 80px;">
                                 Pay
-                            </button>
+                            </a>
                             {% else %}
                             <button class="btn btn-sm btn-outline-success disabled border-0"
                                     style="min-width: 80px; opacity: 1;">
