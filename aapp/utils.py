@@ -127,3 +127,8 @@ def handle_meter_reading(data):
         return False,message
     return True,message
 
+<<<<<<< Updated upstream
+=======
+    return True, message
+
+>>>>>>> Stashed changes

@@ -3,12 +3,21 @@ from datetime import datetime
 from cloudinary.api import usage
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required, login_user, logout_user
+<<<<<<< Updated upstream
 from aapp import app, dao, login
 from aapp.utils import get_months_list, save_result, validate_reading, handle_meter_reading
 from aapp.dao import get_last_reading_values, save_new_reading, get_contract_expiration
 import cloudinary.uploader
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Apartment
 from aapp.utils import process_upload
+=======
+from aapp import vnpay
+from aapp import app, dao, login, db,vnpay_client
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice
+from aapp.utils import (
+    get_tenant_context, hash_password, get_months_list, handle_meter_reading
+)
+>>>>>>> Stashed changes
 
 
 @app.context_processor
@@ -203,9 +212,86 @@ def report_contracts_expiration():
     try:
         days=int(request.args.get('days',30))
     except ValueError:
+<<<<<<< Updated upstream
         days=30
     contract_expiration=dao.get_contract_expiration(day_limit=days)
     return render_template('reports/contracts_expiration.html', contract_expiration=contract_expiration,day_limit=days,datetime=datetime)
+=======
+        days = 30
+    contract_expiration = dao.get_contract_expiration(day_limit=days)
+    return render_template('reports/contracts_expiration.html', contract_expiration=contract_expiration, day_limit=days,
+                           datetime=datetime)
+
+
+@app.route('/manager/revenue-report')
+@login_required
+def report_revenue():
+    if current_user.user_role != UserRole.MANAGER:
+        return redirect('/')  # Hoặc trang lỗi 403
+
+    kw = request.args.get('kw')
+    month = request.args.get('month')
+
+    stats = dao.stats_revenue(kw=kw, month=month)
+
+    total_revenue = 0
+    if stats:
+        for s in stats:
+            if s[3] == PaymentStatus.PAID:
+                total_revenue += s[2]
+
+    # Lưu ý: render template mới nằm trong thư mục reports
+    return render_template('reports/revenue.html',
+                           stats=stats,
+                           month=month,
+                           kw=kw,
+                           total_revenue=total_revenue)
+
+@app.route('/payment')
+def payment():
+    invoice_id = request.args.get('invoice_id')
+    amount = request.args.get('amount')
+    if not invoice_id or not amount:
+        return "Thiếu thông tin hóa đơn", 400
+
+    params = {
+        'vnp_Version': '2.1.0',
+        'vnp_Command': 'pay',
+        'vnp_TmnCode': vnpay_client.tmn_code,
+        'vnp_Amount': int(float(amount)) * 100,
+        'vnp_CreateDate': datetime.now().strftime('%Y%m%d%H%M%S'),
+        'vnp_CurrCode': 'VND',
+        'vnp_IpAddr': request.remote_addr,
+        'vnp_Locale': 'vn',
+        'vnp_OrderInfo': f"Thanh toan hao don {invoice_id}",
+        'vnp_OrderType': 'billpayment',
+        'vnp_ReturnUrl': url_for('payment_return',_external=True),
+        'vnp_TxnRef': str(invoice_id),
+    }
+    pay_url=vnpay_client.get_payment_url(params)
+    return redirect(pay_url)
+
+@app.route('/payment_return',methods=['GET'])
+def payment_return():
+    data=request.args.to_dict()
+    if vnpay_client.validate_response(data):
+        vnp_txn_ref = data.get('vnp_TxnRef')
+        response_code = data.get('vnp_ResponseCode')
+        invoice_id = vnp_txn_ref.split('_')[0]
+        if response_code=='00':
+            invoice=Invoice.query.get(int(invoice_id))
+            if invoice:
+                invoice.status=PaymentStatus.PAID
+                db.session.commit()
+                db.session.refresh(invoice)
+            flash(f"Thanh toán thành công hóa đơn #{invoice_id}!", "success")
+            return redirect(url_for('tenant_payments'))
+        else:
+            flash(f"Thanh toán không thành công. Mã lỗi: {response_code}", "danger")
+            return redirect(url_for('tenant_payments'))
+    else:
+        return "Xác thực không hợp lệ!",400
+>>>>>>> Stashed changes
 
 if __name__ == "__main__":
     from aapp import admin
