@@ -1,7 +1,7 @@
 import cloudinary
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import current_user, LoginManager
+from flask_login import LoginManager
 from urllib.parse import quote
 
 app = Flask(__name__)
@@ -19,3 +19,8 @@ cloudinary.config(cloud_name='dyupzyqwj',
 
 db = SQLAlchemy(app=app)
 login = LoginManager(app=app)
+
+#ham nay de dam bao ko bi loi circular import
+def init_extensions():
+    from .utils import init_scheduler
+    init_scheduler(app)
