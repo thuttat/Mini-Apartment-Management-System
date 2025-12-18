@@ -1,59 +1,79 @@
 {% extends 'layout/base.html' %}
 
 {% block content %}
-<h1>THỐNG KÊ TÌNH TRẠNG THUÊ PHÒNG</h1>
+<div class="container py-5">
+    <h1 class="mb-4 fw-bold text-slate-800">THỐNG KÊ TÌNH TRẠNG THUÊ PHÒNG</h1>
 
-<ul>
-    {% for s in stats_data %}
-    <li><strong>{{ s.name }}</strong>: {{ s.count }}</li>
-    {% endfor %}
-</ul>
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <ul class="list-group shadow-sm">
+                {% for s in stats_data %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <strong>{{ s.name }}</strong>
+                    <span class="badge bg-primary rounded-pill">{{ s.count }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
-<div style="width:40%">
-    <canvas id="myChart"></canvas>
+        <div class="col-md-6 d-flex justify-content-center">
+            <div style="width:80%">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
 <script>
-    window.onload=function(){
-    let data=[];
-    let labels=[];
+    let data = [];
+    let labels = [];
+    let colors = [];
+    let borderColors = [];
+    let r,g,b;
 
     {% for s in stats_data %}
-    data.push({{s.count}})
-    labels.push('{{s.name}}')
+         labels.push('{{ s.name }}');
+         data.push({{ s.count }});
+
+         r = Math.floor(Math.random() * 200);
+         g = Math.floor(Math.random() * 200);
+         b = Math.floor(Math.random() * 200);
+
+         colors.push(`rgba(${r}, ${g}, ${b}, 0.6)`);
+         borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`);
     {% endfor %}
 
-    const ctx = document.getElementById('myChart');
-    new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: '# Tình trạng thuê phòng',
-          data: data,
-          borderWidth: 1,
-          backgroundColor:['red', 'green', 'blue','yellow']
-        }]
-      },
+    window.onload = function() {
 
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                display:true,
-                position: 'bottom',
-                labels:{
-                    padding:20
+        const ctx = document.getElementById('myChart');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '# Tình trạng thuê phòng',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: borderColors,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: { size: 14 }
+                        }
+                    }
                 }
             }
-        }
-    }
-    });
+        });
     }
 </script>
-
 {% endblock content %}

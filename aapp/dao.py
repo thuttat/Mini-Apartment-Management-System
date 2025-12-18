@@ -178,19 +178,16 @@ def update_apartment_info(apartment_id, status=None, room_type=None, price=None)
 def count_apartments():
     stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
         Apartment.status).all()
-    stats_data = []
 
+    status_map = {
+        ApartmentStatus.AVAILABLE: "Còn Trống",
+        ApartmentStatus.RENTED: "Đã Thuê",
+        ApartmentStatus.MAINTENANCE: "Đang Bảo Trì",
+        ApartmentStatus.LOOKING_FOR_ROOMMATE: "Tìm Người Ở Ghép"
+    }
+    stats_data = []
     for s in stats:
-        status_name = s.status.value
-        display_name = status_name
-        if status_name == ApartmentStatus.AVAILABLE.value:
-            display_name = "Còn Trống"
-        elif status_name == ApartmentStatus.RENTED.value:
-            display_name = "Đã Thuê"
-        elif status_name == ApartmentStatus.MAINTENANCE.value:
-            display_name = "Đang Bảo Trì"
-        elif status_name == ApartmentStatus.LOOKING_FOR_ROOMMATE.value:
-            display_name = "Tìm Người Ở Ghép"
+        display_name=status_map.get(s.status, s.status.value if s.status else "Chưa xác định")
 
         stats_data.append({
             'name': display_name,
