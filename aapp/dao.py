@@ -356,16 +356,11 @@ def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee
 # CREATE FIRST INVOICE
 # ============================
 def create_first_invoice(contract):
-    # Kiểm tra xem đã có invoice nào cho contract này chưa để tránh trùng lặp
-    existing = Invoice.query.filter_by(contract_id=contract.id).first()
-    if existing:
-        return
-
     deposit_fee = contract.deposit
     service_fee = get_rule_value(RuleKey.PRICE_SERVICE)
 
     inv = Invoice(
-        id=get_next_id(Invoice, "INV", 6),
+        id=get_next_id(Invoice, "I", 3),
         contract_id=contract.id,
         month=f"{contract.start_date.year}-{contract.start_date.month}",
         electric_usage=0,
@@ -373,7 +368,6 @@ def create_first_invoice(contract):
         electric_fee=0,
         water_fee=0,
         service_fee=service_fee,
-        # Tiền phòng + Dịch vụ + Cọc
         total_amount=contract.rent_price + service_fee + deposit_fee,
         status=PaymentStatus.UNPAID
     )
@@ -413,15 +407,18 @@ def get_last_reading_values(apartment_id, reading_type):
     return (None, None)
 
 
+
 def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage, new_reading, image):
     contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
     if not contract: return False, "Không tìm thấy hợp đồng!"
 
     invoice = get_invoice(contract.id, month)
     if not invoice:
-        new_id = get_next_id(Invoice, "INV", 6)
+        new_id = get_next_id(Invoice, "I", 3)
         invoice = Invoice(id=new_id, contract_id=contract.id, month=month)
         db.session.add(invoice)
+        invoice.electric_usage = 0
+        invoice.water_usage = 0
 
     try:
         if reading_type == 'electric':
@@ -432,8 +429,24 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
             invoice.water_usage = water_usage
             invoice.water_end_reading = new_reading
             invoice.water_image = image
+
+        curr_elec = invoice.electric_usage if invoice.electric_usage else 0
+        curr_water = invoice.water_usage if invoice.water_usage else 0
+        curr_service = invoice.service_fee
+
+        money_data = calculate_monthly_invoice(
+            contract=contract,
+            electric_usage=curr_elec,
+            water_usage=curr_water,
+            service_fee=curr_service
+        )
+        invoice.electric_fee = money_data['electric_fee']
+        invoice.water_fee = money_data['water_fee']
+        invoice.service_fee = money_data['service_fee']
+        invoice.total_amount = money_data['total_price']
+
         db.session.commit()
-        return True, f"Lưu chỉ số {reading_type.capitalize()} thành công."
+        return True, f"Lưu chỉ số {reading_type.capitalize()} và cập nhật hóa đơn thành công."
     except Exception as e:
         db.session.rollback()
         return False, f"Lỗi CSDL: {str(e)}"

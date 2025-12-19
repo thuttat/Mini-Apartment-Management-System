@@ -12,6 +12,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:%s@localhost/apart
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['PAGE_SIZE'] = 6
+
 # cloudinary.config(cloud_name='djviyyvzu',
 #                   api_key='516671461397882',
 #                   api_secret='oqcwKadypdGiiyJreDZprPf2K10')
@@ -29,7 +30,6 @@ vnpay_client = VNPay(
 db = SQLAlchemy(app=app)
 login = LoginManager(app=app)
 
-#ham nay de dam bao ko bi loi circular import
 def init_extensions():
     from .utils import init_scheduler
     init_scheduler(app)
