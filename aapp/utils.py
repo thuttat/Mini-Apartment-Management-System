@@ -1,10 +1,13 @@
 import hashlib
 from datetime import datetime, timedelta
 import cloudinary.uploader
+from flask import session
 from flask_login import current_user
+from flask_apscheduler import APScheduler
 
-from aapp import db, dao,app
-from aapp.models import ContractStatus, Apartment,ApartmentStatus
+from aapp import db, app,dao
+from aapp.models import ContractStatus, Apartment, ApartmentStatus
+
 
 
 # ============================
@@ -40,27 +43,31 @@ def get_months_list(num_months=12):
         months_list.append(target_date.strftime('%Y-%m'))
     return months_list
 
-# ============================
-# INDEX
-# ============================
-
 
 # ============================
-# TENANT
+# TENANT UTILS
 # ============================
 def get_tenant_context():
+    from aapp import dao
+
     contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
     invoices = []
     contract = None
     apartment = None
+    total_unpaid = 0
 
     if contracts:
-        contract = contracts[0]
+        current_contract_id = session.get("current_contract_id")
+        contract = next(
+            (c for c in contracts if c.id == current_contract_id),
+            contracts[0]
+        )
+        session["current_contract_id"] = contract.id
+
         apartment = dao.get_apartment_by_id(contract.apartment_id)
         invoices = dao.load_invoices(contract_id=contract.id)
         invoices.sort(key=lambda x: x.month, reverse=True)
 
-    total_unpaid = 0
     if invoices:
         for i in invoices:
             if i.status.name != 'PAID':
@@ -68,6 +75,7 @@ def get_tenant_context():
 
     return {
         'contract': contract,
+        'contracts': contracts,
         'apartment': apartment,
         'invoices': invoices,
         'total_unpaid': total_unpaid
@@ -75,7 +83,7 @@ def get_tenant_context():
 
 
 # ============================
-# TECHNICIAN
+# TECHNICIAN UTILS
 # ============================
 def process_upload(image):
     if image:
@@ -131,7 +139,7 @@ def handle_meter_reading(data):
             image_url, image_public_id = upload_result
     except Exception as e:
         print(f"Lỗi upload ảnh: {e}")
-        return False, 'Lỗi upload ảnh'
+        return False
 
     if not image_url:
         return False, 'Tải ảnh không thành công (bắt buộc phải có ảnh minh chứng)'
@@ -167,3 +175,23 @@ def handle_meter_reading(data):
         return False, message
 
     return True, message
+
+
+# ============================
+# SCHEDULER
+# ============================
+scheduler = APScheduler()
+
+
+def init_scheduler(app):
+    if not scheduler.running:
+        scheduler.init_app(app)
+        from .dao import auto_update_contract_status
+        scheduler.add_job(
+            id="auto_contract_status",
+            func=auto_update_contract_status,
+            trigger="cron",
+            hour=0,
+            minute=0
+        )
+        scheduler.start()

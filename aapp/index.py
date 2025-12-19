@@ -3,11 +3,12 @@ from datetime import datetime, timedelta
 from sys import exception
 
 import cloudinary.uploader
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
-from aapp import app, dao, login, db, vnpay_client
-from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice
+from aapp import app, dao, login, db, vnpay_client, init_extensions
+from aapp.dao import renew_contract
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice, Contract
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )
@@ -48,7 +49,8 @@ def index():
         to_price=to_price,
         keyword=keyword
     )
-    return render_template('index.html', apartments=apartments, pages=math.ceil(total_count / app.config['PAGE_SIZE']))
+    return render_template('index.html', apartments=apartments,
+                           pages=math.ceil(total_count / app.config['PAGE_SIZE']))
 
 
 @app.route('/settings')
@@ -133,6 +135,22 @@ def apartment_detail(apartment_id):
 def load_user(user_id):
     return dao.get_user_by_id(user_id)
 
+# man hinh gia han hop dong cua admin
+@app.route("/admin/renew_contracts", methods=["GET", "POST"])
+def renew_contract_view():
+    if request.method == "POST":
+        contract_id = request.form["contract_id"]
+        rental_period = int(request.form["rental_period"])
+
+        renew_contract(contract_id, rental_period)
+        flash("Contract renewed successfully!")
+        return redirect(url_for("renew_contract_view"))
+
+    active_contracts = Contract.query.filter(Contract.status == ContractStatus.ACTIVE).all()
+
+    return render_template(
+        "admin/renew_contracts.html", contracts=active_contracts)
+
 
 # ==========================================
 # TENANT ROUTES
@@ -156,21 +174,23 @@ def tenant_index():
 @login_required
 def tenant_apartment():
     ctx = get_tenant_context()
-    return render_template('tenant/apartment.html', apartment=ctx['apartment'], contract=ctx['contract'])
+
+    return render_template(
+        'tenant/apartment.html', apartment=ctx['apartment'], contract=ctx['contract'])
 
 
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
-    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
+    ctx = get_tenant_context()
+    contract = ctx['contract']
     invoices = []
 
     req_month = request.args.get('month')
     req_status = request.args.get('status')
 
-    if contracts:
-        contract_id = contracts[0].id
-        all_invoices = dao.load_invoices(contract_id=contract_id)
+    if contract:
+        all_invoices = dao.load_invoices(contract_id=contract.id)
 
         for inv in all_invoices:
             is_match = True
@@ -187,7 +207,10 @@ def tenant_payments():
 
     return render_template('tenant/payments.html',
                            invoices=invoices,
-                           total_unpaid=total_unpaid)
+                           total_unpaid=total_unpaid,
+                           contract=contract,
+                           apartment=ctx['apartment']
+                           )
 
 
 @app.route('/tenant/invoice/<invoice_id>')
@@ -216,7 +239,9 @@ def tenant_rules():
 @app.route('/tenant/profile')
 def tenant_profile():
     ctx = get_tenant_context()
-    return render_template('tenant/profile.html', apartment=ctx['apartment'], contract=ctx['contract'])
+
+    return render_template('tenant/profile.html', apartment=ctx['apartment'],
+                           contract=ctx['contract'], contracts=ctx['contracts'])
 
 
 # ==========================================
@@ -272,6 +297,18 @@ def change_password():
     flash("Password changed successfully!", "success")
     return redirect(url_for('tenant_profile', tab="password", msg="CHANGE PASSWORD SUCCESSFULLY!"))
 
+# xu ly doi can ho cho tenant
+@app.route('/switch_apartment/<contract_id>', methods=['POST'])
+@login_required
+def switch_apartment(contract_id):
+    contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
+
+    for c in contracts:
+        if contract_id != c.id:
+            continue
+
+    session['current_contract_id'] = contract_id
+    return redirect(url_for('tenant_profile', contract_id=contract_id))
 
 # ==========================================
 # TECHNICIAN ROUTES
@@ -291,10 +328,8 @@ def chart_view():
 @app.route('/technician/index')
 @login_required
 def technician_index():
-    rented_apartments = dao.load_apartments(status=ApartmentStatus.RENTED)
-    total_rented = dao.count_for_pagination(status=ApartmentStatus.RENTED)
-    return render_template('technician/index.html', apartments=rented_apartments
-                           ,total_rented=total_rented)
+    rented_apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
+    return render_template('technician/index.html', apartments=rented_apartments)
 
 
 @app.route('/technician/meter_reading/<string:reading_type>', methods=['GET', 'POST'])
@@ -323,7 +358,7 @@ def meter_reading_view(reading_type):
 
         return redirect(url_for('meter_reading_view', reading_type=reading_type))
 
-    apartments = dao.load_apartments(status=ApartmentStatus.RENTED,page=None)
+    apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
     months = get_months_list()
     return render_template('technician/meter_reading.html', apartments=apartments, months=months,
                            reading_type=reading_type)
@@ -422,6 +457,7 @@ def payment_return():
     else:
         return "Xác thực không hợp lệ!",400
 
+init_extensions()
 
 if __name__ == "__main__":
     from aapp import admin

@@ -1,13 +1,13 @@
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from sqlalchemy import func
 import cloudinary.uploader
 from dateutil.relativedelta import relativedelta
 
 from aapp import db, app
 from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoice,
-                         Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus)
-from aapp.utils import get_next_id, hash_password
+                         Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus, ContractAssignment)
+from .utils import get_next_id, hash_password
 
 
 # ============================
@@ -23,16 +23,11 @@ def auth_user(username, password):
     ]
 
     for Model, role in auth_sources:
-        # Tìm user có username và password khớp
         user = Model.query.filter_by(username=username.strip(), password=hashed).first()
-
         if user:
-            # Kiểm tra trạng thái hoạt động (active)
             if hasattr(user, 'active') and not user.active:
                 return None, None
-
             return user, role
-
     return None, None
 
 
@@ -47,69 +42,45 @@ def get_user_by_id(id):
 
 
 # ============================
-# MANAGER
+# USER CREATION
 # ============================
 def add_manager(name, username, password, avatar=None):
     new_id = get_next_id(Manager, "M", 3)
-
     user = Manager(
-        id=new_id,
-        full_name=name,
-        username=username.strip(),
-        password=hash_password(password),
-        user_role=UserRole.MANAGER,
-        active=True
+        id=new_id, full_name=name, username=username.strip(),
+        password=hash_password(password), user_role=UserRole.MANAGER, active=True
     )
     if avatar:
         res = cloudinary.uploader.upload(avatar)
         user.avatar = res.get('secure_url')
-
     db.session.add(user)
     db.session.commit()
     return user
 
 
-# ============================
-# TECHNICIAN
-# ============================
 def add_technician(name, username, password, avatar=None):
     new_id = get_next_id(Technician, "TECH", 3)
-
     user = Technician(
-        id=new_id,
-        full_name=name,
-        username=username.strip(),
-        password=hash_password(password),
-        user_role=UserRole.TECHNICIAN,
-        active=True
+        id=new_id, full_name=name, username=username.strip(),
+        password=hash_password(password), user_role=UserRole.TECHNICIAN, active=True
     )
     if avatar:
         res = cloudinary.uploader.upload(avatar)
         user.avatar = res.get('secure_url')
-
     db.session.add(user)
     db.session.commit()
     return user
 
 
-# ============================
-# TENANT
-# ============================
 def add_tenant(name, username, password, avatar=None):
     new_id = get_next_id(Tenant, "T", 3)
     tenant = Tenant(
-        id=new_id,
-        full_name=name,
-        username=username.strip(),
-        password=hash_password(password),
-        user_role=UserRole.TENANT,
-        active=True
+        id=new_id, full_name=name, username=username.strip(),
+        password=hash_password(password), user_role=UserRole.TENANT, active=True
     )
-
     if avatar:
         res = cloudinary.uploader.upload(avatar)
         tenant.avatar = res.get('secure_url')
-
     db.session.add(tenant)
     db.session.commit()
     return tenant
@@ -120,73 +91,38 @@ def add_tenant(name, username, password, avatar=None):
 # ============================
 def _build_query(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
     query = Apartment.query
-
     if room_type:
         query = query.filter(Apartment.room_type == room_type)
-
     if status:
         if isinstance(status, list):
             query = query.filter(Apartment.status.in_(status))
         else:
             query = query.filter(Apartment.status == status)
-
     if from_price:
         query = query.filter(Apartment.price.__ge__(float(from_price)))
-
     if to_price:
         query = query.filter(Apartment.price.__le__(float(to_price)))
-
     if keyword:
-        query = query.filter(Apartment.name.contains(keyword))
-
+        query = query.filter(Apartment.id.contains(keyword))
     return query
 
-def load_apartments(room_type=None, status=None, from_price=None, to_price=None, keyword=None,page =1):
+
+def load_apartments(room_type=None, status=None, from_price=None, to_price=None, keyword=None, page=1):
     query = _build_query(room_type, status, from_price, to_price, keyword)
     query = query.order_by(Apartment.id.desc())
     if page is not None:
-        start = (page -1)*app.config["PAGE_SIZE"]
-        query = query.slice(start,start+app.config["PAGE_SIZE"])
-
+        start = (page - 1) * app.config["PAGE_SIZE"]
+        query = query.slice(start, start + app.config["PAGE_SIZE"])
     return query.all()
+
 
 def count_for_pagination(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
     query = _build_query(room_type, status, from_price, to_price, keyword)
     return query.count()
 
+
 def get_apartment_by_id(apartment_id):
     return Apartment.query.filter(Apartment.id == apartment_id).first()
-
-
-def update_apartment_info(apartment_id, status=None, room_type=None, price=None):
-    apt = Apartment.query.get(apartment_id)
-    if not apt:
-        return False
-
-    #kiểm tra số người nếu tìm người ở ghép
-    if status == ApartmentStatus.LOOKING_FOR_ROOMMATE:
-        max_people = get_rule_value(RuleKey.MAX_PER_ROOM)
-        current_people = count_people_in_apartment(apartment_id)
-
-        if current_people >= int(max_people):
-            return False, f"Enough members ({current_people}/{int(max_people)})"
-
-    change_made = False
-    if status:
-        apt.status = status
-        change_made = True
-    if room_type:
-        apt.room_type = room_type
-        change_made = True
-    if price:
-        apt.price = price
-        change_made = True
-
-    if change_made:
-        db.session.commit()
-        return True
-
-    return False
 
 
 def count_apartments():
@@ -201,11 +137,7 @@ def count_apartments():
     stats_data = []
     for s in stats:
         display_name = status_map.get(s.status, s.status.value if s.status else "Chưa xác định")
-
-        stats_data.append({
-            'name': display_name,
-            'count': s.count
-        })
+        stats_data.append({'name': display_name, 'count': s.count})
     return stats_data
 
 
@@ -214,42 +146,32 @@ def count_apartments():
 # ============================
 def load_contracts(tenant_id=None, apartment_id=None, status=None):
     query = Contract.query
-
-    if tenant_id:
-        query = query.filter(Contract.tenant_id == tenant_id)
-
-    if apartment_id:
-        query = query.filter(Contract.apartment_id == apartment_id)
-
-    if status:
-        query = query.filter(Contract.status == status)
-
+    if tenant_id: query = query.filter(Contract.tenant_id == tenant_id)
+    if apartment_id: query = query.filter(Contract.apartment_id == apartment_id)
+    if status: query = query.filter(Contract.status == status)
     return query.all()
-
-
-def count_people_in_apartment(apartment_id):
-    contract = Contract.query.filter(
-        Contract.apartment_id == apartment_id,
-        Contract.status == ContractStatus.ACTIVE
-    ).first()
-    if contract:
-        return contract.member_count
-    return 0
 
 
 def calculate_end_date(start_date, rental_period):
     return start_date + relativedelta(months=rental_period)
 
 
+def get_contract_by_id(cid):
+    return Contract.query.filter(Contract.id == cid).first()
+
+
+def get_contract_expiration(day_limit=30):
+    current_date = datetime.now().date()
+    expiration_date = current_date + timedelta(days=day_limit)
+    contract = Contract.query.filter(
+        Contract.status == ContractStatus.ACTIVE,
+        Contract.end_date >= current_date,
+        Contract.end_date <= expiration_date
+    )
+    return contract.order_by(Contract.end_date.asc()).all()
+
+
 def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, rent_price, member_count=1):
-    max_people = get_rule_value(RuleKey.MAX_PER_ROOM)
-    if member_count > int(max_people):
-        raise Exception(f"The quanity is ({member_count})/({int(max_people)})")
-
-    current_active = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
-    if current_active:
-        raise Exception("This room is active")
-
     end_date = calculate_end_date(start_date, rental_period)
     new_id = get_next_id(Contract, "C", 3)
 
@@ -265,33 +187,99 @@ def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, re
         status=ContractStatus.ACTIVE,
         member_count=member_count
     )
-
     db.session.add(contract)
+
+    # Cập nhật trạng thái phòng
+    apt = Apartment.query.get(apartment_id)
+    if apt:
+        apt.status = ApartmentStatus.RENTED
+
     db.session.commit()
+
+    # có hợp đồng => invoice đầu
+    create_first_invoice(contract)
+
     return contract
 
 
-def terminate_contract(contract_id):
-    c = Contract.query.get(contract_id)
-    if c and c.status == ContractStatus.ACTIVE:
-        c.status = ContractStatus.EXPIRED
+def handle_assign_contract(contract_id, new_tenant_id, effective_date=None, note=None):
+    id = get_next_id(ContractAssignment, "CA", "3"),
+    contract = get_contract_by_id(contract_id)
+
+    if contract.status != ContractStatus.ACTIVE and contract.status != ContractStatus.PENDING:
+        raise ValueError("Only active and pending contract allowed!")
+
+    # Check ngày hết hạn
+    if contract.end_date - effective_date < timedelta(days=30):
+        raise ValueError("You can only transfer the contract at least 30 days before the contract expires!")
+
+    # Check nợ
+    for inv in contract.invoices:
+        if inv.status == PaymentStatus.UNPAID:
+            raise Exception("Can't assign contract while there are outstanding invoices!")
+
+    old_tenant_id = contract.tenant_id
+    if old_tenant_id == new_tenant_id:
+        raise ValueError("Can't assign contract to same tenant!")
+
+    contract_assignment = ContractAssignment(
+        id=id,
+        contract_id=contract.id,
+        old_tenant_id=old_tenant_id,
+        new_tenant_id=new_tenant_id,
+        effective_date=effective_date if effective_date else datetime.now(),
+        note=note
+    )
+    contract.tenant_id = new_tenant_id  # Đổi người thuê
+
+    db.session.add(contract_assignment)
+    db.session.commit()
+    return contract_assignment
+
+
+def renew_contract(old_contract_id, rental_period):
+    old_contract = Contract.query.get(old_contract_id)
+    if not old_contract or old_contract.status != ContractStatus.ACTIVE:
+        raise ValueError("Only active contract allowed!")
+
+    if date.today() + timedelta(days=30) > old_contract.end_date:
+        raise ValueError("You can only renew the contract at least 30 days before the contract expires!")
+
+    new_contract = Contract(
+        id=get_next_id(Contract, "C", "3"),
+        apartment_id=old_contract.apartment_id,
+        tenant_id=old_contract.tenant_id,
+        start_date=old_contract.end_date + timedelta(days=1),
+        rental_period=rental_period,
+        member_count=old_contract.member_count,
+        deposit=old_contract.deposit,
+        rent_price=old_contract.rent_price,
+        status=ContractStatus.PENDING,  # Trạng thái chờ
+    )
+    new_contract.end_date = calculate_end_date(new_contract.start_date, new_contract.rental_period)
+    db.session.add(new_contract)
+    db.session.commit()
+    return new_contract
+
+
+# Tự động cập nhật trạng thái hợp đồng
+def auto_update_contract_status():
+    with app.app_context():
+        # Pending -> Active
+        pending_contracts = Contract.query.filter(Contract.status == ContractStatus.PENDING,
+                                                  Contract.start_date <= date.today()).all()
+        for contract in pending_contracts:
+            contract.status = ContractStatus.ACTIVE
+            contract.apartment.status = ApartmentStatus.RENTED
+
+        # Active -> Expired
+        expired_contracts = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
+                                                  Contract.end_date < date.today()).all()
+        for contract in expired_contracts:
+            contract.status = ContractStatus.EXPIRED
+            contract.apartment.status = ApartmentStatus.AVAILABLE
+
         db.session.commit()
-        return True
-    return False
-
-
-def get_contract_by_id(cid):
-    return Contract.query.filter(Contract.id == cid).first()
-
-
-def get_contract_expiration(day_limit=30):
-    current_date = datetime.now().date()
-    expiration_date = current_date + timedelta(days=day_limit)
-
-    contract = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
-                                     Contract.end_date>=current_date,
-                                     Contract.end_date <= expiration_date)
-    return contract.order_by(Contract.end_date.asc()).all()
 
 
 # ============================
@@ -299,16 +287,9 @@ def get_contract_expiration(day_limit=30):
 # ============================
 def load_invoices(contract_id=None, month=None, status=None):
     query = Invoice.query
-
-    if contract_id:
-        query = query.filter(Invoice.contract_id == contract_id)
-
-    if month:
-        query = query.filter(Invoice.month == month)
-
-    if status:
-        query = query.filter(Invoice.status == status)
-
+    if contract_id: query = query.filter(Invoice.contract_id == contract_id)
+    if month: query = query.filter(Invoice.month == month)
+    if status: query = query.filter(Invoice.status == status)
     return query.all()
 
 
@@ -318,6 +299,7 @@ def get_invoice_by_id(iid):
 
 def get_invoice(contract_id, month_str):
     return Invoice.query.filter(Invoice.contract_id == contract_id, Invoice.month == month_str).first()
+
 
 def calculate_usage(contract_id, current_month, electric_end, water_end):
     prev_invoice = Invoice.query.filter(
@@ -335,7 +317,6 @@ def calculate_usage(contract_id, current_month, electric_end, water_end):
 
     e_end = float(electric_end) if electric_end is not None else 0.0
     w_end = float(water_end) if water_end is not None else 0.0
-
     new_elec_usage = e_end - start_elec
     new_water_usage = w_end - start_water
 
@@ -349,13 +330,12 @@ def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee
     e_price = get_rule_value(RuleKey.PRICE_ELECTRIC)
     w_price = get_rule_value(RuleKey.PRICE_WATER)
 
+    s_price = get_rule_value(RuleKey.PRICE_SERVICE)
     if service_fee is not None:
         try:
             s_price = float(service_fee)
         except:
-            s_price = get_rule_value(RuleKey.PRICE_SERVICE)
-    else:
-        s_price = get_rule_value(RuleKey.PRICE_SERVICE)
+            pass
 
     usage_e = float(electric_usage) if electric_usage else 0.0
     usage_w = float(water_usage) if water_usage else 0.0
@@ -372,32 +352,34 @@ def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee
     }
 
 
-def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
-    contract = Contract.query.get(contract_id)
-    if not contract:
-        raise Exception("Contract not found")
+# ============================
+# CREATE FIRST INVOICE
+# ============================
+def create_first_invoice(contract):
+    # Kiểm tra xem đã có invoice nào cho contract này chưa để tránh trùng lặp
+    existing = Invoice.query.filter_by(contract_id=contract.id).first()
+    if existing:
+        return
 
-    fees = calculate_monthly_invoice(contract=contract, electric_usage=electric_usage, water_usage=water_usage)
+    deposit_fee = contract.deposit
+    service_fee = get_rule_value(RuleKey.PRICE_SERVICE)
 
-    new_id = get_next_id(Invoice, "INV", 6)
     inv = Invoice(
-        id=new_id,
-        contract_id=contract_id,
-        month=month_str,
-        electric_usage=electric_usage,
-        water_usage=water_usage,
-        electric_fee=fees['electric_fee'],
-        water_fee=fees['water_fee'],
-        service_fee=fees['service_fee'],
-        total_amount=fees['total_price'],
+        id=get_next_id(Invoice, "INV", 6),
+        contract_id=contract.id,
+        month=f"{contract.start_date.year}-{contract.start_date.month}",
+        electric_usage=0,
+        water_usage=0,
+        electric_fee=0,
+        water_fee=0,
+        service_fee=service_fee,
+        # Tiền phòng + Dịch vụ + Cọc
+        total_amount=contract.rent_price + service_fee + deposit_fee,
         status=PaymentStatus.UNPAID
     )
 
     db.session.add(inv)
     db.session.commit()
-    return inv
-
-
 
 
 # ============================
@@ -405,9 +387,7 @@ def create_monthly_invoice(contract_id, month_str, electric_usage, water_usage):
 # ============================
 def get_rule_value(key: RuleKey):
     rule = Rule.query.filter(Rule.key == key).first()
-    if not rule:
-        return 0
-
+    if not rule: return 0
     try:
         return float(rule.value)
     except ValueError:
@@ -416,48 +396,26 @@ def get_rule_value(key: RuleKey):
 
 def get_all_rules_as_dict():
     rules = Rule.query.all()
-    # {'PRICE_ELECTRIC': 3500.0, 'MAX_PER_ROOM': 4.0 ...}
     return {r.key.name: float(r.value) if r.value.replace('.', '', 1).isdigit() else r.value for r in rules}
-
-
-def update_rule(key: RuleKey, new_value):
-    rule = Rule.query.filter(Rule.key == key).first()
-    if rule:
-        rule.value = str(new_value)
-        rule.last_updated = datetime.now()
-        db.session.commit()
-        return True
-    return False
 
 
 def get_last_reading_values(apartment_id, reading_type):
     contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
-    if not contract:
-        return None
+    if not contract: return None, None
 
-    if reading_type == 'electric':
-        end_reading_column = Invoice.electric_end_reading
-    elif reading_type == 'water':
-        end_reading_column = Invoice.water_end_reading
-    else:
-        raise Exception("Chỉ số bắt buộc là điện hoặc nước")
-
-    last_invoice = (Invoice.query.filter(Invoice.contract_id == contract.id, end_reading_column.isnot(None))
-                    .order_by(Invoice.month.desc()).first())
+    col = Invoice.electric_end_reading if reading_type == 'electric' else Invoice.water_end_reading
+    last_invoice = Invoice.query.filter(Invoice.contract_id == contract.id, col.isnot(None)) \
+        .order_by(Invoice.month.desc()).first()
 
     if last_invoice:
-        if reading_type == 'electric':
-            return (last_invoice.month, last_invoice.electric_end_reading)
-        else:
-            return (last_invoice.month, last_invoice.water_end_reading)
-
+        val = last_invoice.electric_end_reading if reading_type == 'electric' else last_invoice.water_end_reading
+        return (last_invoice.month, val)
     return (None, None)
 
 
 def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage, new_reading, image):
     contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
-    if not contract:
-        return False, "Không tìm thấy hợp đồng!"
+    if not contract: return False, "Không tìm thấy hợp đồng!"
 
     invoice = get_invoice(contract.id, month)
     if not invoice:
@@ -474,9 +432,6 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
             invoice.water_usage = water_usage
             invoice.water_end_reading = new_reading
             invoice.water_image = image
-        else:
-            return False, "Loại chỉ số không xác định."
-
         db.session.commit()
         return True, f"Lưu chỉ số {reading_type.capitalize()} thành công."
     except Exception as e:
@@ -495,10 +450,7 @@ def stats_revenue(kw=None, month=None):
         Invoice.status
     ).join(Invoice, Invoice.contract_id == Contract.id)
 
-    if kw:
-        query = query.filter(Contract.apartment_id.contains(kw))
-
-    if month:
-        query = query.filter(Invoice.month == month)
+    if kw: query = query.filter(Contract.apartment_id.contains(kw))
+    if month: query = query.filter(Invoice.month == month)
 
     return query.group_by(Contract.apartment_id, Invoice.month, Invoice.status).all()

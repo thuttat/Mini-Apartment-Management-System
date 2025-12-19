@@ -1,0 +1,36 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Renew Contracts{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-danger border-bottom pb-2">Renew Contracts</h2>
+    <p class="text-muted">
+        <strong>Note: Contracts can only be renewed if the contract status remains active and must be renewed at least 30 days before the expiration date.</strong>
+    </p>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Active Contracts</label>
+            <select name="contract_id" class="form-select" required>
+                <option value="">-- Choose Contract --</option>
+                {% for c in contracts %}
+                    <option value="{{ c.id }}">
+                        Contract {{c.id}} | Room {{c.apartment.id}} | Tenant {{c.tenant.id}} | Expired {{c.end_date}}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Rental Period (months)</label>
+            <input type="number" name="rental_period" class="form-control" min="1" required>
+        </div>
+
+        <button type="submit" class="btn btn-warning">
+            Submit
+        </button>
+    </form>
+</div>
+
+{% endblock %}

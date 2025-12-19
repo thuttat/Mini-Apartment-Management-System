@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import Column, Integer, String, Boolean, Float, Date, ForeignKey, Enum, Text, DateTime
 from sqlalchemy.orm import relationship
 
-from aapp import db, app
+from aapp import db
 from flask_login import UserMixin
 
 
@@ -32,6 +32,7 @@ class ApartmentStatus(AppEnum):
 
 
 class ContractStatus(AppEnum):
+    PENDING = "PENDING"  # Trạng thái chờ kích hoạt (cho hợp đồng gia hạn)
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"
@@ -140,6 +141,21 @@ class Contract(BaseModel):
             self.end_date = self.start_date + relativedelta(months=self.rental_period)
 
 
+class ContractAssignment(BaseModel):
+    contract_id = Column(String(50), ForeignKey("contract.id"), nullable=False)
+    old_tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
+    new_tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
+    effective_date = Column(Date, default=datetime.now)
+    note = Column(String(225))
+
+    contract = relationship("Contract", backref="assignments")
+    old_tenant = relationship("Tenant", foreign_keys=[old_tenant_id])
+    new_tenant = relationship("Tenant", foreign_keys=[new_tenant_id])
+
+    def __str__(self):
+        return f"Transfer history of contract {self.contract_id}"
+
+
 # ============================
 # INVOICE
 # ============================
@@ -166,7 +182,7 @@ class Invoice(BaseModel):
     status = Column(Enum(PaymentStatus), default=PaymentStatus.UNPAID)
 
     contract = relationship("Contract", backref="invoices", lazy=True)
-    #invoice ko có mối quan hệ trực tiếp với apartment + rule => làm thuộc tính ảo để lấy giá thuê(contract/apartment)
+
     @property
     def rent_price(self):
         if self.contract:
@@ -178,8 +194,6 @@ class Invoice(BaseModel):
         if self.contract:
             return self.contract.apartment_id
         return None
-
-
 
 
 # ============================

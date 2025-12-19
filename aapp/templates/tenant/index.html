@@ -20,7 +20,7 @@
                 <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Contract Status</h6>
                 {% if contract %}
                     <h5 class="card-title fw-bold mb-1">{{contract.status.value}}</h5>
-                    <p class="card-text text-success small mb-3"><i class="bi bi-check-circle"></i> Lease ends {{contract.end_date}}</p>
+                    <p class="card-text text-success small mb-3"><i class="bi bi-check-circle"></i> Ends {{contract.end_date}}</p>
                 {% else %}
                     <h5 class="card-title fw-bold mb-1">No Contract</h5>
                     <p class="card-text text-muted small mb-3">Contact admin</p>

@@ -11,24 +11,24 @@
 {% block content %}
 <h1 class="text-success mt-2 text-center">Login</h1>
 
-<form method="post" action="">
+<form method="post" action="/login"> {% if err_msg %}
+        <div class="alert alert-danger mb-3">
+            {{ err_msg }}
+        </div>
+    {% endif %}
+
     <div class="form-floating mb-3 mt-3">
-        <input type="text" class="form-control" id="username" placeholder="Username" name="username">
+        <input type="text" class="form-control" id="username" placeholder="Username" name="username" required>
         <label for="username">Username</label>
     </div>
 
     <div class="form-floating mt-3 mb-3">
-    <input type="password" class="form-control" id="password" placeholder="Mật khẩu" name="password">
+    <input type="password" class="form-control" id="password" placeholder="Mật khẩu" name="password" required>
     <label for="password">Mật khẩu</label>
     </div>
 
     <div class="form-floating mt-3 mb-3">
         <button type="submit" class="btn btn-danger">Đăng nhập</button>
     </div>
-    {% if request.args.get('login_failed') %}
-        <div class="alert alert-danger">
-            Sai username hoặc password!
-        </div>
-    {% endif %}
 </form>
 {% endblock %}

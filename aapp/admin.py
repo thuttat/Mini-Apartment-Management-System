@@ -7,11 +7,12 @@ from flask_login import current_user, logout_user
 from wtforms import validators
 from flask import request,flash
 
+from aapp.dao import handle_assign_contract
 from aapp.utils import get_next_id, hash_password
 from aapp import app, db, dao
 from aapp.models import (Apartment, Tenant, Manager, Technician, Contract, Invoice,
                          Rule, UserRole, ApartmentDetail, RuleKey, ContractStatus,
-                         ApartmentStatus, PaymentStatus)
+                         ApartmentStatus, PaymentStatus, ContractAssignment)
 
 
 class AdminView(ModelView):
@@ -124,6 +125,27 @@ class ContractView(AdminView):
             if existing:
                 raise validators.ValidationError(f"Room {model.apartment.id} has active constract!")
 
+class ContractAssignmentView(AdminView):
+    column_list = ['id', 'contract', 'old_tenant', 'new_tenant', 'effective_date', 'note']
+    column_filters = ['contract', 'effective_date']
+    column_searchable_list = ['id']
+
+    form_columns = ['contract', 'new_tenant', 'effective_date', 'note']
+    can_delete = False
+    can_edit = False
+
+    def create_model(self, form):
+        try:
+            handle_assign_contract(
+                contract_id=form.contract.data.id,
+                new_tenant_id=form.new_tenant.data.id,
+                effective_date=form.effective_date.data,
+                note=form.note.data
+            )
+            return True
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 # =========================================================
 # INVOICE
@@ -262,6 +284,7 @@ admin.add_view(ApartmentView(Apartment, db.session, name='Apartment'))
 admin.add_view(ApartmentDetailView(ApartmentDetail, db.session, name='Apartment Detail'))
 
 admin.add_view(ContractView(Contract, db.session, name='Contract'))
+admin.add_view(ContractAssignmentView(ContractAssignment, db.session, name='Contract Assignment'))
 admin.add_view(InvoiceView(Invoice, db.session, name='Invoice'))
 admin.add_view(RuleView(Rule, db.session, name='Rule'))
 
