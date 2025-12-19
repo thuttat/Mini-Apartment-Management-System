@@ -104,12 +104,23 @@ class ContractView(AdminView):
     column_searchable_list = ['id', 'apartment.id', 'tenant.full_name']
     column_editable_list = ('member_count', 'status')
 
-    # can_delete = False
+    can_delete = False
     can_export = True
     can_edit = True
 
     form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'status']
     form_excluded_columns = ('end_date', 'rent_price', 'deposit')
+
+    def edit_form(self, obj=None):
+        form = super().edit_form(obj)
+
+        for name, field in form._fields.items():
+            if name not in ['member_count', 'status']:
+                field.render_kw = field.render_kw or {}
+                field.render_kw['readonly'] = True
+                field.render_kw['disabled'] = True
+
+        return form
 
     def on_model_change(self, form, model, is_created):
         if model.start_date and model.rental_period:
