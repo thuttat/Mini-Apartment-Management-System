@@ -78,6 +78,12 @@
                 </a>
             </li>
 
+            <li>
+                <a href="{{ url_for('renew_contract_view') }}" class="nav-link fw-bold">
+                    <i class="bi bi-file-earmark-text me-2"></i> Renew Contracts
+                </a>
+            </li>
+
             <hr class="border-secondary opacity-25 my-2">
 
             <li>
@@ -110,19 +116,6 @@
                 </a>
             </li>
             {% endif %}
-
-            <hr class="border-secondary opacity-25 my-3">
-            <li>
-                <a href="{{ url_for('renew_contract_view') }}" class="nav-link fw-bold">
-                    <i class="bi bi-file-earmark-text me-2"></i> Renew Contracts
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('settings') }}"
-                   class="nav-link text-white {% if active_page == 'settings' %}active{% endif %}">
-                    <i class="bi bi-gear me-2"></i> Settings
-                </a>
-            </li>
         </ul>
     </div>
 
