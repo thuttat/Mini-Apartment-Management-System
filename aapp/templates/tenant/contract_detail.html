@@ -1,0 +1,167 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Invoice Detail #{{ contract.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+
+    <div class="d-flex justify-content-between mb-3 no-print">
+        <a href="/tenant/apartment" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Go back
+        </a>
+
+        <button onclick="exportToPDF('contract-content', 'contract_{{ contract.id }}.pdf')"
+                class="btn btn-danger shadow-sm">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </button>
+    </div>
+
+<div id="contract-content" class="bg-white p-5 border shadow-sm mx-auto" style="max-width: 900px;">
+
+        <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+            <div>
+                <h2 class="text-primary fw-bold m-0">SKYSCRAPER</h2>
+                <p class="text-muted small">Apartment Management</p>
+            </div>
+            <div class="text-end">
+                <h4 class="fw-bold">RESIDENTIAL LEASE AGREEMENT</h4>
+                <p class="mb-0">Contract Ref: #{{ contract.id }}</p>
+            </div>
+        </div>
+
+        <div class="bg-light p-1 rounded mb-3 border">
+            <div class="row text-center">
+                <div class="col-4 border-end">
+                    <small class="text-muted text-uppercase fw-bold">Start Date</small>
+                    <div class="fs-6 fw-bold">{{ contract.start_date }}</div>
+                </div>
+                <div class="col-4 border-end">
+                    <small class="text-muted text-uppercase fw-bold">End Date</small>
+                    <div class="fs-6 fw-bold">{{ contract.end_date }}</div>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted text-uppercase fw-bold">Status</small>
+                    <div class="fs-6 fw-bold {{ 'text-success' if contract.status.name == 'ACTIVE' else 'text-danger' }}">
+                        {{ contract.status.name }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-6 pe-4">
+                <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">1. Landlord (Lessor)</h5>
+                {% if contract.apartment.details %}
+                    {% set manager = contract.apartment.details[0].manager %}
+                    <p class="mb-1"><strong>Name:</strong> {{ manager.full_name }}</p>
+                    <p class="mb-1"><strong>Role:</strong> Property Manager</p>
+                    <p class="mb-1"><strong>Email:</strong> {{ manager.email }}</p>
+                    <p class="mb-1"><strong>Phone:</strong> {{ manager.phone_number }}</p>
+                {% else %}
+                    <p class="mb-1"><strong>Name:</strong> Skyscraper Management Board</p>
+                    <p class="mb-1"><strong>Email:</strong> admin@skyscraper.com</p>
+                    <p class="mb-1"><strong>Hotline:</strong> 1900 8386</p>
+                {% endif %}
+            </div>
+
+            <div class="col-6 ps-4 border-start">
+                <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">2. Tenant (Lessee)</h5>
+                <p class="mb-1"><strong>Full Name:</strong> {{ contract.tenant.full_name }}</p>
+                <p class="mb-1"><strong>Date of Birth:</strong> {{ contract.tenant.dob if contract.tenant.dob else 'N/A' }}</p>
+                <p class="mb-1"><strong>Email:</strong> {{ contract.tenant.email }}</p>
+                <p class="mb-1"><strong>Phone:</strong> {{ contract.tenant.phone_number }}</p>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">3. The Premises (Apartment)</h5>
+            <p>The Landlord agrees to lease to the Tenant the apartment located at <strong>Skyscraper Building</strong> with the following details:</p>
+
+            <table class="table table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Unit Number</th>
+                        <th>Floor</th>
+                        <th>Type</th>
+                        <th>Area</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold text-primary">Room {{ contract.apartment.id }}</td>
+                        <td>{{ contract.apartment.floor }}</td>
+                        <td>{{ contract.apartment.room_type.value }}</td>
+                        <td>{{ contract.apartment.area }} m²</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mb-3">
+            <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-1">4. Financial Terms</h5>
+            <div class="row">
+                <div class="col-8">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center ps-0">
+                            <span>Monthly Rent Fee</span>
+                            <span class="fw-bold">{{ "{:,.0f}".format(contract.rent_price) }} VND</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center ps-0">
+                            <span>Security Deposit (Refundable)</span>
+                            <span class="fw-bold">{{ "{:,.0f}".format(contract.deposit) }} VND</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center ps-0">
+                            <span>Payment Cycle</span>
+                            <span>Monthly (Due on the 5th)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-1">
+            <h5 class="fw-bold text-uppercase border-bottom pb-2 mb-3">5. General Terms</h5>
+            <ul class="small text-muted" style="list-style-type: circle;">
+                <li class="mb-2">The Tenant agrees to pay the rent on time as specified in the Financial Terms.</li>
+                <li class="mb-2">The Tenant shall not make any structural alterations to the property without written consent.</li>
+                <li class="mb-2">The Tenant is responsible for maintaining the property in good condition.</li>
+                <li class="mb-2">Utilities (Electricity, Water, Internet) are not included in the rent and are charged separately.</li>
+                <li class="mb-2">Contract renewals and contract transfers must be completed at least one month before the contract expires.</li>
+            </ul>
+        </div>
+
+        <div class="row mt-1 pt-1">
+            <div class="col-6">
+                <p class="fw-bold mb-5">Signed by Landlord:</p>
+                <div class="border-bottom w-75 mb-2"></div>
+                {% if contract.apartment.details %}
+                    <p class="fw-bold m-0">{{ contract.apartment.details[0].manager.full_name }}</p>
+                {% else %}
+                    <p class="fw-bold m-0">Skyscraper Manager</p>
+                {% endif %}
+                <small class="text-muted">Date: {{ contract.start_date.strftime('%Y-%m-%d') }}</small>
+            </div>
+
+            <div class="col-6">
+                <p class="fw-bold mb-5">Signed by Tenant:</p>
+                <div class="border-bottom w-75 mb-2"></div>
+                <p class="fw-bold m-0">{{ contract.tenant.full_name }}</p>
+                <small class="text-muted">Date: {{ contract.start_date.strftime('%Y-%m-%d') }}</small>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        body { background-color: white; }
+        #contract-content { border: none !important; box-shadow: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+    {% include 'layout/pdf_exporter.html' %}
+{% endblock %}

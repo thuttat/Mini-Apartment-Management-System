@@ -72,7 +72,8 @@ def seed_data():
             id=item['id'],
             room_type=get_enum(RoomType, item['room_type']),
             status=get_enum(ApartmentStatus, item['status']),
-            floor=item['floor'], area=item['area'], price=item['price']
+            floor=item['floor'], area=item['area'], price=item['price'],
+            image_urls=item['image_urls']
         )
         db.session.add(a)
 

@@ -4,24 +4,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div class="mb-4">
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-                {% if category == 'success' %}
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                {% else %}
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                {% endif %}
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-        </div>
-    {% endif %}
-{% endwith %}
-
 <div class="row mb-4">
     <div class="col-12">
         <div class="card bg-primary text-white">
@@ -63,6 +45,7 @@
                     <th>Action</th>
                 </tr>
                 </thead>
+
                 <tbody>
                 {% if invoices %}
                 {% for i in invoices %}
@@ -114,6 +97,23 @@
                 <tr>
                     <td colspan="6" class="text-center py-4 text-muted">No invoices found.</td>
                 </tr>
+                {% endif %}
+
+                {% if pages > 1 %}
+                <ul class="pagination justify-content-center mt-4">
+                    {% for i in range(1, pages + 1) %}
+                    <li class="page-item {{ 'active' if i == request.args.get('page', 1)|int else '' }}">
+                        <a class="page-link"
+                           href="{{ url_for(
+                           'tenant_payments',
+                           page=i,
+                           status=request.args.get('status'),
+                           month=request.args.get('month')) }}">
+                            {{ i }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
                 </tbody>
             </table>

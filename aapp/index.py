@@ -7,7 +7,7 @@ from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db, vnpay_client, init_extensions
-from aapp.dao import renew_contract
+from aapp.dao import renew_contract, load_invoices, count_invoices
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice, Contract
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
@@ -116,7 +116,6 @@ def register_process():
 
 
 @app.route('/logout')
-@login_required
 def logout_process():
     logout_user()
     return redirect('/')
@@ -178,39 +177,42 @@ def tenant_apartment():
     return render_template(
         'tenant/apartment.html', apartment=ctx['apartment'], contract=ctx['contract'])
 
+@app.route('/tenant/contract/<contract_id>')
+@login_required
+def tenant_contract_detail(contract_id):
+    contract = Contract.query.get(contract_id)
+
+    if not contract:
+        return render_template('404.html'), 404
+
+    if contract.tenant_id != current_user.id:
+        return "This is not your contract!", 403
+
+    return render_template('tenant/contract_detail.html', contract=contract)
+
 
 @app.route('/tenant/payments')
 @login_required
 def tenant_payments():
     ctx = get_tenant_context()
     contract = ctx['contract']
-    invoices = []
-
+    page = int(request.args.get('page', 1))
     req_month = request.args.get('month')
     req_status = request.args.get('status')
 
-    if contract:
-        all_invoices = dao.load_invoices(contract_id=contract.id)
+    invoices = load_invoices(
+        contract_id=contract.id,
+        month=req_month,
+        status=PaymentStatus[req_status] if req_status else None,
+        page=page
+    )
 
-        for inv in all_invoices:
-            is_match = True
-            if req_month and inv.month != req_month:
-                is_match = False
-            if req_status and inv.status.name != req_status:
-                is_match = False
-
-            if is_match:
-                invoices.append(inv)
-
-        invoices.sort(key=lambda x: x.month, reverse=True)
     total_unpaid = sum(inv.total_amount for inv in invoices if inv.status.name == 'UNPAID')
 
     return render_template('tenant/payments.html',
                            invoices=invoices,
                            total_unpaid=total_unpaid,
-                           contract=contract,
-                           apartment=ctx['apartment']
-                           )
+                           pages=int(math.ceil(count_invoices(contract.id, status=PaymentStatus[req_status] if req_status else None) / app.config['PAGE_SIZE'])))
 
 
 @app.route('/tenant/invoice/<invoice_id>')
@@ -253,29 +255,42 @@ def upload_avatar():
     if request.method == 'POST':
         file_to_upload = request.files['avatar']
 
-        if file_to_upload:
-            upload_result = cloudinary.uploader.upload(
-                file_to_upload,
-                folder="skyscraper_avatars",
-                public_id=f"avatar_{current_user.id}",
-                overwrite=True,
-                resource_type="image"
-            )
-            image_url = upload_result['secure_url']
-            current_user.avatar = image_url
-            db.session.commit()
+        try:
+            if file_to_upload:
+                upload_result = cloudinary.uploader.upload(
+                    file_to_upload,
+                    folder="skyscraper_avatars",
+                    public_id=f"avatar_{current_user.id}",
+                    overwrite=True,
+                    resource_type="image"
+                )
+                image_url = upload_result['secure_url']
+                current_user.avatar = image_url
+                db.session.commit()
+                flash("Update avatar successfully!", category='success')
+            else:
+                flash("No file selected!", category='danger')
+        except Exception:
+            db.session.rollback()
+            flash("There's something wrong! Try again later.", "danger")
     return redirect(url_for('tenant_profile'))
 
 
 @app.route('/change_info', methods=['POST'])
 @login_required
 def change_user_info():
-    current_user.phone_number = request.form.get("phone_number")
-    current_user.email = request.form.get("email")
-    dob_str = request.form.get("dob")
-    if dob_str:
-        current_user.dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
-    db.session.commit()
+    try:
+        current_user.phone_number = request.form.get("phone_number")
+        current_user.email = request.form.get("email")
+        dob_str = request.form.get("dob")
+        if dob_str:
+            current_user.dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+        db.session.commit()
+        flash("Update personal information successfully!", 'success')
+
+    except Exception:
+        db.session.rollback()
+        flash("There's something wrong! Try again later.", "danger")
     return redirect(url_for('tenant_profile'))
 
 
@@ -283,19 +298,21 @@ def change_user_info():
 @login_required
 def change_password():
     if current_user.password != hash_password(request.form.get("current_password")):
-        return redirect(url_for('tenant_profile', tab="password", msg="WRONG PASSWORD!"))
+        flash('Current password is incorrect!', 'danger')
+        return redirect(url_for('tenant_profile'))
 
     new_pw = request.form.get('new_password')
     confirm_pw = request.form.get('confirm_password')
 
     if new_pw != confirm_pw:
-        return redirect(url_for('tenant_profile', tab="password", msg="WRONG CONFIRM PASSWORD!"))
+        flash('Confirm password is incorrect!', 'danger')
+        return redirect(url_for('tenant_profile'))
 
     current_user.password = hash_password(new_pw)
     db.session.commit()
 
     flash("Password changed successfully!", "success")
-    return redirect(url_for('tenant_profile', tab="password", msg="CHANGE PASSWORD SUCCESSFULLY!"))
+    return redirect(url_for('tenant_profile'))
 
 # xu ly doi can ho cho tenant
 @app.route('/switch_apartment/<contract_id>', methods=['POST'])

@@ -66,12 +66,6 @@ def get_tenant_context():
 
         apartment = dao.get_apartment_by_id(contract.apartment_id)
         invoices = dao.load_invoices(contract_id=contract.id)
-        invoices.sort(key=lambda x: x.month, reverse=True)
-
-    if invoices:
-        for i in invoices:
-            if i.status.name != 'PAID':
-                total_unpaid += i.total_amount
 
     return {
         'contract': contract,

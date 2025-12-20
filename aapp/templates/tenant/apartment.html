@@ -9,10 +9,10 @@
     <div class="col-md-4">
         <div class="card h-100 border-0 shadow-sm">
             <div class="position-relative">
-                <div class="d-flex justify-content-center" style="height: 200px;">
-                    <image src="{{apartment.image_urls}}"></image>
+                <div class="rounded-top overflow-hidden" style="height: 200px;">
+                    <image src="{{apartment.image_urls}}" class="w-100 h-100" style="object-fit: cover; object-position: center;" alt="Room {{apartment.id}}"></image>
                 </div>
-                <span class="position-absolute top-0 start-0 m-3 badge bg-success">Occupied</span>
+                <span class="position-absolute top-0 start-0 m-3 badge bg-success">{{apartment.status.name}}</span>
             </div>
 
             <div class="card-body">
@@ -105,7 +105,13 @@
                     <span class="fw-bold">1 Month</span>
                 </div>
 
-                <button class="btn btn-outline-primary w-100"><i class="bi bi-download me-2"></i> Download Contract (PDF)</button>
+                <a href="{{ url_for('tenant_contract_detail', contract_id=contract.id) }}"
+                   class="btn btn-outline-primary w-100"
+                   title="Download Contract (PDF)">
+                    <i class="bi bi-download me-2"></i>
+                    Download Contract (PDF)
+                </a>
+<!--                <button class="btn btn-outline-primary w-100"><i class="bi bi-download me-2"></i> Download Contract (PDF)</button>-->
             </div>
         </div>
 
