@@ -26,60 +26,456 @@
     { "id": "R5", "key": "PRICE_SERVICE", "value": "150000", "name_display": "Phí dịch vụ", "description": "Phí quản lý hàng tháng" }
   ],
   "apartments": [
-    { "id": "A101", "room_type": "STUDIO", "status": "RENTED", "floor": 1, "area": 30, "price": 3500000 },
-    { "id": "A102", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 32, "price": 3600000 },
-    { "id": "A103", "room_type": "STUDIO", "status": "RENTED", "floor": 1, "area": 28, "price": 3400000 },
-    { "id": "A104", "room_type": "STUDIO", "status": "MAINTENANCE", "floor": 1, "area": 30, "price": 3500000 },
-    { "id": "A105", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 35, "price": 3800000 },
-    { "id": "A106", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 30, "price": 3500000 },
-    { "id": "A107", "room_type": "STUDIO", "status": "LOOKING_FOR_ROOMMATE", "floor": 1, "area": 32, "price": 3600000 },
-    { "id": "A108", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 30, "price": 3500000 },
-    { "id": "A109", "room_type": "STUDIO", "status": "RENTED", "floor": 1, "area": 34, "price": 3700000 },
-    { "id": "A110", "room_type": "STUDIO", "status": "AVAILABLE", "floor": 1, "area": 30, "price": 3500000 },
-
-    { "id": "A201", "room_type": "ONE_BEDROOM", "status": "RENTED", "floor": 2, "area": 45, "price": 5000000 },
-    { "id": "A202", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 48, "price": 5200000 },
-    { "id": "A203", "room_type": "ONE_BEDROOM", "status": "LOOKING_FOR_ROOMMATE", "floor": 2, "area": 45, "price": 5000000 },
-    { "id": "A204", "room_type": "ONE_BEDROOM", "status": "RENTED", "floor": 2, "area": 50, "price": 5500000 },
-    { "id": "A205", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 45, "price": 5000000 },
-    { "id": "A206", "room_type": "ONE_BEDROOM", "status": "MAINTENANCE", "floor": 2, "area": 42, "price": 4800000 },
-    { "id": "A207", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 45, "price": 5000000 },
-    { "id": "A208", "room_type": "ONE_BEDROOM", "status": "RENTED", "floor": 2, "area": 48, "price": 5200000 },
-    { "id": "A209", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 45, "price": 5000000 },
-    { "id": "A210", "room_type": "ONE_BEDROOM", "status": "AVAILABLE", "floor": 2, "area": 50, "price": 5500000 },
-
-    { "id": "A301", "room_type": "TWO_BEDROOM", "status": "RENTED", "floor": 3, "area": 65, "price": 7500000 },
-    { "id": "A302", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 70, "price": 8000000 },
-    { "id": "A303", "room_type": "TWO_BEDROOM", "status": "RENTED", "floor": 3, "area": 68, "price": 7800000 },
-    { "id": "A304", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 65, "price": 7500000 },
-    { "id": "A305", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 65, "price": 7500000 },
-    { "id": "A306", "room_type": "TWO_BEDROOM", "status": "LOOKING_FOR_ROOMMATE", "floor": 3, "area": 70, "price": 8000000 },
-    { "id": "A307", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 68, "price": 7800000 },
-    { "id": "A308", "room_type": "TWO_BEDROOM", "status": "RENTED", "floor": 3, "area": 65, "price": 7500000 },
-    { "id": "A309", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 72, "price": 8200000 },
-    { "id": "A310", "room_type": "TWO_BEDROOM", "status": "AVAILABLE", "floor": 3, "area": 65, "price": 7500000 },
-
-    { "id": "A401", "room_type": "DUPLEX", "status": "RENTED", "floor": 4, "area": 90, "price": 12000000 },
-    { "id": "A402", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 95, "price": 13000000 },
-    { "id": "A403", "room_type": "DUPLEX", "status": "RENTED", "floor": 4, "area": 92, "price": 12500000 },
-    { "id": "A404", "room_type": "DUPLEX", "status": "MAINTENANCE", "floor": 4, "area": 90, "price": 12000000 },
-    { "id": "A405", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 95, "price": 13000000 },
-    { "id": "A406", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 90, "price": 12000000 },
-    { "id": "A407", "room_type": "DUPLEX", "status": "RENTED", "floor": 4, "area": 98, "price": 13500000 },
-    { "id": "A408", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 90, "price": 12000000 },
-    { "id": "A409", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 92, "price": 12500000 },
-    { "id": "A410", "room_type": "DUPLEX", "status": "AVAILABLE", "floor": 4, "area": 90, "price": 12000000 },
-
-    { "id": "A501", "room_type": "PENTHOUSE", "status": "RENTED", "floor": 5, "area": 120, "price": 20000000 },
-    { "id": "A502", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 130, "price": 22000000 },
-    { "id": "A503", "room_type": "PENTHOUSE", "status": "LOOKING_FOR_ROOMMATE", "floor": 5, "area": 125, "price": 21000000 },
-    { "id": "A504", "room_type": "PENTHOUSE", "status": "RENTED", "floor": 5, "area": 120, "price": 20000000 },
-    { "id": "A505", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 140, "price": 25000000 },
-    { "id": "A506", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 120, "price": 20000000 },
-    { "id": "A507", "room_type": "PENTHOUSE", "status": "RENTED", "floor": 5, "area": 135, "price": 23000000 },
-    { "id": "A508", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 120, "price": 20000000 },
-    { "id": "A509", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 125, "price": 21000000 },
-    { "id": "A510", "room_type": "PENTHOUSE", "status": "AVAILABLE", "floor": 5, "area": 150, "price": 30000000 }
+	{
+		"room_type" : "STUDIO",
+		"status" : "RENTED",
+		"image_urls" : "https://vinapad.com/wp-content/uploads/2020/08/studio-apartment-la-gi.jpg",
+		"floor" : 1,
+		"area" : 30,
+		"price" : 3500000,
+		"id" : "A101"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://cf.bstatic.com/xdata/images/hotel/max1024x768/184423976.jpg?k=e1667b9c89059ecc39432ce3365fee14deea4848e29039c09da56dfe6c694827&o=",
+		"floor" : 1,
+		"area" : 32,
+		"price" : 3600000,
+		"id" : "A102"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "RENTED",
+		"image_urls" : "https://www.collegiate-ac.com/propeller/uploads/sites/2/2019/09/studio-8-NXPowerLite-Copy-edited-1450x815.jpg",
+		"floor" : 1,
+		"area" : 28,
+		"price" : 3400000,
+		"id" : "A103"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "MAINTENANCE",
+		"image_urls" : "https://vinapad.com/wp-content/uploads/2020/08/studio-apartment-la-gi.jpg",
+		"floor" : 1,
+		"area" : 30,
+		"price" : 3500000,
+		"id" : "A104"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.redfin.com/blog/wp-content/uploads/2022/09/spacejoy-xkJ2_THgKmk-unsplash.jpg",
+		"floor" : 1,
+		"area" : 35,
+		"price" : 3800000,
+		"id" : "A105"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://vinapad.com/wp-content/uploads/2020/08/studio-apartment-la-gi.jpg",
+		"floor" : 1,
+		"area" : 30,
+		"price" : 3500000,
+		"id" : "A106"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "LOOKING_FOR_ROOMMATE",
+		"image_urls" : "https://cf.bstatic.com/xdata/images/hotel/max1024x768/184423976.jpg?k=e1667b9c89059ecc39432ce3365fee14deea4848e29039c09da56dfe6c694827&o=",
+		"floor" : 1,
+		"area" : 32,
+		"price" : 3600000,
+		"id" : "A107"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://vinapad.com/wp-content/uploads/2020/08/studio-apartment-la-gi.jpg",
+		"floor" : 1,
+		"area" : 30,
+		"price" : 3500000,
+		"id" : "A108"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "RENTED",
+		"image_urls" : "https://img.homedy.com/store/article/images/2020/03/18/can-ho-studio-637201427686316126.jpg",
+		"floor" : 1,
+		"area" : 34,
+		"price" : 3700000,
+		"id" : "A109"
+	},
+	{
+		"room_type" : "STUDIO",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://vinapad.com/wp-content/uploads/2020/08/studio-apartment-la-gi.jpg",
+		"floor" : 1,
+		"area" : 30,
+		"price" : 3500000,
+		"id" : "A110"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "RENTED",
+		"image_urls" : "https://www.hellolanding.com/blog/wp-content/uploads/2021/10/image2-4.jpg",
+		"floor" : 2,
+		"area" : 45,
+		"price" : 5000000,
+		"id" : "A201"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.walnutcapital.com/files/blog/items/1086/lh-downtown-studio-justin-commonwealth-studio-3-staged-corrected-2-ds-4-1623328187.jpg",
+		"floor" : 2,
+		"area" : 48,
+		"price" : 5200000,
+		"id" : "A202"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "LOOKING_FOR_ROOMMATE",
+		"image_urls" : "https://www.hellolanding.com/blog/wp-content/uploads/2021/10/image2-4.jpg",
+		"floor" : 2,
+		"area" : 45,
+		"price" : 5000000,
+		"id" : "A203"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "RENTED",
+		"image_urls" : "https://www.essexapartmenthomes.com/-/media/project/essexpropertytrust/sites/essexapartmenthomes/blog/2021/2021-01-12-studio-vs-one-bedroom-apartment-how-they-measure-up/studio-vs-one-bedroom-apartment-how-they-measure-up-1.jpg",
+		"floor" : 2,
+		"area" : 50,
+		"price" : 5500000,
+		"id" : "A204"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.hellolanding.com/blog/wp-content/uploads/2021/10/image2-4.jpg",
+		"floor" : 2,
+		"area" : 45,
+		"price" : 5000000,
+		"id" : "A205"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "MAINTENANCE",
+		"image_urls" : "https://www.guinnesshomes.co.uk/wp-content/uploads/2025/08/The-One-Hundred-Living-Room-and-Kitchen.webp",
+		"floor" : 2,
+		"area" : 42,
+		"price" : 4800000,
+		"id" : "A206"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.hellolanding.com/blog/wp-content/uploads/2021/10/image2-4.jpg",
+		"floor" : 2,
+		"area" : 45,
+		"price" : 5000000,
+		"id" : "A207"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "RENTED",
+		"image_urls" : "https://www.walnutcapital.com/files/blog/items/1086/lh-downtown-studio-justin-commonwealth-studio-3-staged-corrected-2-ds-4-1623328187.jpg",
+		"floor" : 2,
+		"area" : 48,
+		"price" : 5200000,
+		"id" : "A208"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.hellolanding.com/blog/wp-content/uploads/2021/10/image2-4.jpg",
+		"floor" : 2,
+		"area" : 45,
+		"price" : 5000000,
+		"id" : "A209"
+	},
+	{
+		"room_type" : "ONE_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.essexapartmenthomes.com/-/media/project/essexpropertytrust/sites/essexapartmenthomes/blog/2021/2021-01-12-studio-vs-one-bedroom-apartment-how-they-measure-up/studio-vs-one-bedroom-apartment-how-they-measure-up-1.jpg",
+		"floor" : 2,
+		"area" : 50,
+		"price" : 5500000,
+		"id" : "A210"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "RENTED",
+		"image_urls" : "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/365308191.jpg?k=66a583fc57750fcd57cc828b8aaa39a2e9264d4738b8d475affa9a8fefeb159c&o=",
+		"floor" : 3,
+		"area" : 65,
+		"price" : 7500000,
+		"id" : "A301"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.vietresidence.com/uploads/data/40/imgproducts/minimalist-2-bedroom-apartment-din-dang-thai-mai-tay-ho-2jpg_9703022995.jpg",
+		"floor" : 3,
+		"area" : 70,
+		"price" : 8000000,
+		"id" : "A302"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "RENTED",
+		"image_urls" : "https://westlakehousing.vn/uploads/plugin/product_items/1005/1723860136-525315575-modern-two-bedroom-apartment-for-rent-in-tay-ho.jpg",
+		"floor" : 3,
+		"area" : 68,
+		"price" : 7800000,
+		"id" : "A303"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/365308191.jpg?k=66a583fc57750fcd57cc828b8aaa39a2e9264d4738b8d475affa9a8fefeb159c&o=",
+		"floor" : 3,
+		"area" : 65,
+		"price" : 7500000,
+		"id" : "A304"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/365308191.jpg?k=66a583fc57750fcd57cc828b8aaa39a2e9264d4738b8d475affa9a8fefeb159c&o=",
+		"floor" : 3,
+		"area" : 65,
+		"price" : 7500000,
+		"id" : "A305"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "LOOKING_FOR_ROOMMATE",
+		"image_urls" : "https://www.vietresidence.com/uploads/data/40/imgproducts/minimalist-2-bedroom-apartment-din-dang-thai-mai-tay-ho-2jpg_9703022995.jpg",
+		"floor" : 3,
+		"area" : 70,
+		"price" : 8000000,
+		"id" : "A306"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://westlakehousing.vn/uploads/plugin/product_items/1005/1723860136-525315575-modern-two-bedroom-apartment-for-rent-in-tay-ho.jpg",
+		"floor" : 3,
+		"area" : 68,
+		"price" : 7800000,
+		"id" : "A307"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "RENTED",
+		"image_urls" : "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/365308191.jpg?k=66a583fc57750fcd57cc828b8aaa39a2e9264d4738b8d475affa9a8fefeb159c&o=",
+		"floor" : 3,
+		"area" : 65,
+		"price" : 7500000,
+		"id" : "A308"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://livinspaces.net/wp-content/uploads/2024/01/Nordic-Two-Bedroom-Apartment-by-the-Rockwood-Homes_16.jpg",
+		"floor" : 3,
+		"area" : 72,
+		"price" : 8200000,
+		"id" : "A309"
+	},
+	{
+		"room_type" : "TWO_BEDROOM",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/365308191.jpg?k=66a583fc57750fcd57cc828b8aaa39a2e9264d4738b8d475affa9a8fefeb159c&o=",
+		"floor" : 3,
+		"area" : 65,
+		"price" : 7500000,
+		"id" : "A310"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "RENTED",
+		"image_urls" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXlixfiPN2iOSdgirJlLoB6x0GyCFEPfbYcw&s",
+		"floor" : 4,
+		"area" : 90,
+		"price" : 12000000,
+		"id" : "A401"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://thearchitectsdiary.com/wp-content/uploads/2020/10/feat-epsilon.jpg",
+		"floor" : 4,
+		"area" : 95,
+		"price" : 13000000,
+		"id" : "A402"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "RENTED",
+		"image_urls" : "https://keycapitalproperties.com/wp-content/uploads/2023/08/buy-duplex-apartment-in-dubai.webp",
+		"floor" : 4,
+		"area" : 92,
+		"price" : 12500000,
+		"id" : "A403"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "MAINTENANCE",
+		"image_urls" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXlixfiPN2iOSdgirJlLoB6x0GyCFEPfbYcw&s",
+		"floor" : 4,
+		"area" : 90,
+		"price" : 12000000,
+		"id" : "A404"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://thearchitectsdiary.com/wp-content/uploads/2020/10/feat-epsilon.jpg",
+		"floor" : 4,
+		"area" : 95,
+		"price" : 13000000,
+		"id" : "A405"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXlixfiPN2iOSdgirJlLoB6x0GyCFEPfbYcw&s",
+		"floor" : 4,
+		"area" : 90,
+		"price" : 12000000,
+		"id" : "A406"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "RENTED",
+		"image_urls" : "https://hanoirealestate.com.vn/images/products/duplex-apartment-spacious-elegant-and-luxurious-for-rent-in-sunshine-city_2023651023310.jpg",
+		"floor" : 4,
+		"area" : 98,
+		"price" : 13500000,
+		"id" : "A407"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXlixfiPN2iOSdgirJlLoB6x0GyCFEPfbYcw&s",
+		"floor" : 4,
+		"area" : 90,
+		"price" : 12000000,
+		"id" : "A408"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://keycapitalproperties.com/wp-content/uploads/2023/08/buy-duplex-apartment-in-dubai.webp",
+		"floor" : 4,
+		"area" : 92,
+		"price" : 12500000,
+		"id" : "A409"
+	},
+	{
+		"room_type" : "DUPLEX",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXlixfiPN2iOSdgirJlLoB6x0GyCFEPfbYcw&s",
+		"floor" : 4,
+		"area" : 90,
+		"price" : 12000000,
+		"id" : "A410"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "RENTED",
+		"image_urls" : "https://www.essexapartmenthomes.com/-/media/project/essexpropertytrust/sites/essexapartmenthomes/apartments-page/penthouse-apartments/500-folsom-penthouse-view.jpg",
+		"floor" : 5,
+		"area" : 120,
+		"price" : 20000000,
+		"id" : "A501"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.apartmentguide.com/blog/wp-content/uploads/2019/10/penthouse_HERO.jpg",
+		"floor" : 5,
+		"area" : 130,
+		"price" : 22000000,
+		"id" : "A502"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "LOOKING_FOR_ROOMMATE",
+		"image_urls" : "https://thumbs.6sqft.com/wp-content/uploads/2018/10/26121020/BK-Point-Penthouse-D-1.jpg?format=webp",
+		"floor" : 5,
+		"area" : 125,
+		"price" : 21000000,
+		"id" : "A503"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "RENTED",
+		"image_urls" : "https://www.essexapartmenthomes.com/-/media/project/essexpropertytrust/sites/essexapartmenthomes/apartments-page/penthouse-apartments/500-folsom-penthouse-view.jpg",
+		"floor" : 5,
+		"area" : 120,
+		"price" : 20000000,
+		"id" : "A504"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://proud-real-estate.s3.ap-southeast-1.amazonaws.com/images/penthouse-highlights_1739722723138.jpg",
+		"floor" : 5,
+		"area" : 140,
+		"price" : 25000000,
+		"id" : "A505"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.essexapartmenthomes.com/-/media/project/essexpropertytrust/sites/essexapartmenthomes/apartments-page/penthouse-apartments/500-folsom-penthouse-view.jpg",
+		"floor" : 5,
+		"area" : 120,
+		"price" : 20000000,
+		"id" : "A506"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "RENTED",
+		"image_urls" : "https://oikios.vn/wp-content/uploads/2022/12/can-ho-Penthouse-1-1024x683-1.jpg",
+		"floor" : 5,
+		"area" : 135,
+		"price" : 23000000,
+		"id" : "A507"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://www.essexapartmenthomes.com/-/media/project/essexpropertytrust/sites/essexapartmenthomes/apartments-page/penthouse-apartments/500-folsom-penthouse-view.jpg",
+		"floor" : 5,
+		"area" : 120,
+		"price" : 20000000,
+		"id" : "A508"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://thumbs.6sqft.com/wp-content/uploads/2018/10/26121020/BK-Point-Penthouse-D-1.jpg?format=webp",
+		"floor" : 5,
+		"area" : 125,
+		"price" : 21000000,
+		"id" : "A509"
+	},
+	{
+		"room_type" : "PENTHOUSE",
+		"status" : "AVAILABLE",
+		"image_urls" : "https://solproperties.ae/wp-content/uploads/2024/08/Living_Dining_V1-HD.webp",
+		"floor" : 5,
+		"area" : 150,
+		"price" : 30000000,
+		"id" : "A510"
+	}
   ],
   "apartment_details": [
     { "id": "AD001", "apartment_id": "A101", "manager_id": "M001", "note": "Giao cho quản lý 1" },
