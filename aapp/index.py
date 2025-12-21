@@ -78,7 +78,7 @@ def login_process():
     if user:
         login_user(user)
         if role == UserRole.MANAGER:
-            return redirect('/admin')
+            return redirect('/')
         elif role == UserRole.TENANT:
             return redirect('/tenant/index')
         elif role == UserRole.TECHNICIAN:
@@ -134,7 +134,7 @@ def apartment_detail(apartment_id):
 def load_user(user_id):
     return dao.get_user_by_id(user_id)
 
-# man hinh gia han hop dong cua admin
+# man hinh gia han hop dong cua admin nam o ngoai
 @app.route("/admin/renew_contracts", methods=["GET", "POST"])
 def renew_contract_view():
     if request.method == "POST":
@@ -212,7 +212,8 @@ def tenant_payments():
     return render_template('tenant/payments.html',
                            invoices=invoices,
                            total_unpaid=total_unpaid,
-                           pages=int(math.ceil(count_invoices(contract.id, status=PaymentStatus[req_status] if req_status else None) / app.config['PAGE_SIZE'])))
+                           pages=int(math.ceil(count_invoices(contract.id, status=PaymentStatus[req_status] if req_status else None)
+                                               / app.config['PAGE_SIZE'])))
 
 
 @app.route('/tenant/invoice/<invoice_id>')
@@ -354,7 +355,7 @@ def technician_index():
 def meter_reading_view(reading_type):
     if not current_user.is_authenticated or current_user.user_role != UserRole.TECHNICIAN or reading_type not in [
         'electric', 'water']:
-        flash('Bạn không có quyền hoặc trang không hợp lệ.', 'danger')
+        flash('You have no role or this site does not accessable', 'danger')
         return redirect(url_for('index'))
 
     if request.method == 'POST':
@@ -375,7 +376,7 @@ def meter_reading_view(reading_type):
 
         return redirect(url_for('meter_reading_view', reading_type=reading_type))
 
-    apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
+    apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE],page = None)
     months = get_months_list()
     return render_template('technician/meter_reading.html', apartments=apartments, months=months,
                            reading_type=reading_type)
@@ -393,29 +394,36 @@ def report_contracts_expiration():
                            datetime=datetime)
 
 
+
 @app.route('/manager/revenue-report')
 @login_required
 def report_revenue():
     if current_user.user_role != UserRole.MANAGER:
-        return redirect('/')  # Hoặc trang lỗi 403
-
-    kw = request.args.get('kw')
+        return redirect('/')
+    year = request.args.get('year')
     month = request.args.get('month')
+    kw = request.args.get('kw')
 
-    stats = dao.stats_revenue(kw=kw, month=month)
+    stats = []
+    mode = 'year' if year else 'month'
+
+    if mode == 'year':
+        stats = dao.stats_revenue_by_year(year)
+    else:
+        if not month and not kw:
+            month = datetime.now().strftime('%Y-%m')
+        stats = dao.stats_revenue(kw=kw, month=month)
 
     total_revenue = 0
     if stats:
         for s in stats:
-            if s[3] == PaymentStatus.PAID:
+            if mode == 'year':
+                total_revenue += s[1]
+            elif s[3] == PaymentStatus.PAID:
                 total_revenue += s[2]
 
-    # Lưu ý: render template mới nằm trong thư mục reports
     return render_template('reports/revenue.html',
-                           stats=stats,
-                           month=month,
-                           kw=kw,
-                           total_revenue=total_revenue)
+                           stats=stats,month=month,year=year,kw=kw,total_revenue=total_revenue,mode=mode)
 
 @app.route('/payment')
 def payment():
@@ -423,7 +431,7 @@ def payment():
     amount = request.args.get('amount')
     txn_ref = f"{invoice_id}_{int(datetime.now().timestamp())}"
     if not invoice_id or not amount:
-        return "Thiếu thông tin hóa đơn", 400
+        return "Have no information about this once", 400
 
     params = {
         'vnp_Version': '2.1.0',
@@ -434,7 +442,7 @@ def payment():
         'vnp_CurrCode': 'VND',
         'vnp_IpAddr': request.remote_addr,
         'vnp_Locale': 'vn',
-        'vnp_OrderInfo': f"Thanh toan hao don {invoice_id}",
+        'vnp_OrderInfo': f"Pay for {invoice_id}",
         'vnp_OrderType': 'billpayment',
         'vnp_ReturnUrl': url_for('payment_return',_external=True),
         'vnp_TxnRef': txn_ref,
@@ -453,7 +461,7 @@ def payment_return():
         try:
             invoice_id_str= vnp_txn_ref.split('_')[0]
         except Exception as e:
-            flash("Mã giao dịch không hợp lệ!", "danger")
+            flash("Invalid transaction code!", "danger")
             return redirect(url_for('tenant_payments'))
         invoice_id = str(invoice_id_str)
         invoice = Invoice.query.get(str(invoice_id))
@@ -463,16 +471,16 @@ def payment_return():
                     invoice.status=PaymentStatus.PAID
                     db.session.commit()
                     db.session.refresh(invoice)
-                    flash(f"Thanh toán thành công hóa đơn #{invoice_id}!", "success")
+                    flash(f"Payment successful for invoice #{invoice_id}!", "success")
                 else:
-                    flash(f"Số tiền thanh toán({vnp_amount}) không khớp với hóa đơn!", "danger")
+                    flash(f"Payment amount({vnp_amount}) does not match the invoice!", "danger")
             else:
-                flash(f"Không tìm thấy hóa đơn!", "danger")
+                flash(f"Invoice not found!", "danger")
         else:
-            flash(f"Thanh toán không thành công. Mã lỗi: {response_code}", "danger")
+            flash(f"Payment failed. Response code: {response_code}", "danger")
         return redirect(url_for('tenant_payments'))
     else:
-        return "Xác thực không hợp lệ!",400
+        return "Invalid checksum!",400
 
 init_extensions()
 

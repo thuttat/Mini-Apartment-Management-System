@@ -196,13 +196,13 @@ class InvoiceView(AdminView):
     column_default_sort = ('month', True)
 
     column_labels = {
-        'contract': 'Hợp đồng',
-        'month': 'Tháng',
-        'rent_price': 'Tiền phòng',
-        'electric_usage': 'Điện (kWh)',
-        'water_usage': 'Nước (m3)',
-        'total_amount': 'Tổng cộng',
-        'status': 'Trạng thái'
+        'contract': 'Constract',
+        'month': 'Month',
+        'rent_price': 'Rent price',
+        'electric_usage': 'Electric (kWh)',
+        'water_usage': 'Water (m3)',
+        'total_amount': 'Total',
+        'status': 'Status'
     }
 
     def _money_formatter(view, context, model, name):

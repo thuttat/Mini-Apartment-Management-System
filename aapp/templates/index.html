@@ -56,19 +56,19 @@
         <div class="row justify-content-center g-2">
             <div class="col-md-2">
                 <select name="status" class="form-select" onchange="this.form.submit()">
-                    <option value="">-- Trạng thái --</option>
-                    <option value="AVAILABLE" {{ 'selected' if request.args.get('status') == 'AVAILABLE' }}>Còn trống</option>
-                    <option value="LOOKING_FOR_ROOMMATE" {{ 'selected' if request.args.get('status') == 'LOOKING_FOR_ROOMMATE' }}>Tìm người ở ghép</option>
+                    <option value="">-- Status --</option>
+                    <option value="AVAILABLE" {{ 'selected' if request.args.get('status') == 'AVAILABLE' }}>Blank</option>
+                    <option value="LOOKING_FOR_ROOMMATE" {{ 'selected' if request.args.get('status') == 'LOOKING_FOR_ROOMMATE' }}>Looking for roommate</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <input type="number" name="from_price" class="form-control" placeholder="Giá từ..." value="{{ request.args.get('from_price', '') }}">
+                <input type="number" name="from_price" class="form-control" placeholder="From price..." value="{{ request.args.get('from_price', '') }}">
             </div>
             <div class="col-md-2">
-                <input type="number" name="to_price" class="form-control" placeholder="Đến giá..." value="{{ request.args.get('to_price', '') }}">
+                <input type="number" name="to_price" class="form-control" placeholder="To price..." value="{{ request.args.get('to_price', '') }}">
             </div>
             <div class="col-md-1">
-                <button type="submit" class="btn btn-dark w-100"><i class="fas fa-filter"></i> Lọc</button>
+                <button type="submit" class="btn btn-dark w-100"><i class="fas fa-filter"></i>Filter</button>
             </div>
         </div>
     </form>

@@ -85,7 +85,7 @@ def process_upload(image):
             res = cloudinary.uploader.upload(image)
             return res.get('secure_url'), res.get('public_id')
         except Exception as e:
-            print(f"Tải ảnh lên không thành công: {e}")
+            print(f"Faill to upload img: {e}")
             return None
     return None
 
@@ -107,7 +107,7 @@ def validate_reading(apartment_id, reading_type, new_reading):
 
     usage = new_reading - last_reading
     if usage < 0:
-        err_msg = str(f"Chỉ số mới ({new_reading}) nhỏ hơn chỉ số cũ ({last_reading})!")
+        err_msg = str(f"New index ({new_reading}) is smaller than the old once ({last_reading})!")
         return False, 0.0, err_msg
     return True, usage, ""
 
@@ -122,7 +122,7 @@ def handle_meter_reading(data):
     try:
         new_reading = float(new_reading_str)
     except ValueError:
-        return False, 'Chỉ số mới phải là số hợp lệ.'
+        return False, 'The new index need to be a float'
 
     image_url = None
     image_public_id = None
@@ -132,11 +132,11 @@ def handle_meter_reading(data):
         if upload_result:
             image_url, image_public_id = upload_result
     except Exception as e:
-        print(f"Lỗi upload ảnh: {e}")
+        print(f"Upload fail: {e}")
         return False
 
     if not image_url:
-        return False, 'Tải ảnh không thành công (bắt buộc phải có ảnh minh chứng)'
+        return False, 'Cannot upload img (force to upload img)'
 
     is_valid, usage, validation_msg = validate_reading(
         apartment_id=apartment_id,
@@ -165,7 +165,7 @@ def handle_meter_reading(data):
         try:
             require_delete_uploaded_image(image_public_id)
         except Exception as e:
-            print(f"Không thể xóa ảnh: {image_public_id}. Lỗi {e}")
+            print(f"Cannot delete the img: {image_public_id}. Err {e}")
         return False, message
 
     return True, message

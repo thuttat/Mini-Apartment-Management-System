@@ -129,14 +129,14 @@ def count_apartments():
     stats = db.session.query(Apartment.status, func.count(Apartment.id).label('count')).group_by(
         Apartment.status).all()
     status_map = {
-        ApartmentStatus.AVAILABLE: "Còn Trống",
-        ApartmentStatus.RENTED: "Đã Thuê",
-        ApartmentStatus.MAINTENANCE: "Đang Bảo Trì",
-        ApartmentStatus.LOOKING_FOR_ROOMMATE: "Tìm Người Ở Ghép"
+        ApartmentStatus.AVAILABLE: "Blank",
+        ApartmentStatus.RENTED: "Rented",
+        ApartmentStatus.MAINTENANCE: "Maintaince",
+        ApartmentStatus.LOOKING_FOR_ROOMMATE: "Looking for roommate"
     }
     stats_data = []
     for s in stats:
-        display_name = status_map.get(s.status, s.status.value if s.status else "Chưa xác định")
+        display_name = status_map.get(s.status, s.status.value if s.status else "Invalid")
         stats_data.append({'name': display_name, 'count': s.count})
     return stats_data
 
@@ -189,7 +189,6 @@ def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, re
     )
     db.session.add(contract)
 
-    # Cập nhật trạng thái phòng
     apt = Apartment.query.get(apartment_id)
     if apt:
         apt.status = ApartmentStatus.RENTED
@@ -254,7 +253,7 @@ def renew_contract(old_contract_id, rental_period):
         member_count=old_contract.member_count,
         deposit=old_contract.deposit,
         rent_price=old_contract.rent_price,
-        status=ContractStatus.PENDING,  # Trạng thái chờ
+        status=ContractStatus.PENDING,
     )
     new_contract.end_date = calculate_end_date(new_contract.start_date, new_contract.rental_period)
     db.session.add(new_contract)
@@ -416,7 +415,7 @@ def get_last_reading_values(apartment_id, reading_type):
 
 def save_new_reading(apartment_id, reading_type, month, electric_usage, water_usage, new_reading, image):
     contract = Contract.query.filter_by(apartment_id=apartment_id, status=ContractStatus.ACTIVE).first()
-    if not contract: return False, "Không tìm thấy hợp đồng!"
+    if not contract: return False, "Can not find the constract!"
 
     invoice = get_invoice(contract.id, month)
     if not invoice:
@@ -452,10 +451,10 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
         invoice.total_amount = money_data['total_price']
 
         db.session.commit()
-        return True, f"Lưu chỉ số {reading_type.capitalize()} và cập nhật hóa đơn thành công."
+        return True, f"Save the index {reading_type.capitalize()} and update the invoice successfully."
     except Exception as e:
         db.session.rollback()
-        return False, f"Lỗi CSDL: {str(e)}"
+        return False, f"Error SQL: {str(e)}"
 
 
 # ============================
@@ -463,13 +462,15 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
 # ============================
 def stats_revenue(kw=None, month=None):
     query = db.session.query(
-        Contract.apartment_id,
-        Invoice.month,
-        func.sum(Invoice.total_amount),
-        Invoice.status
+        Contract.apartment_id,Invoice.month,func.sum(Invoice.total_amount),Invoice.status
     ).join(Invoice, Invoice.contract_id == Contract.id)
 
     if kw: query = query.filter(Contract.apartment_id.contains(kw))
     if month: query = query.filter(Invoice.month == month)
 
     return query.group_by(Contract.apartment_id, Invoice.month, Invoice.status).all()
+
+def stats_revenue_by_year(year):
+    return (db.session.query(Invoice.month, func.sum(Invoice.total_amount))
+            .filter(Invoice.month.contains(str(year)),Invoice.status == PaymentStatus.PAID)
+            .group_by(Invoice.month).order_by(Invoice.month).all())

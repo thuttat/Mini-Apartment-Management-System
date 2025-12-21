@@ -1,7 +1,7 @@
 {% extends 'layout/base.html' %}
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Hợp đồng Sắp hết hạn (trong {{ day_limit }} ngày tới)</h1>
+    <h1 class="mb-4">CONSTRACT WILL BE EXPIRED (FOR {{ day_limit }} DAYS LEFT)</h1>
 
   <form method="GET" class="d-flex align-items-center">
     <label for="days" class="me-2">Xem trước:</label>
@@ -50,7 +50,7 @@
         </tbody>
     </table>
     {% else %}
-    <div class="alert alert-info">Không có hợp đồng nào sắp hết hạn trong {{ day_limit }} ngày tới.</div>
+    <div class="alert alert-info">Have no constract will be expired for {{ day_limit }} days left.</div>
     {% endif %}
 </div>
 {% endblock %}

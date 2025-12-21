@@ -6,7 +6,7 @@
 <div class="container-fluid px-4 py-3">
     <div class="mb-3">
         <h2 class="fw-bold text-dark mb-0">Technician Portal</h2>
-        <p class="text-muted small mb-0">Quản lý chỉ số căn hộ chuyên nghiệp</p>
+        <p class="text-muted small mb-0">Manage Apartment index</p>
     </div>
 
     <div class="row g-3 mb-4">
@@ -15,8 +15,8 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h4 class="fw-bold mb-1">Chào buổi sáng, {{ current_user.full_name if current_user.is_authenticated else "Kỹ thuật viên" }}! 👋</h4>
-                            <p class="mb-2 opacity-75 small">Bạn đang quản lý các căn hộ trong hệ thống Skyscraper.</p>
+                            <h4 class="fw-bold mb-1">Hello, {{ current_user.full_name if current_user.is_authenticated else "Technician" }}! </h4>
+                            <p class="mb-2 opacity-75 small">You are managing the apartments in Skyscraper.</p>
 <!--                            <button class="btn btn-light btn-sm fw-bold rounded-pill px-3">Xem lịch trình</button>-->
                         </div>
                         <i class="fas fa-user-check fa-3x opacity-25 d-none d-md-block"></i>
@@ -28,10 +28,10 @@
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm bg-white h-100" style="border-radius: 1.25rem;">
                 <div class="card-body p-3 d-flex flex-column justify-content-center">
-                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Căn hộ quản lý</h6>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Apartments</h6>
                     <div class="d-flex align-items-center">
                         <span class="display-6 fw-bold text-dark me-2">{{total_rented}}</span>
-                        <span class="badge rounded-pill bg-success px-2 py-1" style="font-size: 0.7rem;">Hoạt động</span>
+                        <span class="badge rounded-pill bg-success px-2 py-1" style="font-size: 0.7rem;">Active</span>
                     </div>
                 </div>
             </div>
@@ -39,7 +39,7 @@
     </div>
 
     <div class="mb-3">
-        <h5 class="fw-bold mb-0">Điều hướng tác vụ</h5>
+        <h5 class="fw-bold mb-0">Nagigation</h5>
     </div>
 
     <div class="row g-3">
@@ -49,8 +49,8 @@
                     <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
                         <i class="fas fa-bolt text-warning fs-4"></i>
                     </div>
-                    <h6 class="fw-bold mb-1">Ghi chỉ số Điện</h6>
-                    <p class="text-muted small mb-3">Nhập dữ liệu tiêu thụ điện mới.</p>
+                    <h6 class="fw-bold mb-1">Write Electricity</h6>
+                    <p class="text-muted small mb-3">Write the new once</p>
                     <a href="{{ url_for('meter_reading_view', reading_type='electric') }}"
                        class="btn btn-warning btn-sm w-100 fw-bold text-white rounded-3 py-2">
                         Go to Electric
@@ -65,8 +65,8 @@
                     <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
                         <i class="fas fa-water text-info fs-4"></i>
                     </div>
-                    <h6 class="fw-bold mb-1">Ghi chỉ số Nước</h6>
-                    <p class="text-muted small mb-3">Nhập dữ liệu tiêu thụ nước mới.</p>
+                    <h6 class="fw-bold mb-1">Write water</h6>
+                    <p class="text-muted small mb-3">Write the new once</p>
                     <a href="{{ url_for('meter_reading_view', reading_type='water') }}"
                        class="btn btn-info btn-sm w-100 fw-bold text-white rounded-3 py-2">
                         Go to Water

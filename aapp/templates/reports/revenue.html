@@ -2,32 +2,27 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4 text-danger border-bottom pb-2">Statistical Revenue</h2>
+    <h2 class="mb-4 text-danger border-bottom pb-2">REVENUE REPORT</h2>
 
     <div class="card p-3 mb-4 shadow-sm bg-light">
-        <form action="" method="get" class="d-flex align-items-center flex-wrap">
+        <form action="" method="get" class="d-flex align-items-center flex-wrap gap-3">
 
-            <div class="me-3 mb-2">
+            <div class="d-flex align-items-center border-end pe-3">
                 <label class="fw-bold me-2">Month:</label>
-                <input type="month" name="month" class="form-control d-inline-block"
-                       value="{{ month if month }}" style="width: 180px;">
+                <input type="month" name="month" class="form-control me-2" style="width: 160px;" value="{{ month if month }}">
+                <input type="text" name="kw" class="form-control me-2" style="width: 120px;" placeholder="Room..." value="{{ kw if kw }}">
+                <button type="submit" class="btn btn-info text-white"><i class="bi bi-filter"></i></button>
             </div>
 
-            <div class="me-3 mb-2">
-                <label class="fw-bold me-2">Room:</label>
-                <input type="text" name="kw" class="form-control d-inline-block"
-                       placeholder="Apartment ID..." value="{{ kw if kw }}" style="width: 150px;">
+            <div class="d-flex align-items-center">
+                <label class="fw-bold me-2">OR Year:</label>
+                <input type="number" name="year" class="form-control me-2" style="width: 100px;" placeholder="YYYY" value="{{ year if year }}">
+                <button type="submit" class="btn btn-success"><i class="bi bi-calendar3"></i></button>
             </div>
 
-            <button type="submit" class="btn btn-info text-white shadow-sm me-2 mb-2">
-                Filter
-            </button>
-
-            {% if month or kw %}
-            <a href="{{ url_for('report_revenue') }}" class="btn btn-secondary shadow-sm mb-2">
-                Reset
-            </a>
-            {% endif %}
+            <div class="ms-auto">
+                <a href="{{ url_for('report_revenue') }}" class="btn btn-secondary">Reset</a>
+            </div>
         </form>
     </div>
 
@@ -37,37 +32,45 @@
                 <table class="table table-bordered table-hover shadow-sm bg-white">
                     <thead class="table-light">
                         <tr>
-                            <th>Apartment</th>
-                            <th>Month</th>
-                            <th class="text-end">Revenue</th>
-                            <th>Status</th>
+                            {% if mode == 'year' %}
+                                <th>Month</th>
+                                <th class="text-end">Total Revenue</th>
+                            {% else %}
+                                <th>Apartment</th>
+                                <th>Month</th>
+                                <th class="text-end">Revenue</th>
+                                <th>Status</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
                         {% if stats %}
                             {% for s in stats %}
                             <tr>
-                                <td>{{s[0]}}</td>
-                                <td>{{s[1]}}</td>
-                                <td class="text-end">{{ "{:,.0f}".format(s[2]) }} VND</td>
-                                <td>
-                                    {% if s[3].name == 'PAID' %}
-                                        <span class="badge bg-success">PAID</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">UNPAID</span>
-                                    {% endif %}
-                                </td>
+                                {% if mode == 'year' %}
+                                    <td>{{s[0]}}</td>
+                                    <td class="text-end fw-bold">{{ "{:,.0f}".format(s[1]) }} VND</td>
+                                {% else %}
+                                    <td>{{s[0]}}</td>
+                                    <td>{{s[1]}}</td>
+                                    <td class="text-end">{{ "{:,.0f}".format(s[2]) }} VND</td>
+                                    <td>
+                                        {% if s[3].name == 'PAID' %}
+                                            <span class="badge bg-success">PAID</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">UNPAID</span>
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted">No data available</td>
-                            </tr>
+                            <tr><td colspan="4" class="text-center text-muted">No data available</td></tr>
                         {% endif %}
                     </tbody>
                     <tfoot class="bg-warning">
                         <tr class="fw-bold">
-                            <td colspan="2" class="text-center">TOTAL PAID</td>
+                            <td colspan="{{ '1' if mode == 'year' else '2' }}" class="text-center">TOTAL REVENUE (PAID)</td>
                             <td colspan="2" class="text-end text-danger">{{ "{:,.0f}".format(total_revenue) }} VND</td>
                         </tr>
                     </tfoot>
@@ -90,8 +93,15 @@
 
     {% if stats %}
         {% for s in stats %}
-            labels.push('{{s[0]}} - {{s[1]}}');
-            data.push({{s[2]}});
+            {% if mode == 'year' %}
+                labels.push('{{s[0]}}');
+                data.push({{s[1]}});
+            {% else %}
+                {% if s[3].name == 'PAID' %}
+                    labels.push('{{s[0]}} - {{s[1]}}');
+                    data.push({{s[2]}});
+                {% endif %}
+            {% endif %}
             r = parseInt(Math.random() * 255); g = parseInt(Math.random() * 255); b = parseInt(Math.random() * 255);
             colors.push(`rgba(${r},${g},${b}, 0.5)`);
             borderColors.push(`rgba(${r},${g},${b}, 1)`);

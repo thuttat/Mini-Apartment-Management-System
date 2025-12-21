@@ -564,7 +564,7 @@
       "total_amount": 3980000, "status": "UNPAID"
     },
     {
-      "id": "I003", "contract_id": "C008", "month": "2024-02",
+      "id": "I003", "contract_id": "C008", "month": "2024-03",
       "electric_usage": 200, "water_usage": 15, "electric_end_reading": 500, "water_end_reading": 50,
       "electric_fee": 700000, "water_fee": 300000, "service_fee": 150000,
       "total_amount": 13150000, "status": "PAID"
@@ -573,7 +573,7 @@
       "id": "I004", "contract_id": "C006", "month": "2024-06",
       "electric_usage": 100, "water_usage": 10, "electric_end_reading": 1100, "water_end_reading": 80,
       "electric_fee": 350000, "water_fee": 200000, "service_fee": 150000,
-      "total_amount": 8200000, "status": "UNPAID"
+      "total_amount": 8200000, "status": "PAID"
     }
   ]
 }
