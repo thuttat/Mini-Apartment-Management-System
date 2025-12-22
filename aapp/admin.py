@@ -104,6 +104,7 @@ class ContractView(AdminView):
     column_searchable_list = ['id']
     can_export = True
     can_edit = True
+    can_delete = False
 
     form_columns = ['apartment', 'tenant', 'start_date', 'rental_period', 'member_count', 'deposit', 'status']
     form_excluded_columns = ('end_date', 'rent_price')
