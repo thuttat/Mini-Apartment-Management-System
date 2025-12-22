@@ -140,6 +140,45 @@ body.dark-mode .card {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
 }
 
+body.dark-mode .text-dark {
+    color: #f8f9fa !important; /* Màu trắng xám sáng */
+}
+
+body.dark-mode .bg-white {
+    background-color: #1e293b !important;
+    color: #e2e8f0;
+}
+
+body.dark-mode .text-muted {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .text-secondary {
+    color: #cbd5e1 !important;
+}
+
+body.dark-mode .card-icon-bg {
+    background-color: #334155;
+}
+
+body.dark-mode hr {
+    border-color: #475569;
+    opacity: 0.5;
+}
+
+
+body.dark-mode .bg-light {
+    background-color: #0f172a !important;
+}
+
+body.dark-mode .bg-opacity-10 {
+    --bs-bg-opacity: 0.2;
+}
+
+body.dark-mode .shadow-sm {
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, 0.5) !important;
+}
+
 
 body.dark-mode header,
 body.dark-mode footer {

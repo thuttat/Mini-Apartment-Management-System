@@ -284,19 +284,34 @@ def auto_update_contract_status():
 # ============================
 # INVOICE
 # ============================
-def load_invoices(contract_id=None, month=None, status=None, page=1):
+def build_invoice_query(contract_id=None, month=None, status=None):
     query = Invoice.query
     if contract_id: query = query.filter(Invoice.contract_id == contract_id)
     if month: query = query.filter(Invoice.month == month)
     if status: query = query.filter(Invoice.status == status)
+    return query
+
+def load_invoices(contract_id=None, month=None, status=None, page=1):
+    query = build_invoice_query(contract_id, month, status)
+    query = query.order_by(Invoice.month.desc())
+
     if page is not None:
-        start = (page - 1) * app.config["PAGE_SIZE"]
-        query = query.order_by(Invoice.month.desc()).slice(start, start + app.config["PAGE_SIZE"])
+        page_size = app.config["PAGE_SIZE"]
+        start = (page - 1) * page_size
+        query = query.slice(start, start + page_size)
+
     return query.all()
 
-def count_invoices(contract_id, status=None):
-    return Invoice.query.filter(Invoice.contract_id == contract_id).count()
+def count_invoices(contract_id=None, month=None, status=None):
+    query = build_invoice_query(contract_id, month, status)
+    return query.count()
 
+def calculate_unpaid_invoices(contract_id=None):
+    query = build_invoice_query(contract_id, status=PaymentStatus.UNPAID).all()
+    total_unpaid = 0
+    for invoice in query:
+        total_unpaid += invoice.total_amount
+    return total_unpaid
 
 def get_invoice_by_id(iid):
     return Invoice.query.filter(Invoice.id == iid).first()

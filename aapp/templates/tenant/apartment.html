@@ -3,9 +3,9 @@
 {% block title %}My Apartment - Skyscraper{% endblock %}
 
 {% block content %}
-{% if contract %}
-<div class="row g-4 mb-4">
 
+<div class="row g-4 mb-4">
+    {% if contract %}
     <div class="col-md-4">
         <div class="card h-100 border-0 shadow-sm">
             <div class="position-relative">
@@ -116,68 +116,35 @@
         </div>
 
     </div>
-</div> <div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white py-3 border-bottom-0">
-        <h6 class="m-0 fw-bold"><i class="bi bi-box-seam me-2 text-primary"></i>Furniture & Assets</h6>
-    </div>
-    <div class="card-body">
-        <div class="row g-4 justify-content-center">
 
-            <div class="col-6 col-md-3">
-                <div class="border rounded p-4 text-center h-100 d-flex flex-column align-items-center justify-content-center bg-light">
-                    <i class="bi bi-snow fs-1 text-info mb-2"></i>
-                    <div class="small text-muted mb-1">Air Cond.</div>
-                    <div class="fw-bold fs-5">1</div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-                <div class="border rounded p-4 text-center h-100 d-flex flex-column align-items-center justify-content-center bg-light">
-                    <i class="bi bi-router fs-1 text-primary mb-2"></i>
-                    <div class="small text-muted mb-1">Modem Wifi</div>
-                    <div class="fw-bold fs-5">1</div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-                <div class="border rounded p-4 text-center h-100 d-flex flex-column align-items-center justify-content-center bg-light">
-                    <i class="bi bi-lamp fs-1 text-warning mb-2"></i>
-                    <div class="small text-muted mb-1">Desk Lamp</div>
-                    <div class="fw-bold fs-5">2</div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
 {% else %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <div class="card border-0 shadow-sm p-5">
-                <i class="bi bi-house-x fs-1 text-muted mb-3"></i>
-                <h4 class="fw-bold mb-2">No Active Apartment</h4>
-                <p class="text-muted mb-4">
-                    You are currently not listed as a tenant in any active lease contract.
-                </p>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <div class="card border-0 shadow-sm p-5">
+                    <i class="bi bi-house-x fs-1 text-muted mb-3"></i>
+                    <h4 class="fw-bold mb-2">No Active Apartment</h4>
+                    <p class="text-muted mb-4">
+                        You are currently not listed as a tenant in any active lease contract.
+                    </p>
 
-                <div class="alert alert-info text-start">
-                    <ul class="mb-0">
-                        <li>You may have moved out</li>
-                        <li>Your contract has expired</li>
-                        <li>The contract was transferred to another tenant</li>
-                    </ul>
+                    <div class="alert alert-info text-start">
+                        <ul class="mb-0">
+                            <li>You may have moved out</li>
+                            <li>Your contract has expired</li>
+                            <li>The contract was transferred to another tenant</li>
+                        </ul>
+                    </div>
+
+                    <p class="small text-muted mt-3">
+                        If you need to help, please contact the apartment manager.
+                        <br>Hotline: 1900 8386
+                        <br>Email: admin@skyscraper.com
+                    </p>
                 </div>
-
-                <p class="small text-muted mt-3">
-                    If you need to help, please contact the apartment manager.
-                    <br>Hotline: 1900 8386
-                    <br>Email: admin@skyscraper.com
-                </p>
             </div>
         </div>
     </div>
-</div>
 {% endif %}
-
+</div>
 {% endblock %}

@@ -38,10 +38,10 @@
                 </div>
 
                 {% if invoices and invoices|length > 0 %}
-                    {% if invoices[0].status.name == "UNPAID" %}
+                    {% if invoices[-1].status.name == "UNPAID" %}
                         <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Next Payment</h6>
-                        <h5 class="card-title fw-bold mb-1">{{"{:,.0f}".format(invoices[0].total_amount)}} VND</h5>
-                        <p class="card-text text-danger small mb-3"><i class="bi bi-clock"></i> Due {{invoices[0].created_at.strftime('%Y-%m-%d') if invoices[0].created_at else 'N/A'}}</p>
+                        <h5 class="card-title fw-bold mb-1">{{"{:,.0f}".format(invoices[-1].total_amount)}} VND</h5>
+                        <p class="card-text text-danger small mb-3"><i class="bi bi-clock"></i> Due {{invoices[-1].created_at.strftime('%Y-%m-%d') if invoices[-1].created_at else 'N/A'}}</p>
                         <a href="{{ url_for('tenant_payments') }}" class="text-decoration-none fw-bold stretched-link">Pay now <i class="bi bi-arrow-right ms-1"></i></a>
                     {% else %}
                         <h6 class="card-subtitle mb-2 text-muted text-uppercase small fw-bold">Next Payment</h6>
@@ -89,100 +89,217 @@
 </div>
 
 <hr>
-<div class="d-flex justify-content-between align-items-end mb-3">
-    <h5 class="text-secondary fw-bold m-0">Introducing Skyscraper's Modern Apartments</h5>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="text-secondary fw-bold m-0">Analytics & History</h5>
 </div>
 
-<div id="apartmentCarousel" class="carousel carousel-dark slide rounded-4 overflow-hidden bg-white" data-bs-ride="carousel">
-    <div class="carousel-indicators">
-        <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-        <button type="button" data-bs-target="#apartmentCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-    </div>
+{% if contract %}
+<div class="row g-4 mb-5">
 
-    <div class="carousel-inner">
-        <div class="carousel-item active" data-bs-interval="5000">
-            <div class="row g-0">
-                <div class="col-md-5 position-relative">
-                    <img src="https://placehold.co/800x600/e0e0e0/555?text=Classic+Suite" class="d-block w-100 h-100 object-fit-cover" alt="Room 1" style="min-height: 320px;">
-                    <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">VIP</span>
-                </div>
-                <div class="col-md-7">
-                    <div class="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
-                        <h3 class="fw-bold mb-2">European Classic Suite</h3>
-                        <p class="text-primary fw-bold mb-3 fs-5">8.500.000 VND <small class="text-muted fw-normal fs-6">/ month</small></p>
-                        <div class="mb-4 text-muted small">
-                            <span class="me-3"><i class="bi bi-people me-1"></i> 4 Guests</span>
-                            <span class="me-3"><i class="bi bi-door-open me-1"></i> 2 Bedrooms</span>
-                            <span><i class="bi bi-aspect-ratio me-1"></i> 65m²</span>
-                        </div>
-                        <p class="card-text text-secondary mb-4 line-clamp-3">
-                            Classic European style combined with modern amenities. Features cream and wood brown tones with delicate moldings.
-                        </p>
-                        <div>
-                            <button class="btn btn-dark px-4 rounded-pill">Book Viewing</button>
-                            <button class="btn btn-outline-secondary px-4 rounded-pill ms-2">Details</button>
-                        </div>
-                    </div>
-                </div>
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                <h6 class="fw-bold m-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Monthly Spending History</h6>
+                <p class="text-muted small mb-0">Total amount paid per month (Rent + Utilities)</p>
             </div>
-        </div>
-
-        <div class="carousel-item" data-bs-interval="5000">
-            <div class="row g-0">
-                <div class="col-md-5 position-relative">
-                    <img src="https://placehold.co/800x600/cbe4f9/0056b3?text=Modern+Studio" class="d-block w-100 h-100 object-fit-cover" alt="Room 2" style="min-height: 320px;">
-                    <span class="position-absolute top-0 start-0 m-3 badge bg-success">Available</span>
-                </div>
-                <div class="col-md-7">
-                    <div class="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
-                        <h3 class="fw-bold mb-2">Sunny Modern Studio</h3>
-                        <p class="text-primary fw-bold mb-3 fs-5">5.200.000 VND <small class="text-muted fw-normal fs-6">/ month</small></p>
-                        <div class="mb-4 text-muted small">
-                            <span class="me-3"><i class="bi bi-people me-1"></i> 2 Guests</span>
-                            <span class="me-3"><i class="bi bi-door-open me-1"></i> Studio</span>
-                            <span><i class="bi bi-aspect-ratio me-1"></i> 35m²</span>
-                        </div>
-                        <p class="card-text text-secondary mb-4">
-                            Perfect for young professionals or students. Full distinct glass windows focusing on natural light.
-                        </p>
-                        <div>
-                            <button class="btn btn-dark px-4 rounded-pill">Book Viewing</button>
-                            <button class="btn btn-outline-secondary px-4 rounded-pill ms-2">Details</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="carousel-item" data-bs-interval="5000">
-            <div class="row g-0">
-                <div class="col-md-5">
-                    <img src="https://placehold.co/800x600/d4edda/155724?text=Rooftop+Garden" class="d-block w-100 h-100 object-fit-cover" alt="News" style="min-height: 320px;">
-                </div>
-                <div class="col-md-7">
-                    <div class="card-body p-4 p-lg-5 d-flex flex-column h-100 justify-content-center">
-                        <h6 class="text-uppercase text-success fw-bold ls-1 mb-2">Community News</h6>
-                        <h3 class="fw-bold mb-3">New Rooftop Garden Open!</h3>
-                        <p class="card-text text-secondary mb-4">
-                            We are happy to announce the opening of the new community garden on the rooftop.
-                        </p>
-                        <div>
-                            <button class="btn btn-success px-4 rounded-pill">Read Guidelines</button>
-                        </div>
-                    </div>
+            <div class="card-body px-4 pb-4">
+                <div style="height: 300px;">
+                    <canvas id="spendingChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <button class="carousel-control-prev" type="button" data-bs-target="#apartmentCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#apartmentCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                <h6 class="fw-bold m-0"><i class="bi bi-speedometer text-primary me-2"></i>Electric / Water Usage</h6>
+                <p class="text-muted small mb-0">Consumption trend (kWh)</p>
+            </div>
+            <div class="card-body px-4 pb-4" style="height: 200px;">
+                <canvas id="electricChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
+
+{% else %}
+    <div class="card border-0 shadow-sm mb-5 overflow-hidden">
+        <div class="row g-0">
+            <div class="col-md-7 p-5 d-flex flex-column justify-content-center bg-white">
+                <div class="mb-3">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold">
+                        <i class="bi bi-stars me-1"></i> Smart Living Features
+                    </span>
+                </div>
+                <h2 class="fw-bold mb-3 text-dark">Unlock Your Apartment Insights</h2>
+                <p class="text-muted mb-4 lead">
+                    Manage your spending, track electricity & water usage in real-time, and pay bills instantly.
+                    Everything you need to live smarter is waiting for you.
+                </p>
+
+                <div class="d-flex gap-3">
+                    <div class="d-flex align-items-center text-secondary">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i> Usage Analysis
+                    </div>
+                    <div class="d-flex align-items-center text-secondary">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i> Bill History
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 bg-light d-none d-md-flex align-items-center justify-content-center position-relative overflow-hidden"
+                 style="background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);">
+
+                <div class="position-absolute top-0 end-0 bg-white opacity-10 rounded-circle" style="width: 300px; height: 300px; margin-top: -100px; margin-right: -100px;"></div>
+                <div class="position-absolute bottom-0 start-0 bg-white opacity-10 rounded-circle" style="width: 200px; height: 200px; margin-bottom: -50px; margin-left: -50px;"></div>
+
+                <div class="text-center text-white z-1">
+                    <i class="bi bi-graph-up-arrow display-1 mb-3"></i>
+                    <h5 class="fw-bold">Real-time Analytics</h5>
+                    <p class="small opacity-75 px-4">Visualization of your monthly utilities consumption data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    {% set sorted_invoices = invoices %}
+    const labelsData = [
+        {% for inv in sorted_invoices %}
+            "{{ inv.month }}",
+        {% endfor %}
+    ];
+    const spendingData = [
+        {% for inv in sorted_invoices %}
+            {{ inv.total_amount }},
+        {% endfor %}
+    ];
+    const electricData = [
+        {% for inv in sorted_invoices %}
+            {{ inv.electric_usage if inv.electric_usage else 0 }},
+        {% endfor %}
+    ];
+    const waterData = [
+        {% for inv in sorted_invoices %}
+            {{ inv.water_usage if inv.water_usage else 0 }},
+        {% endfor %}
+    ];
+
+    const ctxSpending = document.getElementById('spendingChart').getContext('2d');
+    let gradientSpending = ctxSpending.createLinearGradient(0, 0, 0, 400);
+    gradientSpending.addColorStop(0, 'rgba(13, 110, 253, 0.8)');
+    gradientSpending.addColorStop(1, 'rgba(13, 110, 253, 0.2)');
+
+    new Chart(ctxSpending, {
+        type: 'bar',
+        data: {
+            labels: labelsData,
+            datasets: [{
+                label: 'Total Paid (VND)',
+                data: spendingData,
+                backgroundColor: gradientSpending,
+                borderRadius: 4,
+                barThickness: 30,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    const ctxUtility = document.getElementById('electricChart').getContext('2d');
+
+new Chart(ctxUtility, {
+    type: 'line',
+    data: {
+        labels: labelsData,
+        datasets: [
+            {
+                label: 'Electric (kWh)',
+                data: electricData,
+                borderColor: '#ffc107', // Vàng
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 3,
+                yAxisID: 'y',
+            },
+
+            {
+                label: 'Water (m3)',
+                data: waterData,
+                borderColor: '#0dcaf0', // Xanh Info (Cyan)
+                backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 3,
+                yAxisID: 'y1',
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: { boxWidth: 10, usePointStyle: true, font: { size: 10 } }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        if (context.parsed.y !== null) {
+                            label += context.parsed.y;
+                            if(context.dataset.yAxisID === 'y') label += ' kWh';
+                            else label += ' m3';
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { font: { size: 10 } }
+            },
+            y: {
+                type: 'linear',
+                display: false,
+                position: 'left',
+            },
+            y1: {
+                type: 'linear',
+                display: false,
+                position: 'right',
+                grid: {
+                    drawOnChartArea: false,
+                },
+            },
+        }
+    }
+});
+
+});
+</script>
+
 {% endblock %}

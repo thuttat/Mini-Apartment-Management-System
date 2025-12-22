@@ -51,10 +51,8 @@ def get_tenant_context():
     from aapp import dao
 
     contracts = dao.load_contracts(tenant_id=current_user.id, status=ContractStatus.ACTIVE)
-    invoices = []
     contract = None
     apartment = None
-    total_unpaid = 0
 
     if contracts:
         current_contract_id = session.get("current_contract_id")
@@ -65,14 +63,11 @@ def get_tenant_context():
         session["current_contract_id"] = contract.id
 
         apartment = dao.get_apartment_by_id(contract.apartment_id)
-        invoices = dao.load_invoices(contract_id=contract.id)
 
     return {
         'contract': contract,
         'contracts': contracts,
-        'apartment': apartment,
-        'invoices': invoices,
-        'total_unpaid': total_unpaid
+        'apartment': apartment
     }
 
 

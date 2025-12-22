@@ -11,7 +11,7 @@
                 <div>
                     <h6 class="opacity-75">Total Outstanding Amount</h6>
                     <h2 class="fw-bold mb-0">
-                        {{ "{:,.0f}".format(total_unpaid) }} ₫
+                        {{ "{:,.0f}".format(total_unpaid) if contract else 0 }} ₫
                     </h2>
                 </div>
                 <i class="bi bi-wallet2 fs-1 opacity-50"></i>
@@ -45,51 +45,31 @@
                     <th>Action</th>
                 </tr>
                 </thead>
-
                 <tbody>
                 {% if invoices %}
                 {% for i in invoices %}
                 <tr>
                     <td class="ps-4 fw-bold">#{{i.id}}</td>
                     <td>{{i.month}}</td>
-
                     <td class="fw-bold {% if i.status.name != 'PAID' %}text-danger{% endif %}">
                         {{"{:,.0f}".format(i.total_amount)}} ₫
                     </td>
-
-                    <td>
-                        {{ i.created_at.strftime('%Y-%m-%d') if i.created_at else 'N/A' }}
+                    <td> {{ i.created_at.strftime('%Y-%m-%d') if i.created_at else 'N/A' }}</td>
+                    <td> {% if i.status.name == "PAID" %} <span
+                            class="badge bg-success bg-opacity-10 text-success px-3">Paid</span> {% else %} <span
+                            class="badge bg-danger bg-opacity-10 text-danger px-3">Unpaid</span> {% endif %}
                     </td>
-
                     <td>
-                        {% if i.status.name == "PAID" %}
-                        <span class="badge bg-success bg-opacity-10 text-success px-3">Paid</span>
-                        {% else %}
-                        <span class="badge bg-danger bg-opacity-10 text-danger px-3">Unpaid</span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            {% if i.status.name != "PAID" %}
-                            <a href="{{ url_for('payment', invoice_id=i.id, amount=i.total_amount) }}"
-                               class="btn btn-sm btn-primary"
-                               style="min-width: 80px;">
-                                Pay
-                            </a>
-                            {% else %}
+                        <div class="d-flex align-items-center gap-2"> {% if i.status.name != "PAID" %} <a
+                                href="{{ url_for('payment', invoice_id=i.id, amount=i.total_amount) }}"
+                                class="btn btn-sm btn-primary" style="min-width: 80px;"> Pay </a> {% else %}
                             <button class="btn btn-sm btn-outline-success disabled border-0"
-                                    style="min-width: 80px; opacity: 1;">
-                                <i class="bi bi-check-lg me-1"></i> Paid
+                                    style="min-width: 80px; opacity: 1;"><i class="bi bi-check-lg me-1"></i> Paid
                             </button>
                             {% endif %}
-
                             <a href="{{ url_for('tenant_invoice_detail', invoice_id=i.id) }}"
-                               class="btn btn-sm btn-outline-secondary"
-                               title="Download PDF">
-                                <i class="bi bi-download"></i>
-                            </a>
-                        </div>
+                                           class="btn btn-sm btn-outline-secondary" title="Download PDF"> <i
+                                    class="bi bi-download"></i> </a></div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -98,26 +78,17 @@
                     <td colspan="6" class="text-center py-4 text-muted">No invoices found.</td>
                 </tr>
                 {% endif %}
-
-                {% if pages > 1 %}
-                <ul class="pagination justify-content-center mt-4">
-                    {% for i in range(1, pages + 1) %}
-                    <li class="page-item {{ 'active' if i == request.args.get('page', 1)|int else '' }}">
-                        <a class="page-link"
-                           href="{{ url_for(
-                           'tenant_payments',
-                           page=i,
-                           status=request.args.get('status'),
-                           month=request.args.get('month')) }}">
-                            {{ i }}
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
                 </tbody>
             </table>
+            {% if pages > 1 %}
+            <ul class="pagination justify-content-center mt-4"> {% for i in range(1, pages + 1) %}
+                <li class="page-item {{ 'active' if i == request.args.get('page', 1)|int else '' }}"><a
+                        class="page-link"
+                        href="{{ url_for( 'tenant_payments', page=i, status=request.args.get('status'), month=request.args.get('month')) }}">
+                    {{ i }} </a></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div>
     </div>
-</div>
-{% endblock %}
+</div> {% endblock %}

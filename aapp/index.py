@@ -7,7 +7,7 @@ from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db, vnpay_client, init_extensions
-from aapp.dao import renew_contract, load_invoices, count_invoices
+from aapp.dao import renew_contract, load_invoices, count_invoices, calculate_unpaid_invoices, build_invoice_query
 from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice, Contract
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
@@ -158,12 +158,17 @@ def renew_contract_view():
 @login_required
 def tenant_index():
     ctx = get_tenant_context()
+    contract = ctx['contract']
+    if not contract:
+        invoices = []
+    else:
+        invoices = build_invoice_query(contract.id).all()
     electric_price = float(Rule.query.filter(Rule.key == RuleKey.PRICE_ELECTRIC).first().value)
     water_price = float(Rule.query.filter(Rule.key == RuleKey.PRICE_WATER).first().value)
     time = datetime.now().strftime('%Y-%m')
     return render_template('tenant/index.html',
                            contract=ctx['contract'],
-                           invoices=ctx['invoices'],
+                           invoices=invoices,
                            electric_price=electric_price,
                            water_price=water_price,
                            time=time)
@@ -200,6 +205,17 @@ def tenant_payments():
     req_month = request.args.get('month')
     req_status = request.args.get('status')
 
+    if not contract:
+        return render_template(
+            'tenant/payments.html',
+            invoices=[],
+            total_unpaid=0,
+            pages=0,
+            contract=None,
+            contracts=ctx['contracts'],
+            apartment=None
+        )
+
     invoices = load_invoices(
         contract_id=contract.id,
         month=req_month,
@@ -207,11 +223,12 @@ def tenant_payments():
         page=page
     )
 
-    total_unpaid = sum(inv.total_amount for inv in invoices if inv.status.name == 'UNPAID')
+    total_unpaid = calculate_unpaid_invoices(contract.id)
 
     return render_template('tenant/payments.html',
                            invoices=invoices,
                            total_unpaid=total_unpaid,
+                           contract=contract,
                            pages=int(math.ceil(count_invoices(contract.id, status=PaymentStatus[req_status] if req_status else None)
                                                / app.config['PAGE_SIZE'])))
 
