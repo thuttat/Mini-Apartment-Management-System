@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sys import exception
 
 import cloudinary.uploader
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db, vnpay_client, init_extensions
@@ -42,6 +42,7 @@ def index():
         keyword=keyword,
         page=page
     )
+
     total_count = dao.count_for_pagination(
         room_type=room_type,
         status=status_filter,
@@ -49,6 +50,7 @@ def index():
         to_price=to_price,
         keyword=keyword
     )
+
     return render_template('index.html', apartments=apartments,
                            pages=math.ceil(total_count / app.config['PAGE_SIZE']))
 
@@ -364,7 +366,9 @@ def chart_view():
 @login_required
 def technician_index():
     rented_apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
-    return render_template('technician/index.html', apartments=rented_apartments)
+    total_rented = dao.count_for_pagination(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
+    return render_template('technician/index.html', apartments=rented_apartments
+                           ,total_rented=total_rented)
 
 
 @app.route('/technician/meter_reading/<string:reading_type>', methods=['GET', 'POST'])
