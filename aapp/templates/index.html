@@ -1,6 +1,6 @@
 {% extends 'layout/base.html' %}
 
-{% block title %}Danh sách căn hộ{% endblock %}
+{% block title %}Apartment List{% endblock %}
 
 {% block content %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -14,7 +14,7 @@
             <div class="col-md-8">
                 <div class="search-container">
                     <input type="text" name="keyword" class="form-control search-input shadow-sm"
-                           placeholder="Tìm kiếm tên căn hộ..."
+                           placeholder="Search for apartment name..."
                            value="{{ request.args.get('keyword', '') }}">
                     <i class="fas fa-search search-icon"></i>
                 </div>
@@ -84,18 +84,18 @@
 
                     <div class="card-body">
                         <h5 class="card-title text-primary">{{ a.id }}</h5>
-                        <p class="card-text">Loại phòng: <strong>{{ a.room_type.value }}</strong></p>
-                        <p class="card-text">Diện tích: {{ a.area }} m²</p>
+                        <p class="card-text">Room type: <strong>{{ a.room_type.value }}</strong></p>
+                        <p class="card-text">Area: {{ a.area }} m²</p>
                         <h5 class="text-danger font-weight-bold">{{ "{:,.0f}".format(a.price) }} VND</h5>
 
-                        <a href="{{ url_for('apartment_detail', apartment_id=a.id) }}" class="btn btn-primary w-100">Xem chi tiết</a>
+                        <a href="{{ url_for('apartment_detail', apartment_id=a.id) }}" class="btn btn-primary w-100">More Details</a>
                     </div>
                 </div>
             </div>
         {% else %}
             <div class="col-12 text-center py-5">
                 <div class="alert alert-warning">
-                    <i class="fas fa-search me-2"></i> Không tìm thấy phòng nào phù hợp với từ khóa hoặc bộ lọc của bạn.
+                    <i class="fas fa-search me-2"></i> No apartments were found that match your keywords or filters.
                 </div>
             </div>
         {% endfor %}

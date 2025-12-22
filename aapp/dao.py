@@ -48,7 +48,7 @@ def add_manager(name, username, password, avatar=None):
     new_id = get_next_id(Manager, "M", 3)
     user = Manager(
         id=new_id, full_name=name, username=username.strip(),
-        password=hash_password(password), user_role=UserRole.MANAGER, active=True
+        password=hash_password(password), user_role=UserRole.MANAGER, active=False
     )
     if avatar:
         res = cloudinary.uploader.upload(avatar)
@@ -62,7 +62,7 @@ def add_technician(name, username, password, avatar=None):
     new_id = get_next_id(Technician, "TECH", 3)
     user = Technician(
         id=new_id, full_name=name, username=username.strip(),
-        password=hash_password(password), user_role=UserRole.TECHNICIAN, active=True
+        password=hash_password(password), user_role=UserRole.TECHNICIAN, active=False
     )
     if avatar:
         res = cloudinary.uploader.upload(avatar)
