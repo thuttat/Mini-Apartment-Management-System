@@ -128,23 +128,14 @@ class ContractView(AdminView):
         if is_created and not model.id:
             model.id = get_next_id(Contract, "C", 3)
             model.rent_price = model.apartment.price
-            model.deposit = model.apartment.price
+            if model.deposit is None:
+                model.deposit = model.apartment.price
 
         max_people = dao.get_rule_value(RuleKey.MAX_PER_ROOM)
         if model.member_count > int(max_people):
             raise validators.ValidationError(
                 f"The quantity is ({model.member_count})/({int(max_people)})."
             )
-
-        if is_created:
-            existing = Contract.query.filter(
-                Contract.apartment_id == model.apartment.id,
-                Contract.status == ContractStatus.ACTIVE,
-                Contract.id != model.id
-            ).first()
-
-            if existing:
-                raise ValidationError(f"Room {model.apartment.id} has active contract!")
 
     def after_model_change(self, form, model, is_created):
         if not is_created:
