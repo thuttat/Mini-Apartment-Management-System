@@ -10,12 +10,8 @@ app = Flask(__name__)
 app.secret_key = 'iqiwqu3e735ehwsnsio274687928dhgtu'
 app.config["SQLALCHEMY_DATABASE_URI"] = 'mysql+pymysql://root:%s@localhost/apartmentdb' % quote('anhthu')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
-app.config['SQLALCHEMY_ECHO'] = True
+app.config['SQLALCHEMY_ECHO'] = False
 app.config['PAGE_SIZE'] = 6
-
-# cloudinary.config(cloud_name='djviyyvzu',
-#                   api_key='516671461397882',
-#                   api_secret='oqcwKadypdGiiyJreDZprPf2K10')
 
 cloudinary.config(cloud_name='dyupzyqwj',
                   api_key='497522642724389',

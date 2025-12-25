@@ -32,14 +32,3 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
-
-//$(document).ready(function() {
-//    if ($('.select2-dropdown').length > 0) {
-//        $('.select2-dropdown').select2({
-//            theme: "classic",
-//            placeholder: "Select or Type...",
-//            allowClear: true,
-//            width: '100%'
-//        });
-//    }
-//});
