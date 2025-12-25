@@ -32,7 +32,7 @@ class ApartmentStatus(AppEnum):
 
 
 class ContractStatus(AppEnum):
-    PENDING = "PENDING"  # Trạng thái chờ kích hoạt (cho hợp đồng gia hạn)
+    PENDING = "PENDING"
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"
@@ -58,9 +58,6 @@ class RuleKey(AppEnum):
     DEPOSIT_MONTHS = "DEPOSIT_MONTHS"
 
 
-# ============================
-# USERS
-# ============================
 class User(BaseModel, UserMixin):
     __abstract__ = True
     full_name = Column(String(50), nullable=False)
@@ -90,9 +87,6 @@ class Technician(User):
         return self.full_name
 
 
-# ============================
-# APARTMENT
-# ============================
 class Apartment(BaseModel):
     room_type = Column(Enum(RoomType), nullable=False)
     status = Column(Enum(ApartmentStatus), default=ApartmentStatus.AVAILABLE)
@@ -118,9 +112,6 @@ class ApartmentDetail(BaseModel):
         return f"{self.apartment_id} - {self.manager_id}"
 
 
-# ============================
-# CONTRACT
-# ============================
 class Contract(BaseModel):
     apartment_id = Column(String(50), ForeignKey("apartment.id"), nullable=False)
     tenant_id = Column(String(50), ForeignKey("tenant.id"), nullable=False)
@@ -156,24 +147,18 @@ class ContractAssignment(BaseModel):
         return f"Transfer history of contract {self.contract_id}"
 
 
-# ============================
-# INVOICE
-# ============================
 class Invoice(BaseModel):
     contract_id = Column(String(50), ForeignKey("contract.id"))
     month = Column(String(20), default=f"{datetime.now().year}-{datetime.now().month}")
 
-    # Chỉ số tiêu thụ
     electric_usage = Column(Float, default=0)
     water_usage = Column(Float, default=0)
 
-    # Chỉ số cuối
     electric_end_reading = Column(Float, default=0)
     water_end_reading = Column(Float, default=0)
     electric_image = Column(String(255))
     water_image = Column(String(255))
 
-    # Thành tiền
     electric_fee = Column(Float, default=0)
     water_fee = Column(Float, default=0)
     service_fee = Column(Float, default=0)
@@ -196,9 +181,6 @@ class Invoice(BaseModel):
         return None
 
 
-# ============================
-# RULE
-# ============================
 class Rule(BaseModel):
     key = Column(Enum(RuleKey), unique=True, nullable=False)
     value = Column(String(50), nullable=False)

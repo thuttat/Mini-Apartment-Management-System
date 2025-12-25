@@ -9,10 +9,6 @@ from aapp import db, app,dao
 from aapp.models import ContractStatus, Apartment, ApartmentStatus
 
 
-
-# ============================
-# BASIC UTILS
-# ============================
 def get_next_id(model, prefix, id_length=3):
     with db.session.no_autoflush:
         last_obj = model.query.filter(model.id.like(f"{prefix}%")) \
@@ -44,9 +40,6 @@ def get_months_list(num_months=12):
     return months_list
 
 
-# ============================
-# TENANT UTILS
-# ============================
 def get_tenant_context():
     from aapp import dao
 
@@ -71,9 +64,6 @@ def get_tenant_context():
     }
 
 
-# ============================
-# TECHNICIAN UTILS
-# ============================
 def process_upload(image):
     if image:
         try:
@@ -166,9 +156,6 @@ def handle_meter_reading(data):
     return True, message
 
 
-# ============================
-# SCHEDULER
-# ============================
 scheduler = APScheduler()
 
 

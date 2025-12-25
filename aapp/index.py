@@ -136,7 +136,6 @@ def apartment_detail(apartment_id):
 def load_user(user_id):
     return dao.get_user_by_id(user_id)
 
-# man hinh gia han hop dong cua admin nam o ngoai
 @app.route("/admin/renew_contracts", methods=["GET", "POST"])
 def renew_contract_view():
     if request.method == "POST":
@@ -153,9 +152,6 @@ def renew_contract_view():
         "admin/renew_contracts.html", contracts=active_contracts)
 
 
-# ==========================================
-# TENANT ROUTES
-# ==========================================
 @app.route('/tenant/index')
 @login_required
 def tenant_index():
@@ -266,9 +262,6 @@ def tenant_profile():
                            contract=ctx['contract'], contracts=ctx['contracts'])
 
 
-# ==========================================
-# TENANT - PROFILE ACTIONS
-# ==========================================
 @app.route('/upload_avatar', methods=['POST'])
 @login_required
 def upload_avatar():
@@ -347,9 +340,6 @@ def switch_apartment(contract_id):
     session['current_contract_id'] = contract_id
     return redirect(url_for('tenant_profile', contract_id=contract_id))
 
-# ==========================================
-# TECHNICIAN ROUTES
-# ==========================================
 @app.route('/technician')
 def admin_index():
     return render_template('technician/index.html')
@@ -365,7 +355,7 @@ def chart_view():
 @app.route('/technician/index')
 @login_required
 def technician_index():
-    rented_apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
+    rented_apartments = dao.load_apartments(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE],page =None)
     total_rented = dao.count_for_pagination(status=[ApartmentStatus.RENTED, ApartmentStatus.LOOKING_FOR_ROOMMATE])
     return render_template('technician/index.html', apartments=rented_apartments
                            ,total_rented=total_rented)

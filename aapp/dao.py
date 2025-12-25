@@ -9,10 +9,6 @@ from aapp.models import (Manager, Tenant, Technician, Apartment, Contract, Invoi
                          Rule, UserRole, RuleKey, ContractStatus, ApartmentStatus, PaymentStatus, ContractAssignment)
 from .utils import get_next_id, hash_password
 
-
-# ============================
-# AUTH & USER
-# ============================
 def auth_user(username, password):
     hashed = hash_password(password)
 
@@ -40,10 +36,6 @@ def get_user_by_id(id):
     if user: return user
     return None
 
-
-# ============================
-# USER CREATION
-# ============================
 def add_manager(name, username, password, avatar=None):
     new_id = get_next_id(Manager, "M", 3)
     user = Manager(
@@ -86,9 +78,6 @@ def add_tenant(name, username, password, avatar=None):
     return tenant
 
 
-# ============================
-# APARTMENT
-# ============================
 def _build_query(room_type=None, status=None, from_price=None, to_price=None, keyword=None):
     query = Apartment.query
     if room_type:
@@ -141,9 +130,6 @@ def count_apartments():
     return stats_data
 
 
-# ============================
-# CONTRACT
-# ============================
 def load_contracts(tenant_id=None, apartment_id=None, status=None):
     query = Contract.query
     if tenant_id: query = query.filter(Contract.tenant_id == tenant_id)
@@ -195,7 +181,6 @@ def add_contract(tenant_id, apartment_id, start_date, rental_period, deposit, re
 
     db.session.commit()
 
-    # có hợp đồng => invoice đầu
     create_first_invoice(contract)
 
     return contract
@@ -261,17 +246,14 @@ def renew_contract(old_contract_id, rental_period):
     return new_contract
 
 
-# Tự động cập nhật trạng thái hợp đồng
 def auto_update_contract_status():
     with app.app_context():
-        # Pending -> Active
         pending_contracts = Contract.query.filter(Contract.status == ContractStatus.PENDING,
                                                   Contract.start_date <= date.today()).all()
         for contract in pending_contracts:
             contract.status = ContractStatus.ACTIVE
             contract.apartment.status = ApartmentStatus.RENTED
 
-        # Active -> Expired
         expired_contracts = Contract.query.filter(Contract.status == ContractStatus.ACTIVE,
                                                   Contract.end_date < date.today()).all()
         for contract in expired_contracts:
@@ -281,9 +263,6 @@ def auto_update_contract_status():
         db.session.commit()
 
 
-# ============================
-# INVOICE
-# ============================
 def build_invoice_query(contract_id=None, month=None, status=None):
     query = Invoice.query
     if contract_id: query = query.filter(Invoice.contract_id == contract_id)
@@ -372,9 +351,6 @@ def calculate_monthly_invoice(contract, electric_usage, water_usage, service_fee
     }
 
 
-# ============================
-# CREATE FIRST INVOICE
-# ============================
 def create_first_invoice(contract):
     deposit_fee = contract.deposit
     service_fee = get_rule_value(RuleKey.PRICE_SERVICE)
@@ -396,9 +372,6 @@ def create_first_invoice(contract):
     db.session.commit()
 
 
-# ============================
-# RULES & READINGS
-# ============================
 def get_rule_value(key: RuleKey):
     rule = Rule.query.filter(Rule.key == key).first()
     if not rule: return 0
@@ -472,9 +445,6 @@ def save_new_reading(apartment_id, reading_type, month, electric_usage, water_us
         return False, f"Error SQL: {str(e)}"
 
 
-# ============================
-# STATS
-# ============================
 def stats_revenue(kw=None, month=None):
     query = db.session.query(
         Contract.apartment_id,Invoice.month,func.sum(Invoice.total_amount),Invoice.status

@@ -23,7 +23,6 @@ def seed_data():
     with open(file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    # Rules
     print("Seeding Rules...")
     for item in data['rules']:
         r = Rule(
@@ -35,7 +34,6 @@ def seed_data():
         )
         db.session.add(r)
 
-    # Users
     print("Seeding Users...")
     for item in data['managers']:
         m = Manager(
@@ -65,7 +63,6 @@ def seed_data():
         )
         db.session.add(t)
 
-    # Apartments
     print("Seeding Apartments...")
     for item in data['apartments']:
         a = Apartment(
@@ -77,7 +74,6 @@ def seed_data():
         )
         db.session.add(a)
 
-    # Apartment Details
     print("Seeding Details...")
     for item in data['apartment_details']:
         ad = ApartmentDetail(
@@ -86,7 +82,6 @@ def seed_data():
         )
         db.session.add(ad)
 
-    # Contracts
     print("Seeding Contracts...")
 
     occupied_apartments = set()
@@ -97,7 +92,7 @@ def seed_data():
         if status_enum == ContractStatus.ACTIVE:
             if item['apartment_id'] in occupied_apartments:
                 print(
-                    f" WARNING: {item['apartment_id']} kiểm tra lại sl hợp đồng active")
+                    f" WARNING: {item['apartment_id']} check for active")
                 continue
             occupied_apartments.add(item['apartment_id'])
 
@@ -114,7 +109,6 @@ def seed_data():
         )
         db.session.add(c)
 
-    # Invoices
     print("Seeding Invoices...")
     for item in data['invoices']:
         inv = Invoice(

@@ -81,6 +81,7 @@ class ApartmentView(AdminView):
     column_editable_list = ['status', 'price']
     form_columns = ['id', 'room_type', 'status', 'floor', 'area', 'price', 'image_urls']
     can_export = True
+    can_create = False
 
 
 class ApartmentDetailView(AdminView):
@@ -95,9 +96,6 @@ class ApartmentDetailView(AdminView):
             model.id = get_next_id(ApartmentDetail, "AD", 4)
 
 
-# =========================================================
-# CONTRACT
-# =========================================================
 class ContractView(AdminView):
     column_list = ['id', 'apartment', 'tenant', 'start_date', 'end_date', 'member_count', 'rent_price', 'status']
     column_filters = ['status', 'apartment.id', 'tenant.id']
@@ -142,7 +140,7 @@ class ContractView(AdminView):
             return
 
         if model.status == ContractStatus.ACTIVE:
-            model.apartment.status = ApartmentStatus.RENTED  # chuyen doi trang thai can ho
+            model.apartment.status = ApartmentStatus.RENTED
             db.session.add(model.apartment)
 
         create_first_invoice(model)  # tao invoice thang dau
@@ -170,10 +168,6 @@ class ContractAssignmentView(AdminView):
         except Exception as e:
             db.session.rollback()
             raise e
-
-# =========================================================
-# INVOICE
-# =========================================================
 
 class InvoiceView(AdminView):
     can_create = False
@@ -218,7 +212,6 @@ class InvoiceView(AdminView):
         'status'
     ]
 
-    # Khóa
     form_widget_args = {
         'contract': {'disabled': True},
         'month': {'disabled': True},
@@ -268,9 +261,6 @@ class InvoiceView(AdminView):
         return super(InvoiceView, self).get_count_query().filter(self.model.active == True)
 
 
-# =========================================================
-# RULE
-# =========================================================
 class RuleView(AdminView):
     column_list = ['key', 'name_display', 'value', 'description', 'last_updated']
     column_searchable_list = ['name_display']
