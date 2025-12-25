@@ -1,14 +1,13 @@
 import math
 from datetime import datetime, timedelta
-from sys import exception
 
 import cloudinary.uploader
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
+from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import current_user, login_required, login_user, logout_user
 
 from aapp import app, dao, login, db, vnpay_client, init_extensions
 from aapp.dao import renew_contract, load_invoices, count_invoices, calculate_unpaid_invoices, build_invoice_query
-from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, Apartment, PaymentStatus, Invoice, Contract
+from aapp.models import UserRole, ApartmentStatus, ContractStatus, Rule, RuleKey, PaymentStatus, Invoice, Contract
 from aapp.utils import (
     get_tenant_context, hash_password, get_months_list, handle_meter_reading
 )

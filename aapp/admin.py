@@ -1,12 +1,10 @@
 from datetime import datetime
 from flask_admin.contrib.sqla import ModelView
-from markupsafe import Markup
 from werkzeug.utils import redirect
 from flask_admin import Admin, BaseView, expose
 from flask_login import current_user, logout_user
 from wtforms import validators
-from flask import request,flash
-from wtforms.validators import ValidationError
+from flask import flash
 
 from aapp.dao import handle_assign_contract, create_first_invoice
 from aapp.utils import get_next_id, hash_password
@@ -24,9 +22,7 @@ class AdminView(ModelView):
         return redirect('/?forbidden=1')
 
 
-# =========================================================
-# USER
-# =========================================================
+
 class ManagerView(AdminView):
     column_list = ['id', 'full_name', 'phone_number', 'email', 'user_role', 'active']
     column_editable_list = ['active']
@@ -71,9 +67,7 @@ class TechnicianView(AdminView):
             model.password = hash_password(form.password.data)
 
 
-# =========================================================
-# APARTMENT
-# =========================================================
+
 class ApartmentView(AdminView):
     column_list = ['id', 'room_type', 'status', 'floor', 'price', 'area']
     column_searchable_list = ['id']
@@ -272,9 +266,7 @@ class RuleView(AdminView):
         model.last_updated = datetime.now()
 
 
-# =========================================================
-# LOGOUT
-# =========================================================
+
 class LogoutView(BaseView):
     @expose('/')
     def index(self):
@@ -285,9 +277,7 @@ class LogoutView(BaseView):
         return current_user.is_authenticated
 
 
-# =========================================================
-# INIT ADMIN
-# =========================================================
+
 admin = Admin(app=app, name="Apartment Management")
 
 admin.add_view(ManagerView(Manager, db.session, name='Manager'))

@@ -5,8 +5,8 @@ from flask import session
 from flask_login import current_user
 from flask_apscheduler import APScheduler
 
-from aapp import db, app,dao
-from aapp.models import ContractStatus, Apartment, ApartmentStatus
+from aapp import db, dao
+from aapp.models import ContractStatus
 
 
 def get_next_id(model, prefix, id_length=3):

@@ -1,4 +1,3 @@
-import hashlib
 from datetime import datetime, timedelta, date
 from sqlalchemy import func
 import cloudinary.uploader
