@@ -78,6 +78,6 @@ python aapp/app.py
 
 ## Tác giả
 
-Trịnh Thị Anh Thư — [github.com/thuttat](https://github.com/thuttat)
-Lê Hoàng Bảo Trân - [github.com/TranLe05](https://github.com/TranLe05)
-Nguyễn Triệu Duy - [github.com/duynguyenntd](https://github.com/duynguyenntd)
+- Trịnh Thị Anh Thư — [github.com/thuttat](https://github.com/thuttat)
+- Lê Hoàng Bảo Trân - [github.com/TranLe05](https://github.com/TranLe05)
+- Nguyễn Triệu Duy - [github.com/duynguyenntd](https://github.com/duynguyenntd)
