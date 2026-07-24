@@ -70,7 +70,7 @@ CLOUDINARY_URL=<your_cloudinary_url>
 Chạy ứng dụng:
 
 ```bash
-python aapp/app.py   # hoặc flask run, tuỳ entrypoint thực tế trong thư mục aapp/
+python aapp/app.py   
 ```
 
 ## Demo
@@ -79,3 +79,5 @@ python aapp/app.py   # hoặc flask run, tuỳ entrypoint thực tế trong thư
 ## Tác giả
 
 Trịnh Thị Anh Thư — [github.com/thuttat](https://github.com/thuttat)
+Lê Hoàng Bảo Trân - [github.com/TranLe05](https://github.com/TranLe05)
+Nguyễn Triệu Duy - [github.com/duynguyenntd](https://github.com/duynguyenntd)
